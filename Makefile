@@ -26,3 +26,6 @@ db-logs:
 
 down:
 	docker compose down
+
+black:
+	docker exec -it astrikos_backend black --exclude '^.+/migrations/[^/]+.py' .

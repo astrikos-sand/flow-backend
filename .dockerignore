@@ -1,7 +1,5 @@
-.venv
-.git
-.github
-.gitignore
-.env*
-media/
-static/
+*
+!apps/
+!config/
+!manage.py
+!requirements.txt
