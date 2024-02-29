@@ -29,4 +29,4 @@ jobs:
 
       - name: Check formatting
         id: black
-        run: black --check --exclude '^.+/migrations/[^/]+.py$' .
+        run: black --check --exclude '^.+/migrations/[^/]+.py' .
