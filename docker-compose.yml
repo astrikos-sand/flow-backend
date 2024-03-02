@@ -15,6 +15,7 @@ services:
       - ./config/:/astrikos/config/
       - ./requirements.txt:/astrikos/requirements.txt
       - ./manage.py:/astrikos/manage.py
+      - ./mongodb:/astrikos/mongodb
     depends_on:
       db:
         condition: service_healthy
