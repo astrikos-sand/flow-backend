@@ -13,8 +13,12 @@ services:
     volumes:
       - ./apps/:/astrikos/apps/
       - ./config/:/astrikos/config/
+      - ./requirements.txt:/astrikos/requirements.txt
+      - ./manage.py:/astrikos/manage.py
     depends_on:
       db:
+        condition: service_healthy
+      mongodb:
         condition: service_healthy
 
   db:
@@ -25,11 +29,43 @@ services:
     volumes:
       - db:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}", "-h", "${POSTGRES_HOST}"]
+      test:
+        [
+          "CMD",
+          "pg_isready",
+          "-U",
+          "${POSTGRES_USER}",
+          "-d",
+          "${POSTGRES_DB}",
+          "-h",
+          "${POSTGRES_HOST}"
+        ]
       interval: 5s
       retries: 5
       timeout: 5s
 
+  mongodb:
+    image: mongo:7.0.6
+    container_name: astrikos_mongodb
+    hostname: ${MONGO_INITDB_HOST}
+    env_file: .env
+    environment:
+      - URI=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@${MONGO_INITDB_HOST}:27017/${MONGO_INITDB_DATABASE}?authSource=admin
+    volumes:
+      - mongodb:/data/db
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mongosh",
+          "${URI}",
+          "--eval",
+          "db.runCommand('ping')"
+        ]
+      interval: 5s
+      retries: 5
+      timeout: 5s
 
 volumes:
   db:
+  mongodb:
