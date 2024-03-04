@@ -6,6 +6,9 @@ build:
 up:
 	docker compose up -d
 
+migrations:
+	docker exec -it astrikos_backend python3 manage.py makemigrations
+
 migrate:
 	docker exec -it astrikos_backend python3 manage.py migrate
 
