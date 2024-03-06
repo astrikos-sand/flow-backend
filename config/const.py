@@ -5,13 +5,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 DEBUG = int(os.environ["DEBUG"])
 
-# Database
+# Postgres
 POSTGRES_HOST = os.environ["POSTGRES_HOST"]
 POSTGRES_DB = os.environ["POSTGRES_DB"]
 POSTGRES_USER = os.environ["POSTGRES_USER"]
 POSTGRES_PASSWORD = os.environ["POSTGRES_PASSWORD"]
 POSTGRES_PORT = os.environ["POSTGRES_PORT"]
 
+# MongoDB
 MONGO_HOST = os.environ["MONGO_INITDB_HOST"]
 MONGO_DB = os.environ["MONGO_INITDB_DATABASE"]
 MONGO_PORT = os.environ["MONGO_INITDB_PORT"]
