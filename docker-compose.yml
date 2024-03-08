@@ -21,6 +21,8 @@ services:
         condition: service_healthy
       mongodb:
         condition: service_healthy
+      broker:
+        condition: service_healthy
 
   db:
     image: postgres:16-alpine
@@ -67,6 +69,20 @@ services:
       retries: 5
       timeout: 5s
 
+  broker:
+    image: rabbitmq:3.13.0-alpine
+    container_name: astrikos_broker
+    hostname: ${RABBITMQ_HOST}
+    env_file: .env
+    volumes:
+      - broker:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 5s
+      retries: 5
+      timeout: 5s
+
 volumes:
   db:
   mongodb:
+  broker:
