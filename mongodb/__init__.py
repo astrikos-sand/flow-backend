@@ -1,4 +1,4 @@
-from mongodb.connect import MongoWrapper
+from mongodb.connect import Mongo
 
-mongo = MongoWrapper()
+mongo = Mongo()
 db = mongo.db

@@ -1,0 +1,2 @@
+class MONGODB:
+    resource = "resource"
