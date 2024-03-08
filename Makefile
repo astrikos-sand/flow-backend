@@ -41,3 +41,9 @@ down:
 
 black:
 	docker exec -it astrikos_backend black --exclude '^.+/migrations/[^/]+.py' .
+
+broker-shell:
+	docker exec -it astrikos_broker bash
+
+broker-logs:
+	docker logs -f astrikos_broker
