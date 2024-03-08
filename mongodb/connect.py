@@ -1,15 +1,15 @@
-from typing import List, Optional
-
 from pymongo import MongoClient
 from pymongo.database import Database
 
 import config.const as const
+from mongodb.collections import make_collections
 
 
-class MongoWrapper:
+class Mongo:
     def __init__(self):
         self.client = self.get_client(const.MONGO_URI)
         self.db = self.get_db(const.MONGO_DB)
+        make_collections(self.db)
 
     def get_db(self, db_name: str) -> Database:
         return self.client[db_name]
@@ -28,18 +28,3 @@ class MongoWrapper:
         except:
             print("Error connecting to MongoDB")
             exit(1)
-
-    def create_validator(
-        self, title: str, properties: Optional[dict], required: Optional[List[str]]
-    ) -> dict:
-        json_schema = {
-            "bsonType": "object",
-            "title": title,
-            "required": required,
-            "properties": {"_id": {"bsonType": "objectId"}, **properties},
-        }
-
-        return {
-            "$jsonSchema": json_schema,
-            "additionalProperties": "false",
-        }
