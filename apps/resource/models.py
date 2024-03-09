@@ -7,8 +7,11 @@ from mongodb import db
 
 
 class ResourceGroup(NS_Node):
+    # TODO: Why the name null is allowed? We are using it in the path
     name = models.CharField(max_length=255, null=True, blank=True)
     resource_type = models.CharField(max_length=255)
+
+    # TODO: path should be unique??
 
     """
     use update when moving node from one
@@ -32,16 +35,37 @@ class ResourceGroup(NS_Node):
 
     @property
     def data(self) -> dict:
-        query = {"resource_type": self.resource_type}
-        res = db[MONGODB.resource].find_one(query)
+        path = self.path + "/"
+        res = db[MONGODB.resource].find_one({"path": path})
+        if res is None or "data" not in res:
+            return {}
         return res["data"]
 
     def store_data(self, data: dict) -> None:
-        db[MONGODB.resource].insert_one(
-            {
-                "resource_type": self.resource_type,
-                "data": data,
-            }
+        paths = self.path.split("/")
+        depth = len(paths)
+        iter = db[MONGODB.resource]
+        path_tracker = ""
+
+        for i in range(0, depth):
+            path = paths[i]
+            path_tracker += f"{path}/"
+            res = iter.find_one({"path": path_tracker})
+            if res is None:
+                iter.insert_one({"children": [], "path": path_tracker})
+                res = iter.find_one({"path": path_tracker})
+
+            children: list = res.get("children", [])
+            if (i + 1) < depth:
+                if paths[i + 1] not in children:
+                    children.append(paths[i + 1])
+                    iter.update_one(
+                        {"_id": res["_id"]}, {"$set": {"children": children}}
+                    )
+
+        current_data = res.get("data", {})
+        iter.update_one(
+            {"_id": res["_id"]}, {"$set": {"data": {**current_data, **data}}}
         )
 
     def __str__(self):

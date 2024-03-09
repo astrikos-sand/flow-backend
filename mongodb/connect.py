@@ -2,14 +2,12 @@ from pymongo import MongoClient
 from pymongo.database import Database
 
 import config.const as const
-from mongodb.collections import make_collections
 
 
 class Mongo:
     def __init__(self):
         self.client = self.get_client(const.MONGO_URI)
         self.db = self.get_db(const.MONGO_DB)
-        make_collections(self.db)
 
     def get_db(self, db_name: str) -> Database:
         return self.client[db_name]
