@@ -4,6 +4,7 @@ from apps.resource.models import ResourceGroup
 
 
 class ResourceGroupSerializer(serializers.ModelSerializer):
+    # TODO: fields which are in NS_tree??
     data = serializers.JSONField()
     path = serializers.ReadOnlyField()
 

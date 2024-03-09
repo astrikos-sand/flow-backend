@@ -85,15 +85,15 @@ class PolicyResourcePermissionRelation(BaseModel):
 
 class Policy(BaseModel):
     class Method(models.TextChoices):
-        ALLOW = True, "allow"
-        DENY = False, "deny"
+        ALLOW = "ALLOW", "allow"
+        DENY = "DENY", "deny"
 
     permissions = models.ManyToManyField(
         ResourcePermission,
         through="PolicyResourcePermissionRelation",
         related_name="policies",
     )
-    method = models.BooleanField(choices=Method)
+    method = models.CharField(choices=Method)
 
     @property
     def short_name(self) -> str:

@@ -6,10 +6,9 @@ from config.strings import MONGODB
 resource_validator = create_validator(
     title=f"{MONGODB.resource} schema",
     properties={
-        "resource_type": {"bsonType": "string"},
         "data": {"bsonType": "object"},
     },
-    required=["resource_type", "data"],
+    required=["data"],
 )
 
 
