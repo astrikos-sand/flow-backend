@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from treebeard.ns_tree import NS_Node
 
 from apps.common.models import BaseModel
+from apps.iam.models import IAMUser
 
 from config.strings import MONGODB
 from mongodb import db
@@ -69,6 +70,26 @@ class ResourceGroup(NS_Node, BaseModel):
         iter.update_one(
             {"_id": res["_id"]}, {"$set": {"data": {**current_data, **data}}}
         )
+
+    def check_permission(
+        self, action: "ResourcePermission.Action", user: 'IAMUser'
+    ) -> bool:
+
+        # check directly attached policies
+        permissions = user.permissions.all()
+        for permission in permissions:
+            if permission.permission_path == self.path and permission.action == action:
+                return permission.method == ResourcePermission.method.ALLOW # else DENY
+            
+        # check roles attached policies
+        roles_permissions = user.roles.all().values_list("permissions", flat=True)
+        for permission in roles_permissions:
+            if permission.permission_path == self.path and permission.action == action:
+                return ResourcePermission.method.ALLOW # else DENY
+            
+        # TODO check group attached policies
+            
+        return False
 
     @staticmethod
     def validate(
@@ -155,12 +176,16 @@ class ResourcePermission(BaseModel):
     def short_name(self) -> str:
         return f"{self.method} {self.action} on {self.permission_path}"
 
+    # need to be called from serializer ( full clean method )
     def clean(self):
 
         # policies with same path and parent_resource should not exist
         # Optimises checking because many policies can have same path but different parent_resource
         matching_policy = ResourcePermission.objects.filter(
-            path=self.path, parent_resource=self.parent_resource
+            path=self.path,
+            parent_resource=self.parent_resource,
+            method=self.method,
+            action=self.action,
         )
         if matching_policy.count() > 0:
             raise ValidationError(
@@ -170,7 +195,7 @@ class ResourcePermission(BaseModel):
         # policies with same permission path should not exist
         resource_path = self.path.split("/").pop()
         possible_matching_policy = ResourcePermission.objects.filter(
-            path__endswith=f"/{resource_path}"
+            path__endswith=f"/{resource_path}", method=self.method, action=self.action
         )
         for policy in possible_matching_policy:
             if policy.permission_path == self.permission_path:

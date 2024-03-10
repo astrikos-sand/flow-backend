@@ -4,12 +4,12 @@ from django.core.validators import RegexValidator
 
 from apps.common.models import BaseModel
 from apps.iam.managers import IAMUserManager
-from apps.resource.models import ResourcePermission
+
 
 
 class Role(BaseModel):
     name = models.CharField(unique=True, max_length=255)
-    permissions = models.ManyToManyField(ResourcePermission, related_name="roles")
+    permissions = models.ManyToManyField("ResourcePermission", related_name="roles")
 
     def __str__(self) -> str:
         return self.name
@@ -24,7 +24,7 @@ class IAMUser(AbstractBaseUser, PermissionsMixin, BaseModel):
         ],
     )
     is_active = models.BooleanField(default=True)
-    permissions = models.ManyToManyField(ResourcePermission, related_name="users")
+    permissions = models.ManyToManyField("ResourcePermission", related_name="users")
     roles = models.ManyToManyField(Role, related_name="users")
 
     USERNAME_FIELD = "username"

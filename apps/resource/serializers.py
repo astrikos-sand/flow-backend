@@ -18,17 +18,17 @@ class ResourceGroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ResourceGroup
-        fields = ("name", "resource_type", "path", "parent", "data","name_prefix")
+        fields = ("name", "resource_type", "path", "parent", "data", "name_prefix")
         extra_kwargs = {
             "name": {"required": False},
         }
 
     def validate(self, data: dict):
         name = data.get("name", None)
-        name_prefix = data.pop("name_prefix", None) # remove name_prefix from data
+        name_prefix = data.pop("name_prefix", None)  # remove name_prefix from data
         resource_type = data.get("resource_type", None)
         parent = data.get("parent", None)
-        
+
         # raises validation error if object to be created can't have a unique path
         data["name"] = ResourceGroup.validate(
             name=name,
