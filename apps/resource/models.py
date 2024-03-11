@@ -1,7 +1,9 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
 
 from treebeard.ns_tree import NS_Node
+import re
 
 from apps.common.models import BaseModel
 from apps.iam.models import IAMUser
@@ -13,7 +15,13 @@ from mongodb import db
 # Validation could not be done at model level because of the way treebeard works
 # Always use serializer to create and update ResourceGroup
 class ResourceGroup(NS_Node, BaseModel):
-    name = models.CharField(max_length=255, db_index=True)
+    name = models.CharField(
+        max_length=255,
+        db_index=True,
+        validators=[
+            RegexValidator(r"/", inverse_match=True, message="name can't contain '/'"),
+        ],
+    )
     resource_type = models.CharField(max_length=255)
 
     """
@@ -72,70 +80,30 @@ class ResourceGroup(NS_Node, BaseModel):
         )
 
     def check_permission(
-        self, action: "ResourcePermission.Action", user: 'IAMUser'
+        self, action: "ResourcePermission.Action", user: "IAMUser"
     ) -> bool:
 
         # check directly attached policies
         permissions = user.permissions.all()
         for permission in permissions:
-            if permission.permission_path == self.path and permission.action == action:
-                return permission.method == ResourcePermission.method.ALLOW # else DENY
-            
+            if (
+                re.fullmatch(permission.permission_path, self.path)
+                and permission.action == action
+            ):
+                return permission.method == ResourcePermission.Method.ALLOW  # else DENY
+
         # check roles attached policies
         roles_permissions = user.roles.all().values_list("permissions", flat=True)
         for permission in roles_permissions:
-            if permission.permission_path == self.path and permission.action == action:
-                return ResourcePermission.method.ALLOW # else DENY
-            
+            if (
+                re.fullmatch(permission.permission_path, self.path) == self.path
+                and permission.action == action
+            ):
+                return ResourcePermission.Method.ALLOW  # else DENY
+
         # TODO check group attached policies
-            
+
         return False
-
-    @staticmethod
-    def validate(
-        name: str | None,
-        name_prefix: str | None,
-        resource_type: str,
-        parent: "ResourceGroup | None",
-    ) -> str:
-
-        if name is None and name_prefix is None:
-            raise ValidationError("either name or name_prefix is required")
-
-        if name is not None and name_prefix is not None:
-            raise ValidationError(
-                "name or name_prefix both can't be defined at the same time"
-            )
-
-        if name is not None:
-            matching_resources = (
-                ResourceGroup.get_root_nodes().filter(
-                    name=name, resource_type=resource_type
-                )
-                if parent is None
-                else parent.get_children().filter(
-                    name=name, resource_type=resource_type
-                )
-            )
-            if matching_resources.count() > 0:
-                raise ValidationError(
-                    "Resource with same name and type already exists at insertion level try using name prefix"
-                )
-        else:
-            matching_resource_count = (
-                ResourceGroup.get_root_nodes().filter(
-                    name__startswith=name_prefix, resource_type=resource_type
-                )
-                if parent is None
-                else parent.get_children().filter(
-                    name__startswith=name_prefix, resource_type=resource_type
-                )
-            ).count()
-
-            name = name_prefix
-            if matching_resource_count > 0:
-                name = f"{name_prefix}-{matching_resource_count}"
-        return name
 
     def __str__(self):
         return f"{self.name} [ {self.resource_type} ] ( {self.path} )"

@@ -6,10 +6,11 @@ from apps.common.models import BaseModel
 from apps.iam.managers import IAMUserManager
 
 
-
 class Role(BaseModel):
     name = models.CharField(unique=True, max_length=255)
-    permissions = models.ManyToManyField("ResourcePermission", related_name="roles")
+    permissions = models.ManyToManyField(
+        "resource.ResourcePermission", related_name="roles"
+    )
 
     def __str__(self) -> str:
         return self.name
@@ -24,8 +25,10 @@ class IAMUser(AbstractBaseUser, PermissionsMixin, BaseModel):
         ],
     )
     is_active = models.BooleanField(default=True)
-    permissions = models.ManyToManyField("ResourcePermission", related_name="users")
-    roles = models.ManyToManyField(Role, related_name="users")
+    permissions = models.ManyToManyField(
+        "resource.ResourcePermission", related_name="users", blank=True
+    )
+    roles = models.ManyToManyField(Role, related_name="users", blank=True)
 
     USERNAME_FIELD = "username"
     REQUIRED_FIELDS = []
