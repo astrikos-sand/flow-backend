@@ -1,10 +1,10 @@
 include .env
 
 build:
-	docker compose up --build -d
+	docker-compose up --build -d
 
 up:
-	docker compose up -d
+	docker-compose up -d
 
 migrations:
 	docker exec -it astrikos_backend python3 manage.py makemigrations
@@ -37,7 +37,7 @@ mongodb-logs:
 	docker logs -f astrikos_mongodb
 
 down:
-	docker compose down
+	docker-compose down
 
 black:
 	docker exec -it astrikos_backend black --exclude '^.+/migrations/[^/]+.py' .
