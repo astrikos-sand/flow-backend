@@ -1,16 +1,17 @@
 include .env
 
 build:
-	docker-compose up --build -d
+	docker compose up --build -d
 
 up:
-	docker-compose up -d
+	docker compose up -d
 
 migrations:
 	docker exec -it astrikos_backend python3 manage.py makemigrations
 
 migrate:
 	docker exec -it astrikos_backend python3 manage.py migrate
+	docker exec -it astrikos_backend python3 manage.py migrate django_celery_results
 
 createsuperuser:
 	docker exec -it astrikos_backend python3 manage.py createsuperuser
@@ -37,7 +38,7 @@ mongodb-logs:
 	docker logs -f astrikos_mongodb
 
 down:
-	docker-compose down
+	docker compose down
 
 black:
 	docker exec -it astrikos_backend black --exclude '^.+/migrations/[^/]+.py' .
@@ -47,3 +48,12 @@ broker-shell:
 
 broker-logs:
 	docker logs -f astrikos_broker
+
+management:
+	docker exec -it astrikos_broker rabbitmq-plugins enable rabbitmq_management
+
+celery-logs:
+	docker logs -f astrikos_celery
+
+celery-shell:
+	docker exec -it astrikos_celery bash

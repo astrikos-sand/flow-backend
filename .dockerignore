@@ -1,5 +1,6 @@
 *
 !apps/
 !config/
+!mongodb/
 !manage.py
 !requirements.txt
