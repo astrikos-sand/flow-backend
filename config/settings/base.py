@@ -17,17 +17,23 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    # DJANGO APPS
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    
+    # THIRD PARTY APPS
     "rest_framework",
     "django_celery_results",
     "treebeard",
+    
+    # LOCAL APPS
     "apps.iam",
     "apps.resource",
+    "apps.flow"
 ]
 
 MIDDLEWARE = [
