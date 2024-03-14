@@ -120,6 +120,9 @@ class ResourcePermission(BaseModel):
         UPDATE = "UPDATE", "update"
         DELETE = "DELETE", "delete"
 
+    name = models.CharField(
+        max_length=255, db_index=True, null=True, blank=True, unique=True
+    )
     action = models.CharField(choices=Action, max_length=10)
     method = models.CharField(choices=Method, max_length=10)
     path = models.CharField(max_length=255, db_index=True)
@@ -141,35 +144,8 @@ class ResourcePermission(BaseModel):
         )
 
     @property
-    def short_name(self) -> str:
+    def long_name(self) -> str:
         return f"{self.method} {self.action} on {self.permission_path}"
 
-    # need to be called from serializer ( full clean method )
-    def clean(self):
-
-        # policies with same path and parent_resource should not exist
-        # Optimises checking because many policies can have same path but different parent_resource
-        matching_policy = ResourcePermission.objects.filter(
-            path=self.path,
-            parent_resource=self.parent_resource,
-            method=self.method,
-            action=self.action,
-        )
-        if matching_policy.count() > 0:
-            raise ValidationError(
-                "Resource permission with same path and parent_resource already exists"
-            )
-
-        # policies with same permission path should not exist
-        resource_path = self.path.split("/").pop()
-        possible_matching_policy = ResourcePermission.objects.filter(
-            path__endswith=f"/{resource_path}", method=self.method, action=self.action
-        )
-        for policy in possible_matching_policy:
-            if policy.permission_path == self.permission_path:
-                raise ValidationError(
-                    "Resource permission with same permission path already exists"
-                )
-
     def __str__(self) -> str:
-        return self.short_name
+        return f"{self.name} ( {self.long_name} )" if self.name else self.long_name
