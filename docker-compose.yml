@@ -13,6 +13,7 @@ services:
     volumes:
       - ./apps/:/astrikos/apps/
       - ./config/:/astrikos/config/
+      - ./media:/astrikos/media
       - ./requirements.txt:/astrikos/requirements.txt
       - ./manage.py:/astrikos/manage.py
       - ./mongodb:/astrikos/mongodb

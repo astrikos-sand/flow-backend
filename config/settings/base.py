@@ -24,16 +24,15 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    
     # THIRD PARTY APPS
     "rest_framework",
     "django_celery_results",
     "treebeard",
-    
+    "polymorphic",
     # LOCAL APPS
     "apps.iam",
     "apps.resource",
-    "apps.flow"
+    "apps.flow",
 ]
 
 MIDDLEWARE = [
