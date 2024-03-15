@@ -57,3 +57,9 @@ celery-logs:
 
 celery-shell:
 	docker exec -it astrikos_celery bash
+
+influxdb-shell:
+	docker exec -it astrikos_influxdb bash
+
+influxdb-logs:
+	docker logs -f astrikos_influxdb
