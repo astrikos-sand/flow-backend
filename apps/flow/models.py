@@ -13,7 +13,7 @@ class FlowFile(BaseModel):
         return f"{self.name} ( {self.description} )"
 
 
-class DynamicNodeClass(BaseModel):
+class BaseNodeClass(BaseModel, PolymorphicModel):
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(null=True, blank=True)
     code = models.FileField(upload_to="flow/node_classes/")
@@ -24,8 +24,35 @@ class DynamicNodeClass(BaseModel):
         exec(code_text, globals, locals)
         return locals
 
+    @property
+    def input_slots(self):
+        return list(
+            self.slots.filter(attachment_type=Slot.ATTACHMENT_TYPE.INPUT).values_list(
+                "name", flat=True
+            )
+        )
+
+    @property
+    def output_slots(self):
+        return list(
+            self.slots.filter(attachment_type=Slot.ATTACHMENT_TYPE.OUTPUT).values_list(
+                "name", flat=True
+            )
+        )
+
     def __str__(self):
         return f"{self.name} ( {self.description} ) [Code: {self.code.name}]"
+
+
+class GenericNodeClass(BaseNodeClass):
+    pass
+
+
+class TriggerNodeClass(BaseNodeClass):
+    @property
+    def output_slots(self):
+        output_slots = super().output_slots
+        output_slots.append("signal")
 
 
 class Slot(BaseModel):
@@ -37,7 +64,7 @@ class Slot(BaseModel):
     name = models.CharField(max_length=100)
     attachment_type = models.CharField(choices=ATTACHMENT_TYPE.choices, max_length=5)
     node_class = models.ForeignKey(
-        DynamicNodeClass, on_delete=models.CASCADE, related_name="slots"
+        BaseNodeClass, on_delete=models.CASCADE, related_name="slots"
     )
 
     def __str__(self):
@@ -64,9 +91,9 @@ class BaseNode(BaseModel, PolymorphicModel):
         return f"{self.id} [Flow: {self.flow_file.name}]"
 
 
-class DynamicNode(BaseNode):
+class GenericNode(BaseNode):
     node_class = models.ForeignKey(
-        DynamicNodeClass, on_delete=models.CASCADE, related_name="nodes"
+        BaseNodeClass, on_delete=models.CASCADE, related_name="nodes"
     )
 
     def execute(self, globals, locals):
