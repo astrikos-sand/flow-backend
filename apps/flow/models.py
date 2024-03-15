@@ -19,7 +19,9 @@ class DynamicNodeClass(BaseModel):
     code = models.FileField(upload_to="flow/node_classes/")
 
     def execute(self, globals, locals):
-        exec(self.code.read(), globals, locals)
+        with self.code.open() as file:
+            code_text = file.read()
+        exec(code_text, globals, locals)
         return locals
 
     def __str__(self):
@@ -37,6 +39,9 @@ class Slot(BaseModel):
     node_class = models.ForeignKey(
         DynamicNodeClass, on_delete=models.CASCADE, related_name="slots"
     )
+
+    def __str__(self):
+        return f"{self.name} [Attachment: {self.attachment_type}] [Node Class: {self.node_class.name}]"
 
 
 class BaseNode(BaseModel, PolymorphicModel):
@@ -66,21 +71,31 @@ class DynamicNode(BaseNode):
 
     def execute(self, globals, locals):
         self.node_class.execute(globals, locals)
-        if not all(slot in locals for slot in self.output_slots):
-            raise ValueError(
-                "Slot is not found in function output, check values returned by function"
-            )
-        return locals
+        outputs = {}
+        for slot in self.output_slots:
+            if slot in locals:
+                outputs.update({slot: locals[slot]})
+            else:
+                raise ValueError(
+                    "Slot is not found in function output, check values returned by function"
+                )
+        return outputs
 
+    @property
     def input_slots(self):
-        return self.node_class.slots.filter(
-            attachment_type=Slot.ATTACHMENT_TYPE.INPUT
-        ).values_list("name", flat=True)
+        return list(
+            self.node_class.slots.filter(
+                attachment_type=Slot.ATTACHMENT_TYPE.INPUT
+            ).values_list("name", flat=True)
+        )
 
+    @property
     def output_slots(self):
-        return self.node_class.slots.filter(
-            attachment_type=Slot.ATTACHMENT_TYPE.OUTPUT
-        ).value_list("name", flat=True)
+        return list(
+            self.node_class.slots.filter(
+                attachment_type=Slot.ATTACHMENT_TYPE.OUTPUT
+            ).values_list("name", flat=True)
+        )
 
     def __str__(self):
         return f"{super().__str__()} [Node Class: {self.node_class.name}]"
@@ -105,6 +120,7 @@ class DataNode(BaseNode):
     def input_slots(self):
         return []
 
+    @property
     def output_slots(self):
         return ["data"]
 
@@ -130,9 +146,10 @@ class DataNode(BaseNode):
                 return None
 
     def execute(self, globals, locals):
-        locals["data"] = self.get_data()
-        return locals
-    
+        outputs = {}
+        outputs["data"] = self.get_data()
+        return outputs
+
     def __str__(self):
         return f"{super().__str__()} [Value: {self.value}]"
 
