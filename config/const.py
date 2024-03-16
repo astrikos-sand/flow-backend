@@ -39,3 +39,6 @@ INFLUXDB_ORG = os.environ["INFLUXDB_ORG"]
 INFLUXDB_BUCKET = os.environ["INFLUXDB_BUCKET"]
 
 INFLUXDB_URI = f"http://{INFLUXDB_HOST}:{INFLUXDB_PORT}"
+
+# Worker
+WORKER_URL = os.environ["WORKER_URL"]

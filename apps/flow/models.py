@@ -40,6 +40,14 @@ class BaseNodeClass(BaseModel, PolymorphicModel):
             )
         )
 
+    @property
+    def special_slots(self):
+        return (
+            self.slots.filter(attachment_type=Slot.ATTACHMENT_TYPE.INPUT)
+            .exclude(speciality=Slot.SPECIAL_SLOT.NONE)
+            .values("name", "speciality")
+        )
+
     def __str__(self):
         return f"{self.name} ( {self.description} ) [Code: {self.code.name}]"
 
@@ -61,10 +69,17 @@ class Slot(BaseModel):
         INPUT = "IN", "Input"
         OUTPUT = "OUT", "Output"
 
+    class SPECIAL_SLOT(models.TextChoices):
+        DATABASE = "DB", "Database"
+        NONE = "NONE", "None"
+
     name = models.CharField(max_length=100)
     attachment_type = models.CharField(choices=ATTACHMENT_TYPE.choices, max_length=5)
     node_class = models.ForeignKey(
         BaseNodeClass, on_delete=models.CASCADE, related_name="slots"
+    )
+    speciality = models.CharField(
+        choices=SPECIAL_SLOT.choices, max_length=10, default=SPECIAL_SLOT.NONE
     )
 
     def __str__(self):
@@ -82,6 +97,10 @@ class BaseNode(BaseModel, PolymorphicModel):
 
     @property
     def output_slots(self):
+        return []
+
+    @property
+    def special_slots(self):
         return []
 
     def execute(self, globals, locals):
@@ -110,19 +129,15 @@ class GenericNode(BaseNode):
 
     @property
     def input_slots(self):
-        return list(
-            self.node_class.slots.filter(
-                attachment_type=Slot.ATTACHMENT_TYPE.INPUT
-            ).values_list("name", flat=True)
-        )
+        return self.node_class.input_slots
 
     @property
     def output_slots(self):
-        return list(
-            self.node_class.slots.filter(
-                attachment_type=Slot.ATTACHMENT_TYPE.OUTPUT
-            ).values_list("name", flat=True)
-        )
+        return self.node_class.output_slots
+
+    @property
+    def special_slots(self):
+        return self.node_class.special_slots
 
     @property
     def node_class_type(self):
@@ -158,6 +173,10 @@ class DataNode(BaseNode):
     @property
     def output_slots(self):
         return ["data"]
+
+    @property
+    def special_slots(self):
+        return []
 
     def get_data(self):
         match self.type:
