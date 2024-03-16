@@ -124,6 +124,14 @@ class GenericNode(BaseNode):
             ).values_list("name", flat=True)
         )
 
+    @property
+    def node_class_type(self):
+        return self.node_class.get_real_instance_class().__name__
+
+    @property
+    def code(self):
+        return self.node_class.code
+
     def __str__(self):
         return f"{super().__str__()} [Node Class: {self.node_class.name}]"
 

@@ -47,8 +47,6 @@ class BaseNodeClassAdmin(PolymorphicParentModelAdmin):
     child_model_admin = BaseNodeClassChildAdmin
 
 
-
-
 # BaseNode Polymorphic Admin
 class BaseNodeChildAdmin(PolymorphicChildModelAdmin):
     base_model = BaseNode
