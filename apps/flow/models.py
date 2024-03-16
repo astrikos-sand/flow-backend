@@ -27,22 +27,24 @@ class BaseNodeClass(BaseModel, PolymorphicModel):
     @property
     def input_slots(self):
         return list(
-            self.slots.filter(attachment_type=Slot.ATTACHMENT_TYPE.INPUT).values_list(
-                "name", flat=True
-            )
+            self.slots.filter(
+                attachment_type=Slot.ATTACHMENT_TYPE.INPUT,
+                speciality=Slot.SPECIAL_SLOT.NONE,
+            ).values_list("name", flat=True)
         )
 
     @property
     def output_slots(self):
         return list(
-            self.slots.filter(attachment_type=Slot.ATTACHMENT_TYPE.OUTPUT).values_list(
-                "name", flat=True
-            )
+            self.slots.filter(
+                attachment_type=Slot.ATTACHMENT_TYPE.OUTPUT,
+                speciality=Slot.SPECIAL_SLOT.NONE,
+            ).values_list("name", flat=True)
         )
 
     @property
     def special_slots(self):
-        return (
+        return list(
             self.slots.filter(attachment_type=Slot.ATTACHMENT_TYPE.INPUT)
             .exclude(speciality=Slot.SPECIAL_SLOT.NONE)
             .values("name", "speciality")
