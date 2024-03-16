@@ -17,6 +17,7 @@ services:
       - ./requirements.txt:/astrikos/requirements.txt
       - ./manage.py:/astrikos/manage.py
       - ./mongodb:/astrikos/mongodb
+      - ./influx:/astrikos/influx
     networks:
       - db
       - broker
@@ -26,6 +27,8 @@ services:
       mongodb:
         condition: service_healthy
       celery:
+        condition: service_healthy
+      influxdb:
         condition: service_healthy
 
   db:
@@ -104,8 +107,6 @@ services:
     ports:
       - "15672:15672"
     env_file: .env
-    volumes:
-      - broker:/var/lib/rabbitmq
     networks:
       - broker
     healthcheck:
@@ -113,11 +114,28 @@ services:
       interval: 5s
       retries: 5
       timeout: 5s
+    
+  influxdb:
+    image: influxdb:2.7-alpine
+    container_name: astrikos_influxdb
+    hostname: ${INFLUXDB_HOST}
+    env_file: .env
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb:/var/lib/influxdb
+    networks:
+      - db
+    healthcheck:
+      test: ["CMD", "influx", "ping"]
+      interval: 5s
+      retries: 5
+      timeout: 5s
 
 volumes:
   db:
   mongodb:
-  broker:
+  influxdb:
 
 networks:
   db:

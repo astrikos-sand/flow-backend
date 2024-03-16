@@ -1,15 +1,16 @@
+import json
+import re
+
 from django.db import models
-from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 
 from treebeard.ns_tree import NS_Node
-import re
 
 from apps.common.models import BaseModel
 from apps.iam.models import IAMUser
+import config.const as const
 
-from config.strings import MONGODB
-from mongodb import db
+from influx import influx
 
 
 # Validation could not be done at model level because of the way treebeard works
@@ -46,38 +47,12 @@ class ResourceGroup(NS_Node, BaseModel):
 
     @property
     def data(self) -> dict:
-        path = self.path + "/"
-        res = db[MONGODB.resource].find_one({"path": path})
-        if res is None or "data" not in res:
-            return {}
-        return res["data"]
+        query = f'from(bucket: "{const.INFLUXDB_BUCKET}") |> range(start: -1h) |> filter(fn: (r) => r["_measurement"] == "{self.path}")'
+        result = influx.get_data(query)
+        return result
 
     def store_data(self, data: dict) -> None:
-        paths = self.path.split("/")
-        depth = len(paths)
-        iter = db[MONGODB.resource]
-        path_tracker = ""
-
-        for i in range(0, depth):
-            path = paths[i]
-            path_tracker += f"{path}/"
-            res = iter.find_one({"path": path_tracker})
-            if res is None:
-                iter.insert_one({"children": [], "path": path_tracker})
-                res = iter.find_one({"path": path_tracker})
-
-            children: list = res.get("children", [])
-            if (i + 1) < depth:
-                if paths[i + 1] not in children:
-                    children.append(paths[i + 1])
-                    iter.update_one(
-                        {"_id": res["_id"]}, {"$set": {"children": children}}
-                    )
-
-        current_data = res.get("data", {})
-        iter.update_one(
-            {"_id": res["_id"]}, {"$set": {"data": {**current_data, **data}}}
-        )
+        influx.write({"measurement": self.path, "value": json.dumps(data)})
 
     def check_permission(
         self, action: "ResourcePermission.Action", user: "IAMUser"
