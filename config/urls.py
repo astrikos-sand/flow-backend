@@ -7,6 +7,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("apps.resource.urls")),
     path("", include("apps.iam.urls")),
+    path("", include("apps.flow.urls")),
 ]
 
 if settings.DEBUG:
