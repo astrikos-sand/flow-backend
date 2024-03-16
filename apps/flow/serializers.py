@@ -24,6 +24,7 @@ class GenericNodeSerializer(serializers.ModelSerializer):
     node_class_type = serializers.ReadOnlyField(read_only=True)
     input_slots = serializers.ReadOnlyField(read_only=True)
     output_slots = serializers.ReadOnlyField(read_only=True)
+    special_slots = serializers.ReadOnlyField(read_only=True)
     code = serializers.FileField(read_only=True)
     source_connections = ConnectionSerialzer(many=True)
     target_connections = ConnectionSerialzer(many=True)
@@ -35,6 +36,7 @@ class GenericNodeSerializer(serializers.ModelSerializer):
             "node_class",
             "input_slots",
             "output_slots",
+            "special_slots",
             "node_class_type",
             "source_connections",
             "target_connections",
@@ -45,6 +47,7 @@ class GenericNodeSerializer(serializers.ModelSerializer):
 class DataNodeSerializer(serializers.ModelSerializer):
     input_slots = serializers.ReadOnlyField(read_only=True)
     output_slots = serializers.ReadOnlyField(read_only=True)
+    special_slots = serializers.ReadOnlyField(read_only=True)
     source_connections = ConnectionSerialzer(many=True)
 
     class Meta:
@@ -53,6 +56,7 @@ class DataNodeSerializer(serializers.ModelSerializer):
             "id",
             "input_slots",
             "output_slots",
+            "special_slots",
             "value",
             "type",
             "source_connections",
