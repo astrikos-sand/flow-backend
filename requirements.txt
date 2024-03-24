@@ -12,3 +12,4 @@ django-rest-polymorphic==0.1.10
 requests==2.31.0
 RestrictedPython==7.1
 influxdb-client==1.41.0
+django-cors-headers==4.3.1
