@@ -8,28 +8,53 @@ from polymorphic.admin import (
 
 from apps.flow.models import (
     FlowFile,
-    DynamicNodeClass,
+    BaseNodeClass,
+    GenericNodeClass,
+    TriggerNodeClass,
     BaseNode,
     Slot,
-    DynamicNode,
+    GenericNode,
     DataNode,
     Connection,
 )
 
 # Register your models here.
 admin.site.register(FlowFile)
-admin.site.register(DynamicNodeClass)
 admin.site.register(Slot)
 admin.site.register(Connection)
 
 
+# BaseNodeClass Polymorphic Admin
+class BaseNodeClassChildAdmin(PolymorphicChildModelAdmin):
+    base_model = BaseNodeClass
+
+
+@admin.register(GenericNodeClass)
+class GenericNodeClassAdmin(BaseNodeClassChildAdmin):
+    base_model = GenericNodeClass
+
+
+@admin.register(TriggerNodeClass)
+class TriggerNodeClassAdmin(BaseNodeClassChildAdmin):
+    base_model = TriggerNodeClass
+
+
+@admin.register(BaseNodeClass)
+class BaseNodeClassAdmin(PolymorphicParentModelAdmin):
+    base_model = BaseNodeClass
+    child_models = (GenericNodeClass, TriggerNodeClass)
+    list_filter = (PolymorphicChildModelFilter,)
+    child_model_admin = BaseNodeClassChildAdmin
+
+
+# BaseNode Polymorphic Admin
 class BaseNodeChildAdmin(PolymorphicChildModelAdmin):
     base_model = BaseNode
 
 
-@admin.register(DynamicNode)
-class DynamicNodeAdmin(PolymorphicChildModelAdmin):
-    base_model = DynamicNode
+@admin.register(GenericNode)
+class GenericNodeAdmin(PolymorphicChildModelAdmin):
+    base_model = GenericNode
 
 
 @admin.register(DataNode)
@@ -40,6 +65,6 @@ class DataNodeAdmin(PolymorphicChildModelAdmin):
 @admin.register(BaseNode)
 class BaseNodeAdmin(PolymorphicParentModelAdmin):
     base_model = BaseNode
-    child_models = (DynamicNode, DataNode)
+    child_models = (GenericNode, DataNode)
     list_filter = (PolymorphicChildModelFilter,)
     child_model_admin = BaseNodeChildAdmin

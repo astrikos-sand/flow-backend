@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "apps.iam",
     "apps.resource",
     "apps.flow",
+    "apps.webhook",
 ]
 
 MIDDLEWARE = [

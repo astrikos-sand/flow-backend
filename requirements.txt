@@ -8,5 +8,7 @@ celery==5.3.6
 django-treebeard==4.7.1
 django-celery-results==2.5.1
 django-polymorphic==3.1.0
+django-rest-polymorphic==0.1.10
+requests==2.31.0
 RestrictedPython==7.1
 influxdb-client==1.41.0
