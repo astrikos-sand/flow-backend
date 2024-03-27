@@ -1,6 +1,7 @@
 from apps.flow.models import BaseNode
 from apps.flow.runtime.worker import submit_task, SUBMIT_TASK_TYPE
 
+
 def create_nodes(node: BaseNode, nodes_list: list):
     nodes_list.append(node)
     for connection in node.source_connections.all():

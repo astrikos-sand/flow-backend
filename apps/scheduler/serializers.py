@@ -6,10 +6,12 @@ from django_celery_beat.models import PeriodicTask, IntervalSchedule, CrontabSch
 from apps.scheduler.models import WebHookScheduler, PeriodicScheduler
 from apps.flow.models import BaseNode
 
+
 class WebHookScheduleSerializer(serializers.ModelSerializer):
     class Meta:
         model = WebHookScheduler
         fields = "__all__"
+
 
 class PeriodicScheduleSerializer(serializers.ModelSerializer):
     class Meta:
