@@ -24,8 +24,11 @@ services:
         condition: service_healthy
       influxdb:
         condition: service_healthy
-      celery-beat:
-        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl --fail http://localhost:8000/ || exit 1"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
 
   db:
     image: postgres:16-alpine
@@ -36,7 +39,6 @@ services:
       - db:/var/lib/postgresql/data
     networks:
       - db
-      - broker
     healthcheck:
       test:
         [
@@ -84,6 +86,10 @@ services:
     depends_on:
       broker:
         condition: service_healthy
+      db:
+        condition: service_healthy
+      backend:
+        condition: service_started
     healthcheck:
       test: ["CMD", "celery", "-A", "config", "inspect","ping"]
       interval: 5s
@@ -98,7 +104,6 @@ services:
       - "15672:15672"
     env_file: .env
     networks:
-      - db
       - broker
     healthcheck:
       test: ["CMD", "rabbitmqctl", "status"]
