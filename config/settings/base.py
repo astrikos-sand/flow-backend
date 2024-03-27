@@ -24,14 +24,15 @@ INSTALLED_APPS = [
     # THIRD PARTY APPS
     "corsheaders",
     "rest_framework",
-    "django_celery_results",
     "treebeard",
     "polymorphic",
+    "django_celery_results",
+    "django_celery_beat",
     # LOCAL APPS
     "apps.iam",
     "apps.resource",
     "apps.flow",
-    "apps.webhook",
+    "apps.scheduler",
 ]
 
 MIDDLEWARE = [
@@ -127,3 +128,8 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "iam.IAMUser"
+
+# Celery
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_BROKER_URL = const.RABBITMQ_CELERY_BROKER_URL
+CELERY_RESULT_BACKEND = const.RABBITMQ_CELERY_RESULT_BACKEND

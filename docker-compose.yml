@@ -30,6 +30,8 @@ services:
         condition: service_healthy
       influxdb:
         condition: service_healthy
+      celery-beat:
+        condition: service_healthy
 
   db:
     image: postgres:16-alpine
@@ -40,6 +42,7 @@ services:
       - db:/var/lib/postgresql/data
     networks:
       - db
+      - broker
     healthcheck:
       test:
         [
@@ -67,6 +70,7 @@ services:
       - mongodb:/data/db
     networks:
       - db
+      - broker
     healthcheck:
       test:
         [
@@ -100,6 +104,26 @@ services:
       retries: 5
       timeout: 5s
 
+  celery-beat:
+    container_name: astrikos_celery_beat
+    build:
+      context: .
+      dockerfile: docker/dev.Dockerfile
+    command: celery -A config beat --loglevel=info
+    image: astrikos_celery_beat
+    env_file: .env
+    networks:
+      - broker
+      - db
+    depends_on:
+      broker:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "celery", "-A", "config", "inspect","ping"]
+      interval: 5s
+      retries: 5
+      timeout: 5s
+
   broker:
     image: rabbitmq:3.13.0-alpine
     container_name: astrikos_broker
@@ -108,6 +132,7 @@ services:
       - "15672:15672"
     env_file: .env
     networks:
+      - db
       - broker
     healthcheck:
       test: ["CMD", "rabbitmqctl", "status"]
