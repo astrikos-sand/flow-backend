@@ -49,6 +49,7 @@ class DataNodeSerializer(serializers.ModelSerializer):
     output_slots = serializers.ReadOnlyField(read_only=True)
     special_slots = serializers.ReadOnlyField(read_only=True)
     source_connections = ConnectionSerialzer(many=True)
+    target_connections = ConnectionSerialzer(many=True)
 
     class Meta:
         model = DataNode
@@ -69,6 +70,7 @@ class BaseNodeSerializer(PolymorphicSerializer):
     input_slots = serializers.ReadOnlyField(read_only=True)
     output_slots = serializers.ReadOnlyField(read_only=True)
     source_connections = ConnectionSerialzer(many=True)
+    target_connections = ConnectionSerialzer(many=True)
 
     model_serializer_mapping = {
         DataNode: DataNodeSerializer,
