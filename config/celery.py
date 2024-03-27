@@ -1,17 +1,16 @@
 import os
 
 from celery import Celery
-
-import config.const as const
+from django.conf import settings
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 
 app = Celery(
     "config",
-    broker=const.RABBITMQ_CELERY_BROKER_URL,
-    backend=const.RABBITMQ_CELERY_RESULT_BACKEND,
+    broker=settings.CELERY_BROKER_URL,
+    backend=settings.CELERY_RESULT_BACKEND,
 )
 
 app.config_from_object("django.conf:settings", namespace="CELERY")
-
+app.conf.task_default_queue = "task_queue"
 app.autodiscover_tasks()

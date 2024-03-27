@@ -73,6 +73,7 @@ class Slot(BaseModel):
 
     class SPECIAL_SLOT(models.TextChoices):
         DATABASE = "DB", "Database"
+        WEBHOOK = "WH", "Webhook"
         NONE = "NONE", "None"
 
     name = models.CharField(max_length=100)

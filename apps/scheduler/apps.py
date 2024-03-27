@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class WebhookConfig(AppConfig):
+class SchedulerConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "apps.webhook"
+    name = "apps.scheduler"
