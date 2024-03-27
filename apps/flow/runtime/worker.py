@@ -10,12 +10,17 @@ from django.core.serializers.json import DjangoJSONEncoder
 
 # type = "Normal" | "Triggered"
 
+
 class SUBMIT_TASK_TYPE(StrEnum):
     NORMAL = "NORMAL"
     TRIGGERED = "TRIGGERED"
 
+
 def submit_task(
-    nodes: dict, data: dict = {}, type: SUBMIT_TASK_TYPE = SUBMIT_TASK_TYPE.NORMAL, trigger_node: str = None
+    nodes: dict,
+    data: dict = {},
+    type: SUBMIT_TASK_TYPE = SUBMIT_TASK_TYPE.NORMAL,
+    trigger_node: str = None,
 ):
 
     if type == SUBMIT_TASK_TYPE.TRIGGERED and trigger_node is None:

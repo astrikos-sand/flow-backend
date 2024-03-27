@@ -130,6 +130,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "iam.IAMUser"
 
 # Celery
-CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 CELERY_BROKER_URL = const.RABBITMQ_CELERY_BROKER_URL
 CELERY_RESULT_BACKEND = const.RABBITMQ_CELERY_RESULT_BACKEND

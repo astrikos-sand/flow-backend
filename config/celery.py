@@ -12,5 +12,5 @@ app = Celery(
 )
 
 app.config_from_object("django.conf:settings", namespace="CELERY")
-app.conf.task_default_queue = 'task_queue'
+app.conf.task_default_queue = "task_queue"
 app.autodiscover_tasks()
