@@ -6,12 +6,10 @@ from django_celery_beat.models import PeriodicTask, IntervalSchedule, CrontabSch
 from apps.scheduler.models import WebHookScheduler, PeriodicScheduler
 from apps.flow.models import BaseNode
 
-
 class WebHookScheduleSerializer(serializers.ModelSerializer):
     class Meta:
         model = WebHookScheduler
         fields = "__all__"
-
 
 class PeriodicScheduleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -38,7 +36,6 @@ class PeriodicScheduleSerializer(serializers.ModelSerializer):
                 task=task,
                 kwargs=json.dumps({"node": node}),
             )
-
         else:
             task_schedule, _ = CrontabSchedule.objects.get_or_create(
                 minute=scheduler.minute,

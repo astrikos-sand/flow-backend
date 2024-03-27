@@ -10,6 +10,9 @@ from django.core.serializers.json import DjangoJSONEncoder
 
 # type = "Normal" | "Triggered"
 
+class SUBMIT_TASK_TYPE(StrEnum):
+    NORMAL = "NORMAL"
+    TRIGGERED = "TRIGGERED"
 
 class SUBMIT_TASK_TYPE(StrEnum):
     NORMAL = "NORMAL"
