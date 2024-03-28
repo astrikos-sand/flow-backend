@@ -10,18 +10,18 @@ from apps.common.models import BaseModel
 from apps.flow.models import BaseNode
 
 
-class Scheduler(BaseModel):
+class Trigger(BaseModel):
     node = models.OneToOneField(BaseNode, on_delete=models.CASCADE)
 
     class Meta:
         abstract = True
 
 
-class WebHookScheduler(Scheduler):
+class WebHookTrigger(Trigger):
     pass
 
 
-class PeriodicScheduler(Scheduler):
+class PeriodicTrigger(Trigger):
 
     class SCHDULER_TYPE(models.TextChoices):
         INTERVAL = "interval", "Interval"

@@ -19,9 +19,32 @@ class ConnectionSerialzer(serializers.ModelSerializer):
         model = Connection
         fields = ("id", "source", "target", "source_slot", "target_slot")
 
+    def validate(self, data: dict):
+        source: BaseNode = data.get("source")
+        target: BaseNode = data.get("target")
+
+        source_slot = data.get("source_slot")
+        target_slot = data.get("target_slot")
+
+        if source.id == target.id:
+            raise serializers.ValidationError("source and target can't be same")
+
+        if source_slot not in source.get_real_instance().output_slots.values_list(
+            "name", flat=True
+        ):
+            raise serializers.ValidationError("source slot not found in source node")
+
+        if target_slot not in target.get_real_instance().input_slots.values_list(
+            "name", flat=True
+        ):
+            raise serializers.ValidationError("target slot not found in target node")
+
+        return super().validate(data)
+
 
 class GenericNodeSerializer(serializers.ModelSerializer):
     node_class_type = serializers.ReadOnlyField(read_only=True)
+    node_class_name = serializers.ReadOnlyField(read_only=True)
     input_slots = serializers.ReadOnlyField(read_only=True)
     output_slots = serializers.ReadOnlyField(read_only=True)
     special_slots = serializers.ReadOnlyField(read_only=True)
@@ -38,6 +61,7 @@ class GenericNodeSerializer(serializers.ModelSerializer):
             "output_slots",
             "special_slots",
             "node_class_type",
+            "node_class_name",
             "source_connections",
             "target_connections",
             "code",

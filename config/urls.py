@@ -8,6 +8,7 @@ urlpatterns = [
     path("", include("apps.resource.urls")),
     path("", include("apps.iam.urls")),
     path("", include("apps.flow.urls")),
+    path("", include("apps.trigger.urls")),
 ]
 
 if settings.DEBUG:

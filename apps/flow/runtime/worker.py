@@ -26,7 +26,6 @@ def submit_task(
     if type == SUBMIT_TASK_TYPE.TRIGGERED and trigger_node is None:
         raise Exception("When task type is triggred then trigger_node is required")
 
-    print("nodes", nodes, flush=True)
     headers = {"Content-type": "application/json", "Accept": "application/json"}
     data = {"nodes": nodes, "data": data, "trigger_node": trigger_node, "type": type}
     response = requests.post(

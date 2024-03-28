@@ -50,11 +50,11 @@ class TaskViewSet(ViewSet):
         nodes_data = BaseNodeSerializer(
             nodes, many=True, context={"request": request}
         ).data
-        print("start nodes data", nodes_data, flush=True)
         try:
             response = submit_task(nodes_data)
         except Exception as e:
             response = {"error": str(e)}
+            print({"error": str(e)})
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(response, status=status.HTTP_200_OK)
