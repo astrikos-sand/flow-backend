@@ -13,7 +13,7 @@ from apps.flow.models import (
 )
 
 
-class ConnectionSerialzer(serializers.ModelSerializer):
+class ConnectionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Connection
@@ -49,8 +49,8 @@ class GenericNodeSerializer(serializers.ModelSerializer):
     output_slots = serializers.ReadOnlyField(read_only=True)
     special_slots = serializers.ReadOnlyField(read_only=True)
     code = serializers.FileField(read_only=True)
-    source_connections = ConnectionSerialzer(many=True)
-    target_connections = ConnectionSerialzer(many=True)
+    source_connections = ConnectionSerializer(many=True)
+    target_connections = ConnectionSerializer(many=True)
 
     class Meta:
         model = GenericNode
@@ -65,15 +65,30 @@ class GenericNodeSerializer(serializers.ModelSerializer):
             "source_connections",
             "target_connections",
             "code",
+            "flow_file",
+            "position"
         )
 
+    def create(self, validated_data):
+        source_connections_data = validated_data.pop('source_connections', [])
+        target_connections_data = validated_data.pop('target_connections', [])
+        
+        generic_node = GenericNode.objects.create(**validated_data)
+
+        for connection_data in source_connections_data:
+            Connection.objects.create(source=generic_node, **connection_data)
+        
+        for connection_data in target_connections_data:
+            Connection.objects.create(target=generic_node, **connection_data)
+
+        return generic_node
 
 class DataNodeSerializer(serializers.ModelSerializer):
     input_slots = serializers.ReadOnlyField(read_only=True)
     output_slots = serializers.ReadOnlyField(read_only=True)
     special_slots = serializers.ReadOnlyField(read_only=True)
-    source_connections = ConnectionSerialzer(many=True)
-    target_connections = ConnectionSerialzer(many=True)
+    source_connections = ConnectionSerializer(many=True)
+    target_connections = ConnectionSerializer(many=True)
 
     class Meta:
         model = DataNode
@@ -86,15 +101,31 @@ class DataNodeSerializer(serializers.ModelSerializer):
             "type",
             "source_connections",
             "target_connections",
+            "flow_file",
+            "position"
         )
 
+    def create(self, validated_data):
+        source_connections_data = validated_data.pop('source_connections', [])
+        target_connections_data = validated_data.pop('target_connections', [])
+        
+        data_node = DataNode.objects.create(**validated_data)
+
+        for connection_data in source_connections_data:
+            Connection.objects.create(source=data_node, **connection_data)
+        
+        for connection_data in target_connections_data:
+            Connection.objects.create(target=data_node, **connection_data)
+
+        return data_node
 
 class BaseNodeSerializer(PolymorphicSerializer):
     resource_type_field_name = "node_type"
     input_slots = serializers.ReadOnlyField(read_only=True)
     output_slots = serializers.ReadOnlyField(read_only=True)
-    source_connections = ConnectionSerialzer(many=True)
-    target_connections = ConnectionSerialzer(many=True)
+    source_connections = ConnectionSerializer(many=True)
+    target_connections = ConnectionSerializer(many=True)
+    flow_file_id = serializers.UUIDField()
 
     model_serializer_mapping = {
         DataNode: DataNodeSerializer,
@@ -121,6 +152,13 @@ class GenericNodeClassSerializer(serializers.ModelSerializer):
         model = GenericNodeClass
         fields = ("id", "name", "description", "code", "slots")
 
+    def create(self, validated_data):
+        print(validated_data)
+        slots_data = validated_data.pop('slots')
+        generic_node_class = GenericNodeClass.objects.create(**validated_data)
+        for slot_data in slots_data:
+            Slot.objects.create(node_class=generic_node_class, **slot_data)
+        return generic_node_class1
 
 class TriggerNodeClassSerializer(serializers.ModelSerializer):
 
@@ -145,6 +183,8 @@ class BaseNodeClassSerializer(PolymorphicSerializer):
 
 
 class FlowFileSerializer(serializers.ModelSerializer):
+    nodes = BaseNodeSerializer(many=True)
+
     class Meta:
         model = FlowFile
         fields = ("id", "name", "nodes", "description")

@@ -3,7 +3,6 @@ import json
 from enum import auto
 from strenum import StrEnum
 
-
 from config.const import WORKER_URL
 from django.core.serializers.json import DjangoJSONEncoder
 
