@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from zoneinfo import available_timezones
 
 import json
 from django_celery_beat.models import PeriodicTask, IntervalSchedule, CrontabSchedule
@@ -14,6 +15,8 @@ class WebHookTriggerSerializer(serializers.ModelSerializer):
 
 
 class PeriodicTriggerSerializer(serializers.ModelSerializer):
+    timezone = serializers.ChoiceField(choices=available_timezones())
+
     class Meta:
         model = PeriodicTrigger
         fields = "__all__"
