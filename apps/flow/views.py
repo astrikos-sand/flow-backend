@@ -29,6 +29,7 @@ from apps.flow.serializers import (
 from apps.flow.runtime.worker import submit_task
 from config import settings
 from .serializers import ConnectionSerializer
+)
 
 
 class BaseNodeViewSet(ModelViewSet):
@@ -69,11 +70,11 @@ class TaskViewSet(ViewSet):
         nodes_data = BaseNodeSerializer(
             nodes, many=True, context={"request": request}
         ).data
-        print("start nodes data", nodes_data, flush=True)
         try:
             response = submit_task(nodes_data)
         except Exception as e:
             response = {"error": str(e)}
+            print({"error": str(e)})
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(response, status=status.HTTP_200_OK)
@@ -159,7 +160,6 @@ class SaveCodeFileAPIView(APIView):
             )
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
 
 router = DefaultRouter()
 router.register(r"nodes", BaseNodeViewSet, basename="node")

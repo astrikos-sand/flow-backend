@@ -22,20 +22,11 @@ shell:
 db-shell:
 	docker exec -it astrikos_db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)
 
-mongodb-shell:
-	docker exec -it astrikos_mongodb mongosh \
-	mongodb://$(MONGO_INITDB_ROOT_USERNAME):$(MONGO_INITDB_ROOT_PASSWORD)\
-	@$(MONGO_INITDB_HOST):$(MONGO_INITDB_PORT)/$(MONGO_INITDB_DATABASE)\
-	?authSource=admin
-
 logs:
 	docker logs -f astrikos_backend
 
 db-logs:
 	docker logs -f astrikos_db
-
-mongodb-logs:
-	docker logs -f astrikos_mongodb
 
 down:
 	docker compose down
@@ -57,3 +48,15 @@ celery-logs:
 
 celery-shell:
 	docker exec -it astrikos_celery bash
+
+celery-beat-logs:
+	docker logs -f astrikos_celery_beat
+
+celery-beat-shell:
+	docker exec -it astrikos_celery_beat bash
+
+influxdb-shell:
+	docker exec -it astrikos_influxdb bash
+
+influxdb-logs:
+	docker logs -f astrikos_influxdb

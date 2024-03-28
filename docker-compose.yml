@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   backend:
     container_name: astrikos_backend
@@ -17,15 +15,14 @@ services:
       - ./requirements.txt:/astrikos/requirements.txt
       - ./manage.py:/astrikos/manage.py
       - ./mongodb:/astrikos/mongodb
+      - ./influx:/astrikos/influx
     networks:
       - db
       - broker
     depends_on:
       db:
         condition: service_healthy
-      mongodb:
-        condition: service_healthy
-      celery:
+      influxdb:
         condition: service_healthy
 
   db:
@@ -53,30 +50,6 @@ services:
       retries: 5
       timeout: 5s
 
-  mongodb:
-    image: mongo:7.0.6
-    container_name: astrikos_mongodb
-    hostname: ${MONGO_INITDB_HOST}
-    env_file: .env
-    environment:
-      - URI=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@${MONGO_INITDB_HOST}:27017/${MONGO_INITDB_DATABASE}?authSource=admin
-    volumes:
-      - mongodb:/data/db
-    networks:
-      - db
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "mongosh",
-          "${URI}",
-          "--eval",
-          "db.runCommand('ping')"
-        ]
-      interval: 5s
-      retries: 5
-      timeout: 5s
-
   celery:
     container_name: astrikos_celery
     build:
@@ -87,10 +60,30 @@ services:
     env_file: .env
     networks:
       - broker
+    healthcheck:
+      test: ["CMD", "celery", "-A", "config", "inspect","ping"]
+      interval: 5s
+      retries: 5
+      timeout: 5s
+
+  celery-beat:
+    container_name: astrikos_celery_beat
+    build:
+      context: .
+      dockerfile: docker/dev.Dockerfile
+    command: celery -A config beat --loglevel=info
+    image: astrikos_celery_beat
+    env_file: .env
+    networks:
+      - broker
       - db
     depends_on:
       broker:
         condition: service_healthy
+      db:
+        condition: service_healthy
+      backend:
+        condition: service_started
     healthcheck:
       test: ["CMD", "celery", "-A", "config", "inspect","ping"]
       interval: 5s
@@ -104,8 +97,6 @@ services:
     ports:
       - "15672:15672"
     env_file: .env
-    volumes:
-      - broker:/var/lib/rabbitmq
     networks:
       - broker
     healthcheck:
@@ -113,11 +104,27 @@ services:
       interval: 5s
       retries: 5
       timeout: 5s
+    
+  influxdb:
+    image: influxdb:2.7-alpine
+    container_name: astrikos_influxdb
+    hostname: ${INFLUXDB_HOST}
+    env_file: .env
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb:/var/lib/influxdb
+    networks:
+      - db
+    healthcheck:
+      test: ["CMD", "influx", "ping"]
+      interval: 5s
+      retries: 5
+      timeout: 5s
 
 volumes:
   db:
-  mongodb:
-  broker:
+  influxdb:
 
 networks:
   db:

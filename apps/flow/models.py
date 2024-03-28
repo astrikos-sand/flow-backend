@@ -45,9 +45,9 @@ class BaseNodeClass(BaseModel, PolymorphicModel):
     @property
     def special_slots(self):
         return list(
-            self.slots.filter(attachment_type=Slot.ATTACHMENT_TYPE.INPUT)
-            .exclude(speciality=Slot.SPECIAL_SLOT.NONE)
-            .values("name", "speciality")
+            self.slots.exclude(speciality=Slot.SPECIAL_SLOT.NONE).values(
+                "name", "speciality", "attachment_type"
+            )
         )
 
     def __str__(self):
@@ -59,10 +59,7 @@ class GenericNodeClass(BaseNodeClass):
 
 
 class TriggerNodeClass(BaseNodeClass):
-    @property
-    def output_slots(self):
-        output_slots = super().output_slots
-        output_slots.append("signal")
+    pass
 
 
 class Slot(BaseModel):
@@ -73,7 +70,11 @@ class Slot(BaseModel):
 
     class SPECIAL_SLOT(models.TextChoices):
         DATABASE = "DB", "Database"
+        API = "API", "API"
+        BACKEND = "BACKEND", "Backend"
+        NODE_ID = "NODE_ID", "Node ID"
         NONE = "NONE", "None"
+        SIGNAL = "SIG", "Signal"
 
     name = models.CharField(max_length=100)
     attachment_type = models.CharField(choices=ATTACHMENT_TYPE.choices, max_length=5)
@@ -83,6 +84,9 @@ class Slot(BaseModel):
     speciality = models.CharField(
         choices=SPECIAL_SLOT.choices, max_length=10, default=SPECIAL_SLOT.NONE
     )
+
+    class Meta:
+        unique_together = ("name", "node_class")
 
     def __str__(self):
         return f"{self.name} [Attachment: {self.attachment_type}] [Node Class: {self.node_class.name}]"
@@ -145,6 +149,10 @@ class GenericNode(BaseNode):
     @property
     def node_class_type(self):
         return self.node_class.get_real_instance_class().__name__
+
+    @property
+    def node_class_name(self):
+        return self.node_class.name
 
     @property
     def code(self):

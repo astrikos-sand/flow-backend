@@ -11,9 +11,6 @@ BASE_DIR = const.BASE_DIR
 SECRET_KEY = const.SECRET_KEY
 DEBUG = const.DEBUG
 
-ALLOWED_HOSTS = []
-
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -27,20 +24,22 @@ INSTALLED_APPS = [
     # THIRD PARTY APPS
     "corsheaders",
     "rest_framework",
-    "django_celery_results",
     "treebeard",
     "polymorphic",
+    "django_celery_results",
+    "django_celery_beat",
     # LOCAL APPS
     "apps.iam",
     "apps.resource",
     "apps.flow",
-    "apps.webhook",
+    "apps.trigger",
 ]
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -135,3 +134,8 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "iam.IAMUser"
+
+# Celery
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+CELERY_BROKER_URL = const.RABBITMQ_CELERY_BROKER_URL
+CELERY_RESULT_BACKEND = const.RABBITMQ_CELERY_RESULT_BACKEND
