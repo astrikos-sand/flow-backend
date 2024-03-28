@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, AbstractUser
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.core.validators import RegexValidator
 
 from apps.common.models import BaseModel
@@ -41,3 +41,11 @@ class IAMUser(AbstractBaseUser, PermissionsMixin, BaseModel):
     @property
     def is_staff(self):
         return self.is_active
+
+    def get_resource_permissions(self):
+        roles_permissions = list(self.roles.values_list("permissions", flat=True))
+        direct_permissions = list(self.permissions.all().values_list("id", flat=True))
+
+        permissions = roles_permissions + direct_permissions
+        permissions = list(set(permissions))
+        return permissions

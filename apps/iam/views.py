@@ -5,17 +5,31 @@ from rest_framework.routers import DefaultRouter
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.request import Request
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework import status
 
 from apps.iam.models import IAMUser, Role
 from apps.iam.serializers import IAMUserSerialzier, RoleSerializer
+from apps.common.permission import IsSuperUser
 
 
 class IAMUserViewSet(ModelViewSet):
     queryset = IAMUser.objects.all()
     serializer_class = IAMUserSerialzier
-    # permission_classes = (IsAuthenticated, IsAdminUser)
+    permission_classes = (IsSuperUser,)
+
+    @action(
+        detail=True,
+        methods=["POST"],
+    )
+    def attach(self, request: Request, pk=None):
+        permissions = request.data.get("permissions", [])
+        roles = request.data.get("roles", [])
+        user = IAMUser.objects.get(pk=pk)
+
+        user.permissions.add(*permissions)
+        user.roles.add(*roles)
+
+        return Response(status=status.HTTP_200_OK)
 
     @action(
         detail=False,
@@ -39,7 +53,7 @@ class IAMUserViewSet(ModelViewSet):
 class RoleViewSet(ModelViewSet):
     queryset = Role.objects.all()
     serializer_class = RoleSerializer
-    # permission_classes = (IsAuthenticated, IsAdminUser)
+    permission_classes = (IsSuperUser,)
 
     @action(
         detail=False,
@@ -51,7 +65,7 @@ class RoleViewSet(ModelViewSet):
         pass
 
 
-class AuthViewSet(ViewSet):
+class LoginViewSet(ViewSet):
     @action(
         detail=False,
         methods=["post"],
@@ -71,4 +85,4 @@ class AuthViewSet(ViewSet):
 router = DefaultRouter()
 router.register(r"users", IAMUserViewSet, basename="user")
 router.register(r"roles", RoleViewSet, basename="role")
-router.register(r"auth", AuthViewSet, basename="auth")
+router.register(r"auth", LoginViewSet, basename="auth")
