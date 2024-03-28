@@ -92,6 +92,7 @@ class BaseNode(BaseModel, PolymorphicModel):
     flow_file = models.ForeignKey(
         FlowFile, on_delete=models.CASCADE, related_name="nodes"
     )
+    position = models.JSONField(default={"x": 0, "y": 0})
 
     @property
     def input_slots(self):
