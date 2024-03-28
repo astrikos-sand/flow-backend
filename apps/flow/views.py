@@ -29,7 +29,7 @@ from apps.flow.serializers import (
 from apps.flow.runtime.worker import submit_task
 from config import settings
 from .serializers import ConnectionSerializer
-)
+
 
 
 class BaseNodeViewSet(ModelViewSet):
