@@ -29,14 +29,10 @@ class ConnectionSerializer(serializers.ModelSerializer):
         if source.id == target.id:
             raise serializers.ValidationError("source and target can't be same")
 
-        if source_slot not in source.get_real_instance().output_slots.values_list(
-            "name", flat=True
-        ):
+        if source_slot not in source.get_real_instance().output_slots:
             raise serializers.ValidationError("source slot not found in source node")
 
-        if target_slot not in target.get_real_instance().input_slots.values_list(
-            "name", flat=True
-        ):
+        if target_slot not in target.get_real_instance().input_slots:
             raise serializers.ValidationError("target slot not found in target node")
 
         return super().validate(data)

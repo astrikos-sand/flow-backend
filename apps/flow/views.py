@@ -1,7 +1,5 @@
 import json
-import os
-from django.http import JsonResponse, QueryDict
-from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
+from rest_framework.parsers import MultiPartParser
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ViewSet
@@ -13,24 +11,16 @@ from apps.flow.models import (
     BaseNodeClass,
     Connection,
     FlowFile,
-    GenericNode,
-    DataNode,
-    Slot,
     GenericNodeClass,
 )
 from apps.flow.serializers import (
     BaseNodeSerializer,
     BaseNodeClassSerializer,
     FlowFileSerializer,
-    GenericNodeSerializer,
-    DataNodeSerializer,
     SlotSerializer
 )
 from apps.flow.runtime.worker import submit_task
-from config import settings
 from .serializers import ConnectionSerializer
-)
-
 
 class BaseNodeViewSet(ModelViewSet):
     queryset = BaseNode.objects.all()
@@ -95,7 +85,10 @@ class SaveAPIView(APIView):
             updated_nodes.append(node_data)
 
         incoming_connections = request.data.get("connections", [])
-        existing_connections = Connection.objects.all()
+        current_node_ids = [node_data['id'] for node_data in received_nodes]
+        existing_connections = Connection.objects.filter(
+            source__id__in=current_node_ids, target__id__in=current_node_ids
+        )
         connections_to_delete = []
 
         for existing_connection in existing_connections:
@@ -107,7 +100,7 @@ class SaveAPIView(APIView):
 
         if connections_to_delete:
             Connection.objects.filter(id__in=connections_to_delete).delete()
-
+        print(incoming_connections)
         serializer = ConnectionSerializer(data=incoming_connections, many=True)
         if serializer.is_valid():
             serializer.save()

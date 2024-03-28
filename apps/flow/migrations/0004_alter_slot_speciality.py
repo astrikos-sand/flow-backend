@@ -19,4 +19,9 @@ class Migration(migrations.Migration):
                 max_length=10,
             ),
         ),
+        migrations.AddField(
+            model_name="basenode",
+            name="position",
+            field=models.JSONField(default={"x": 0, "y": 0}),
+        ),
     ]
