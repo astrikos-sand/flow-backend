@@ -3,31 +3,29 @@ from rest_framework import serializers
 import json
 from django_celery_beat.models import PeriodicTask, IntervalSchedule, CrontabSchedule
 
-from apps.scheduler.models import WebHookScheduler, PeriodicScheduler
+from apps.trigger.models import WebHookTrigger, PeriodicTrigger
 from apps.flow.models import BaseNode
 
 
-class WebHookScheduleSerializer(serializers.ModelSerializer):
+class WebHookTriggerSerializer(serializers.ModelSerializer):
     class Meta:
-        model = WebHookScheduler
+        model = WebHookTrigger
         fields = "__all__"
 
 
-class PeriodicScheduleSerializer(serializers.ModelSerializer):
+class PeriodicTriggerSerializer(serializers.ModelSerializer):
     class Meta:
-        model = PeriodicScheduler
+        model = PeriodicTrigger
         fields = "__all__"
 
     def create(self, validated_data):
-        scheduler: PeriodicScheduler = PeriodicScheduler.objects.create(
-            **validated_data
-        )
+        scheduler: PeriodicTrigger = PeriodicTrigger.objects.create(**validated_data)
         node: BaseNode = scheduler.node
 
         task_name = f"{node.flow_file.name} - {node.id}"
-        task = "apps.scheduler.tasks.periodic_task"
+        task = "apps.trigger.tasks.periodic_task"
 
-        if scheduler.scheduler_type is PeriodicScheduler.SCHDULER_TYPE.INTERVAL:
+        if scheduler.scheduler_type is PeriodicTrigger.SCHDULER_TYPE.INTERVAL:
             task_interval, _ = IntervalSchedule.objects.get_or_create(
                 every=scheduler.duration.seconds, period=IntervalSchedule.SECONDS
             )
@@ -36,7 +34,7 @@ class PeriodicScheduleSerializer(serializers.ModelSerializer):
                 interval=task_interval,
                 name=task_name,
                 task=task,
-                kwargs=json.dumps({"node": node}),
+                kwargs=json.dumps({"node": node, "context": self.context}),
             )
         else:
             task_schedule, _ = CrontabSchedule.objects.get_or_create(
@@ -52,7 +50,7 @@ class PeriodicScheduleSerializer(serializers.ModelSerializer):
                 crontab=task_schedule,
                 name=task_name,
                 task=task,
-                kwargs=json.dumps({"node": node}),
+                kwargs=json.dumps({"node": node, "context": self.context}),
             )
 
         return scheduler

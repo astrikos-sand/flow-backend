@@ -32,7 +32,7 @@ INSTALLED_APPS = [
     "apps.iam",
     "apps.resource",
     "apps.flow",
-    "apps.scheduler",
+    "apps.trigger",
 ]
 
 MIDDLEWARE = [
