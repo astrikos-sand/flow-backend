@@ -24,12 +24,11 @@ from apps.flow.serializers import (
     FlowFileSerializer,
     GenericNodeSerializer,
     DataNodeSerializer,
-    SlotSerializer
+    SlotSerializer,
 )
 from apps.flow.runtime.worker import submit_task
 from config import settings
 from .serializers import ConnectionSerializer
-
 
 
 class BaseNodeViewSet(ModelViewSet):
@@ -131,11 +130,13 @@ class SaveCodeFileAPIView(APIView):
                 )
             if not code_file:
                 return Response(
-                    {"error": "Code file is required"}, status=status.HTTP_400_BAD_REQUEST
+                    {"error": "Code file is required"},
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
             if not slots_data:
                 return Response(
-                    {"error": "Slots data is required"}, status=status.HTTP_400_BAD_REQUEST
+                    {"error": "Slots data is required"},
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
 
             node_class = GenericNodeClass.objects.create(
@@ -158,6 +159,7 @@ class SaveCodeFileAPIView(APIView):
             )
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
 router = DefaultRouter()
 router.register(r"nodes", BaseNodeViewSet, basename="node")
