@@ -172,6 +172,7 @@ class DataNode(BaseNode):
         SET = "SET", "Set"
         TUPLE = "TUPLE", "Tuple"
         DICTIONARY = "DICT", "Dictionary"
+        NONE = "NONE", "None"
 
     value = models.CharField(max_length=255)
     type = models.CharField(choices=DATA_TYPE.choices, max_length=5)
@@ -240,4 +241,4 @@ class Connection(BaseModel):
     # Validate that the target parameter belong to the target node's input slot
 
     class Meta:
-        unique_together = ("source", "target")
+        unique_together = ("source", "target", "source_slot", "target_slot")
