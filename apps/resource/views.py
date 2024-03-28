@@ -32,7 +32,7 @@ class ResourceViewSet(ModelViewSet):
                 and permission.action == action
             ):
                 path = permission.permission_path
-                regex_pattern = re.compile(re.escape(path))
+                regex_pattern = re.compile(path)
                 all_resources = ResourceGroup.objects.all()
                 resources = list(
                     filter(lambda x: regex_pattern.search(x.path), all_resources)

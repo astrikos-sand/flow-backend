@@ -149,12 +149,11 @@ class GenericNodeClassSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "description", "code", "slots")
 
     def create(self, validated_data):
-        print(validated_data)
         slots_data = validated_data.pop('slots')
         generic_node_class = GenericNodeClass.objects.create(**validated_data)
         for slot_data in slots_data:
             Slot.objects.create(node_class=generic_node_class, **slot_data)
-        return generic_node_class1
+        return generic_node_class
 
 class TriggerNodeClassSerializer(serializers.ModelSerializer):
 

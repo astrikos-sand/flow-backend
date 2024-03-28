@@ -6,7 +6,7 @@ from apps.resource.models import ResourceGroup, ResourcePermission
 
 
 class ResourceGroupSerializer(serializers.ModelSerializer):
-    data = serializers.JSONField(write_only=True)
+    data = serializers.JSONField()
     path = serializers.ReadOnlyField()
     parent = serializers.PrimaryKeyRelatedField(
         queryset=ResourceGroup.objects.all(),
