@@ -1,4 +1,7 @@
 import re
+import json
+from rest_framework.response import Response
+from rest_framework import status
 
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.routers import DefaultRouter
@@ -62,6 +65,23 @@ class ResourceViewSet(ModelViewSet):
 
         return resource_list
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            for instance in serializer.data:
+                instance_obj = ResourceGroup.objects.get(id=instance['id'])
+                instance['data'] = json.loads(instance_obj.data[0]['_value']) if instance_obj.data else None
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        for instance in serializer.data:
+            instance_obj = ResourceGroup.objects.get(id=instance['id'])
+            print(instance_obj.data)
+            instance['data'] = json.loads(instance_obj.data[0]['_value']) if instance_obj.data else None
+        return Response(serializer.data)
 
 class ResourcePermissionViewSet(ModelViewSet):
     queryset = ResourcePermission.objects.all()

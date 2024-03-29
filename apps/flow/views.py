@@ -1,7 +1,5 @@
 import json
-import os
-from django.http import JsonResponse, QueryDict
-from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
+from rest_framework.parsers import MultiPartParser
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ViewSet
@@ -24,9 +22,7 @@ from apps.flow.serializers import (
 )
 
 from apps.flow.runtime.worker import submit_task
-from config import settings
 from .serializers import ConnectionSerializer
-
 
 class BaseNodeViewSet(ModelViewSet):
     queryset = BaseNode.objects.all()
@@ -78,6 +74,15 @@ class TaskViewSet(ViewSet):
 
 class SaveAPIView(APIView):
     def post(self, request, *args, **kwargs):
+        flow_file_id = request.data.get("flow_file_id")
+        if not flow_file_id:
+            return Response({"error": "Flow file ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            flow_file = FlowFile.objects.get(id=flow_file_id)
+        except FlowFile.DoesNotExist:
+            return Response({"error": "Flow file not found"}, status=status.HTTP_404_NOT_FOUND)
+
         received_data = request.data
         received_nodes = received_data.get("nodes", [])
 
@@ -85,14 +90,19 @@ class SaveAPIView(APIView):
         saved_connections = []
         for node_data in received_nodes:
             node_id = node_data.get("id")
-            node = BaseNode.objects.get(id=node_id)
-            node_serializer = BaseNodeSerializer(node, data=node_data, partial=True)
-            if node_serializer.is_valid():
-                node_serializer.save()
+            try:
+                node = BaseNode.objects.get(id=node_id, flow_file=flow_file)
+            except BaseNode.DoesNotExist:
+                continue
+            node.position = node_data.get("position")
+            node.save()
             updated_nodes.append(node_data)
 
         incoming_connections = request.data.get("connections", [])
-        existing_connections = Connection.objects.all()
+        current_node_ids = [node_data['id'] for node_data in received_nodes]
+        existing_connections = Connection.objects.filter(
+            source__id__in=current_node_ids, target__id__in=current_node_ids
+        )
         connections_to_delete = []
 
         for existing_connection in existing_connections:
@@ -104,7 +114,11 @@ class SaveAPIView(APIView):
 
         if connections_to_delete:
             Connection.objects.filter(id__in=connections_to_delete).delete()
-
+        
+        nodes_to_delete = BaseNode.objects.filter(flow_file=flow_file).exclude(id__in=current_node_ids)
+        for node_to_delete in nodes_to_delete:
+            node_to_delete.delete()
+        
         serializer = ConnectionSerializer(data=incoming_connections, many=True)
         if serializer.is_valid():
             serializer.save()
