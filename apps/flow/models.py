@@ -75,17 +75,16 @@ class BaseNodeClass(BaseModel, PolymorphicModel):
 class GenericNodeClass(BaseNodeClass):
 
     @classmethod
-    def get_allowed_attachment_types():
-        allwed_list = Slot.ATTACHMENT_TYPE.values.copy().remove(
-            Slot.ATTACHMENT_TYPE.DELAYED_OUTPUT
-        )
+    def get_allowed_attachment_types(cls):
+        allwed_list = Slot.ATTACHMENT_TYPE.values.copy()
+        allwed_list.remove(Slot.ATTACHMENT_TYPE.DELAYED_OUTPUT)
         return allwed_list
 
 
 class TriggerNodeClass(BaseNodeClass):
 
     @classmethod
-    def get_attachment_types():
+    def get_attachment_types(cls):
         allwed_list = Slot.ATTACHMENT_TYPE.values.copy()
         return allwed_list
 
