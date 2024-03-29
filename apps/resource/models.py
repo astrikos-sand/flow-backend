@@ -47,12 +47,12 @@ class ResourceGroup(NS_Node, BaseModel):
 
     @property
     def data(self) -> dict:
-        query = f'from(bucket: "{const.INFLUXDB_BUCKET}") |> range(start: -1h) |> filter(fn: (r) => r["_measurement"] == "{self.path}")'
+        query = f'from(bucket: "{const.INFLUXDB_BUCKET}") |> range(start: -1h) |> filter(fn: (r) => r["_measurement"] == "{self.id}")'
         result = influx.get_data(query)
         return result
 
     def store_data(self, data: dict) -> None:
-        influx.write({"measurement": self.path, "value": json.dumps(data)})
+        influx.write({"measurement": self.id, "value": json.dumps(data)})
 
     def check_permission(
         self, action: "ResourcePermission.Action", user: "IAMUser"
