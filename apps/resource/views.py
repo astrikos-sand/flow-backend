@@ -72,16 +72,25 @@ class ResourceViewSet(ModelViewSet):
         if page is not None:
             serializer = self.get_serializer(page, many=True)
             for instance in serializer.data:
-                instance_obj = ResourceGroup.objects.get(id=instance['id'])
-                instance['data'] = json.loads(instance_obj.data[0]['_value']) if instance_obj.data else None
+                instance_obj = ResourceGroup.objects.get(id=instance["id"])
+                instance["data"] = (
+                    json.loads(instance_obj.data[0]["_value"])
+                    if instance_obj.data
+                    else None
+                )
             return self.get_paginated_response(serializer.data)
 
         serializer = self.get_serializer(queryset, many=True)
         for instance in serializer.data:
-            instance_obj = ResourceGroup.objects.get(id=instance['id'])
+            instance_obj = ResourceGroup.objects.get(id=instance["id"])
             print(instance_obj.data)
-            instance['data'] = json.loads(instance_obj.data[0]['_value']) if instance_obj.data else None
+            instance["data"] = (
+                json.loads(instance_obj.data[0]["_value"])
+                if instance_obj.data
+                else None
+            )
         return Response(serializer.data)
+
 
 class ResourcePermissionViewSet(ModelViewSet):
     queryset = ResourcePermission.objects.all()
