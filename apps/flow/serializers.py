@@ -143,7 +143,7 @@ class SlotSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Slot
-        fields = ("id", "name", "attachment_type", "node_class")
+        fields = ("id", "name", "attachment_type", "node_class", "speciality")
 
     def validate(self, data: dict):
         node_class = data.get("node_class")
@@ -162,7 +162,7 @@ class GenericNodeClassSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = GenericNodeClass
-        fields = ("id", "name", "description", "code", "slots", "speciality")
+        fields = ("id", "name", "description", "code", "slots")
 
     def create(self, validated_data):
         slots_data = validated_data.pop("slots")
