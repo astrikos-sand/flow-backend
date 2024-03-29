@@ -144,11 +144,14 @@ class SlotSerializer(serializers.ModelSerializer):
     class Meta:
         model = Slot
         fields = ("id", "name", "attachment_type", "node_class")
-        
+
     def validate(self, data: dict):
         node_class = data.get("node_class")
         attachment_type = data.get("attachment_type")
-        if attachment_type not in node_class.get_real_instance_class().get_allowed_attachment_types():
+        if (
+            attachment_type
+            not in node_class.get_real_instance_class().get_allowed_attachment_types()
+        ):
             raise serializers.ValidationError("Invalid attachment type")
         return super().validate(data)
 

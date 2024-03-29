@@ -32,8 +32,10 @@ class PeriodicTrigger(Trigger):
     scheduler_type = models.CharField(
         choices=SCHDULER_TYPE.choices, default=SCHDULER_TYPE.INTERVAL, max_length=10
     )
-    
-    task = models.OneToOneField(PeriodicTask, on_delete=models.CASCADE, null=True, blank=True)
+
+    task = models.OneToOneField(
+        PeriodicTask, on_delete=models.CASCADE, null=True, blank=True
+    )
 
     # interval scheduler
     duration = models.DurationField(
@@ -107,4 +109,3 @@ class PeriodicTrigger(Trigger):
         verbose_name=_("Cron Timezone"),
         help_text=_("Timezone to Run the Cron Schedule on. Default is UTC."),
     )
-

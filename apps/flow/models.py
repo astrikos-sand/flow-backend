@@ -42,7 +42,7 @@ class BaseNodeClass(BaseModel, PolymorphicModel):
                 speciality=Slot.SPECIAL_SLOT.NONE,
             ).values_list("name", flat=True)
         )
-        
+
     @property
     def delayed_output_slots(self):
         return list(
@@ -59,14 +59,13 @@ class BaseNodeClass(BaseModel, PolymorphicModel):
                 "name", "speciality", "attachment_type"
             )
         )
-        
+
     @property
     def delayed_special_output_slots(self):
         return list(
-            self.slots.filter(
-                attachment_type=Slot.ATTACHMENT_TYPE.DELAYED_OUTPUT).exclude(speciality=Slot.SPECIAL_SLOT.NONE).values(
-                "name", "speciality", "attachment_type"
-            )
+            self.slots.filter(attachment_type=Slot.ATTACHMENT_TYPE.DELAYED_OUTPUT)
+            .exclude(speciality=Slot.SPECIAL_SLOT.NONE)
+            .values("name", "speciality", "attachment_type")
         )
 
     def __str__(self):
@@ -74,21 +73,21 @@ class BaseNodeClass(BaseModel, PolymorphicModel):
 
 
 class GenericNodeClass(BaseNodeClass):
-    
+
     @classmethod
     def get_allowed_attachment_types():
-        allwed_list = Slot.ATTACHMENT_TYPE.values.copy().remove(Slot.ATTACHMENT_TYPE.DELAYED_OUTPUT)
+        allwed_list = Slot.ATTACHMENT_TYPE.values.copy().remove(
+            Slot.ATTACHMENT_TYPE.DELAYED_OUTPUT
+        )
         return allwed_list
-    
 
 
 class TriggerNodeClass(BaseNodeClass):
-    
+
     @classmethod
     def get_attachment_types():
         allwed_list = Slot.ATTACHMENT_TYPE.values.copy()
         return allwed_list
-    
 
 
 class Slot(BaseModel):
@@ -120,9 +119,6 @@ class Slot(BaseModel):
 
     def __str__(self):
         return f"{self.name} [Attachment: {self.attachment_type}] [Node Class: {self.node_class.name}]"
-    
-def default_position():
-    return {"x": 0, "y": 0}
 
 
 class BaseNode(BaseModel, PolymorphicModel):
@@ -142,11 +138,11 @@ class BaseNode(BaseModel, PolymorphicModel):
     @property
     def special_slots(self):
         return []
-    
+
     @property
     def delayed_output_slots(self):
         return []
-    
+
     @property
     def delayed_special_output_slots(self):
         return []
@@ -186,11 +182,11 @@ class GenericNode(BaseNode):
     @property
     def special_slots(self):
         return self.node_class.special_slots
-    
+
     @property
     def delayed_output_slots(self):
         return self.node_class.delayed_output_slots
-    
+
     @property
     def delayed_special_output_slots(self):
         return self.node_class.delayed_special_output_slots

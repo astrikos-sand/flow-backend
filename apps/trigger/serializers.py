@@ -1,7 +1,12 @@
 from rest_framework import serializers
 
 import json
-from django_celery_beat.models import crontab_schedule_celery_timezone, PeriodicTask, IntervalSchedule, CrontabSchedule
+from django_celery_beat.models import (
+    crontab_schedule_celery_timezone,
+    PeriodicTask,
+    IntervalSchedule,
+    CrontabSchedule,
+)
 
 from django.core.serializers.json import DjangoJSONEncoder
 
@@ -18,7 +23,15 @@ class WebHookTriggerSerializer(serializers.ModelSerializer):
 
 
 class PeriodicTriggerSerializer(serializers.ModelSerializer):
-    timezone = serializers.ChoiceField(allow_blank=True, allow_null=True, choices=crontab_schedule_celery_timezone(), default="UTC", initial="UTC", required=False, write_only=True)
+    timezone = serializers.ChoiceField(
+        allow_blank=True,
+        allow_null=True,
+        choices=crontab_schedule_celery_timezone(),
+        default="UTC",
+        initial="UTC",
+        required=False,
+        write_only=True,
+    )
 
     class Meta:
         model = PeriodicTrigger
@@ -28,18 +41,21 @@ class PeriodicTriggerSerializer(serializers.ModelSerializer):
         if not value and value not in choices:
             value = default
         return value
-    
+
     def validate_timezone(self, value):
         print("timzone value", value, flush=True)
-        return self._validate_nullable_choice_field(value, self.fields["timezone"].choices, self.fields["timezone"].default)
-    
+        return self._validate_nullable_choice_field(
+            value, self.fields["timezone"].choices, self.fields["timezone"].default
+        )
+
     def validate(self, data: dict):
-        
+
         scheduler_type = data.get("scheduler_type")
         if scheduler_type not in PeriodicTrigger.SCHDULER_TYPE.values:
-            raise serializers.ValidationError(f"Invalid scheduler type {scheduler_type}")
+            raise serializers.ValidationError(
+                f"Invalid scheduler type {scheduler_type}"
+            )
         return super().validate(data)
-
 
     def create(self, validated_data):
         node = validated_data.get("node")
@@ -54,7 +70,7 @@ class PeriodicTriggerSerializer(serializers.ModelSerializer):
 
         task_name = f"{node.flow_file.name} - {node.id}"
         task = "apps.trigger.tasks.periodic_task"
-        
+
         node_id = node.id
         node_list = []
         create_nodes(node, node_list)
@@ -65,14 +81,16 @@ class PeriodicTriggerSerializer(serializers.ModelSerializer):
             task_interval, created = IntervalSchedule.objects.get_or_create(
                 every=duration.seconds, period=IntervalSchedule.SECONDS
             )
-            
+
             print(f"created interval {created}", flush=True)
 
             periodic_task = PeriodicTask.objects.create(
                 interval=task_interval,
                 name=task_name,
                 task=task,
-                kwargs=json.dumps({"node_id": node.id, "node_list": node_list}, cls=DjangoJSONEncoder),
+                kwargs=json.dumps(
+                    {"node_id": node.id, "node_list": node_list}, cls=DjangoJSONEncoder
+                ),
             )
         elif scheduler_type == PeriodicTrigger.SCHDULER_TYPE.CRONTAB:
             task_schedule, _ = CrontabSchedule.objects.get_or_create(
@@ -88,9 +106,13 @@ class PeriodicTriggerSerializer(serializers.ModelSerializer):
                 crontab=task_schedule,
                 name=task_name,
                 task=task,
-                kwargs=json.dumps({"node_id": node_id,"node_list": node_list}, cls=DjangoJSONEncoder),
+                kwargs=json.dumps(
+                    {"node_id": node_id, "node_list": node_list}, cls=DjangoJSONEncoder
+                ),
             )
-            
-        scheduler: PeriodicTrigger = PeriodicTrigger.objects.create(task=periodic_task, **validated_data)
+
+        scheduler: PeriodicTrigger = PeriodicTrigger.objects.create(
+            task=periodic_task, **validated_data
+        )
 
         return scheduler
