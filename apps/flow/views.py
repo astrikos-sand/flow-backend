@@ -13,19 +13,16 @@ from apps.flow.models import (
     BaseNodeClass,
     Connection,
     FlowFile,
-    GenericNode,
-    DataNode,
-    Slot,
     GenericNodeClass,
 )
+
 from apps.flow.serializers import (
     BaseNodeSerializer,
     BaseNodeClassSerializer,
     FlowFileSerializer,
-    GenericNodeSerializer,
-    DataNodeSerializer,
     SlotSerializer,
 )
+
 from apps.flow.runtime.worker import submit_task
 from config import settings
 from .serializers import ConnectionSerializer
@@ -89,8 +86,9 @@ class SaveAPIView(APIView):
         for node_data in received_nodes:
             node_id = node_data.get("id")
             node = BaseNode.objects.get(id=node_id)
-            node.position = node_data.get("position")
-            node.save()
+            node_serializer = BaseNodeSerializer(node, data=node_data, partial=True)
+            if node_serializer.is_valid():
+                node_serializer.save()
             updated_nodes.append(node_data)
 
         incoming_connections = request.data.get("connections", [])

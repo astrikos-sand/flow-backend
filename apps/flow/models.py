@@ -42,11 +42,29 @@ class BaseNodeClass(BaseModel, PolymorphicModel):
                 speciality=Slot.SPECIAL_SLOT.NONE,
             ).values_list("name", flat=True)
         )
+        
+    @property
+    def delayed_output_slots(self):
+        return list(
+            self.slots.filter(
+                attachment_type=Slot.ATTACHMENT_TYPE.DELAYED_OUTPUT,
+                speciality=Slot.SPECIAL_SLOT.NONE,
+            ).values_list("name", flat=True)
+        )
 
     @property
     def special_slots(self):
         return list(
             self.slots.exclude(speciality=Slot.SPECIAL_SLOT.NONE).values(
+                "name", "speciality", "attachment_type"
+            )
+        )
+        
+    @property
+    def delayed_special_output_slots(self):
+        return list(
+            self.slots.filter(
+                attachment_type=Slot.ATTACHMENT_TYPE.DELAYED_OUTPUT).exclude(speciality=Slot.SPECIAL_SLOT.NONE).values(
                 "name", "speciality", "attachment_type"
             )
         )
@@ -56,11 +74,21 @@ class BaseNodeClass(BaseModel, PolymorphicModel):
 
 
 class GenericNodeClass(BaseNodeClass):
-    pass
+    
+    @classmethod
+    def get_allowed_attachment_types():
+        allwed_list = Slot.ATTACHMENT_TYPE.values.copy().remove(Slot.ATTACHMENT_TYPE.DELAYED_OUTPUT)
+        return allwed_list
+    
 
 
 class TriggerNodeClass(BaseNodeClass):
-    pass
+    
+    @classmethod
+    def get_attachment_types():
+        allwed_list = Slot.ATTACHMENT_TYPE.values.copy()
+        return allwed_list
+    
 
 
 class Slot(BaseModel):
@@ -68,6 +96,7 @@ class Slot(BaseModel):
     class ATTACHMENT_TYPE(models.TextChoices):
         INPUT = "IN", "Input"
         OUTPUT = "OUT", "Output"
+        DELAYED_OUTPUT = "D_OUT", "Delayed Output"
 
     class SPECIAL_SLOT(models.TextChoices):
         DATABASE = "DB", "Database"
@@ -91,6 +120,9 @@ class Slot(BaseModel):
 
     def __str__(self):
         return f"{self.name} [Attachment: {self.attachment_type}] [Node Class: {self.node_class.name}]"
+    
+def default_position():
+    return {"x": 0, "y": 0}
 
 
 class BaseNode(BaseModel, PolymorphicModel):
@@ -109,6 +141,14 @@ class BaseNode(BaseModel, PolymorphicModel):
 
     @property
     def special_slots(self):
+        return []
+    
+    @property
+    def delayed_output_slots(self):
+        return []
+    
+    @property
+    def delayed_special_output_slots(self):
         return []
 
     def execute(self, globals, locals):
@@ -146,6 +186,14 @@ class GenericNode(BaseNode):
     @property
     def special_slots(self):
         return self.node_class.special_slots
+    
+    @property
+    def delayed_output_slots(self):
+        return self.node_class.delayed_output_slots
+    
+    @property
+    def delayed_special_output_slots(self):
+        return self.node_class.delayed_special_output_slots
 
     @property
     def node_class_type(self):
