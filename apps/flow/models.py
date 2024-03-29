@@ -3,6 +3,7 @@ from django.db import models
 from polymorphic.models import PolymorphicModel
 
 from apps.common.models import BaseModel
+from apps.flow.utils import default_position
 
 
 class FlowFile(BaseModel):
@@ -96,7 +97,7 @@ class BaseNode(BaseModel, PolymorphicModel):
     flow_file = models.ForeignKey(
         FlowFile, on_delete=models.CASCADE, related_name="nodes"
     )
-    position = models.JSONField(default=lambda: {"x": 0, "y": 0})
+    position = models.JSONField(default=default_position)
 
     @property
     def input_slots(self):
