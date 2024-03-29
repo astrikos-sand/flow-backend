@@ -72,6 +72,15 @@ class TaskViewSet(ViewSet):
 
 class SaveAPIView(APIView):
     def post(self, request, *args, **kwargs):
+        flow_file_id = request.data.get("flow_file_id")
+        if not flow_file_id:
+            return Response({"error": "Flow file ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            flow_file = FlowFile.objects.get(id=flow_file_id)
+        except FlowFile.DoesNotExist:
+            return Response({"error": "Flow file not found"}, status=status.HTTP_404_NOT_FOUND)
+
         received_data = request.data
         received_nodes = received_data.get("nodes", [])
 
@@ -79,7 +88,10 @@ class SaveAPIView(APIView):
         saved_connections = []
         for node_data in received_nodes:
             node_id = node_data.get("id")
-            node = BaseNode.objects.get(id=node_id)
+            try:
+                node = BaseNode.objects.get(id=node_id, flow_file=flow_file)
+            except BaseNode.DoesNotExist:
+                continue
             node.position = node_data.get("position")
             node.save()
             updated_nodes.append(node_data)
@@ -100,7 +112,11 @@ class SaveAPIView(APIView):
 
         if connections_to_delete:
             Connection.objects.filter(id__in=connections_to_delete).delete()
-        print(incoming_connections)
+        
+        nodes_to_delete = BaseNode.objects.filter(flow_file=flow_file).exclude(id__in=current_node_ids)
+        for node_to_delete in nodes_to_delete:
+            node_to_delete.delete()
+        
         serializer = ConnectionSerializer(data=incoming_connections, many=True)
         if serializer.is_valid():
             serializer.save()
