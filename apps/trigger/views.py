@@ -19,9 +19,7 @@ class WebHookTriggerViewSet(ModelViewSet):
     @action(detail=True, methods=["post"], url_path="trigger", url_name="trigger")
     def trigger(self, request, pk=None):
         hook: WebHookTrigger = self.get_object()
-        data = {
-            "data": request.data
-        }
+        data = {"data": request.data}
         try:
             result = webhook_task(node=hook.node, data=data, request=request)
         except Exception as e:
@@ -37,7 +35,7 @@ class PeriodicTriggerViewSet(ModelViewSet):
         context = super().get_serializer_context()
         context.update({"request": self.request})
         return context
-    
+
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         instance.task.delete()
