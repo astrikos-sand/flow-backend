@@ -162,7 +162,7 @@ class GenericNodeClassSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = GenericNodeClass
-        fields = ("id", "name", "description", "code", "slots")
+        fields = ("id", "name", "description", "code", "slots", "speciality")
 
     def create(self, validated_data):
         slots_data = validated_data.pop("slots")

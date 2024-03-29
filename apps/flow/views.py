@@ -24,6 +24,7 @@ from apps.flow.serializers import (
 from apps.flow.runtime.worker import submit_task
 from .serializers import ConnectionSerializer
 
+
 class BaseNodeViewSet(ModelViewSet):
     queryset = BaseNode.objects.all()
     serializer_class = BaseNodeSerializer
@@ -76,12 +77,17 @@ class SaveAPIView(APIView):
     def post(self, request, *args, **kwargs):
         flow_file_id = request.data.get("flow_file_id")
         if not flow_file_id:
-            return Response({"error": "Flow file ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Flow file ID is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         try:
             flow_file = FlowFile.objects.get(id=flow_file_id)
         except FlowFile.DoesNotExist:
-            return Response({"error": "Flow file not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Flow file not found"}, status=status.HTTP_404_NOT_FOUND
+            )
 
         received_data = request.data
         received_nodes = received_data.get("nodes", [])
@@ -99,7 +105,7 @@ class SaveAPIView(APIView):
             updated_nodes.append(node_data)
 
         incoming_connections = request.data.get("connections", [])
-        current_node_ids = [node_data['id'] for node_data in received_nodes]
+        current_node_ids = [node_data["id"] for node_data in received_nodes]
         existing_connections = Connection.objects.filter(
             source__id__in=current_node_ids, target__id__in=current_node_ids
         )
@@ -114,11 +120,13 @@ class SaveAPIView(APIView):
 
         if connections_to_delete:
             Connection.objects.filter(id__in=connections_to_delete).delete()
-        
-        nodes_to_delete = BaseNode.objects.filter(flow_file=flow_file).exclude(id__in=current_node_ids)
+
+        nodes_to_delete = BaseNode.objects.filter(flow_file=flow_file).exclude(
+            id__in=current_node_ids
+        )
         for node_to_delete in nodes_to_delete:
             node_to_delete.delete()
-        
+
         serializer = ConnectionSerializer(data=incoming_connections, many=True)
         if serializer.is_valid():
             serializer.save()
