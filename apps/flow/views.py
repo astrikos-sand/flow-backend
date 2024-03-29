@@ -122,10 +122,7 @@ class SaveCodeFileAPIView(APIView):
             description = request.data.get("description")
             code_file = request.FILES.get("code_file")
             slots_data = json.loads(request.data.get("slots", []))
-            special_slots = json.loads(request.data.get("special_slots", []))
-            output_special_slots = json.loads(
-                request.data.get("output_special_slots", [])
-            )
+
             if not name:
                 return Response(
                     {"error": "Name is required"}, status=status.HTTP_400_BAD_REQUEST
