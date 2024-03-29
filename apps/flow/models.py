@@ -3,6 +3,7 @@ from django.db import models
 from polymorphic.models import PolymorphicModel
 
 from apps.common.models import BaseModel
+from apps.flow.utils import default_position
 
 
 class FlowFile(BaseModel):
@@ -43,6 +44,15 @@ class BaseNodeClass(BaseModel, PolymorphicModel):
         )
 
     @property
+    def delayed_output_slots(self):
+        return list(
+            self.slots.filter(
+                attachment_type=Slot.ATTACHMENT_TYPE.DELAYED_OUTPUT,
+                speciality=Slot.SPECIAL_SLOT.NONE,
+            ).values_list("name", flat=True)
+        )
+
+    @property
     def special_slots(self):
         return list(
             self.slots.exclude(speciality=Slot.SPECIAL_SLOT.NONE).values(
@@ -50,16 +60,33 @@ class BaseNodeClass(BaseModel, PolymorphicModel):
             )
         )
 
+    @property
+    def delayed_special_output_slots(self):
+        return list(
+            self.slots.filter(attachment_type=Slot.ATTACHMENT_TYPE.DELAYED_OUTPUT)
+            .exclude(speciality=Slot.SPECIAL_SLOT.NONE)
+            .values("name", "speciality", "attachment_type")
+        )
+
     def __str__(self):
         return f"{self.name} ( {self.description} ) [Code: {self.code.name}]"
 
 
 class GenericNodeClass(BaseNodeClass):
-    pass
+
+    @classmethod
+    def get_allowed_attachment_types(cls):
+        allwed_list = Slot.ATTACHMENT_TYPE.values.copy()
+        allwed_list.remove(Slot.ATTACHMENT_TYPE.DELAYED_OUTPUT)
+        return allwed_list
 
 
 class TriggerNodeClass(BaseNodeClass):
-    pass
+
+    @classmethod
+    def get_attachment_types(cls):
+        allwed_list = Slot.ATTACHMENT_TYPE.values.copy()
+        return allwed_list
 
 
 class Slot(BaseModel):
@@ -67,6 +94,7 @@ class Slot(BaseModel):
     class ATTACHMENT_TYPE(models.TextChoices):
         INPUT = "IN", "Input"
         OUTPUT = "OUT", "Output"
+        DELAYED_OUTPUT = "D_OUT", "Delayed Output"
 
     class SPECIAL_SLOT(models.TextChoices):
         DATABASE = "DB", "Database"
@@ -96,7 +124,7 @@ class BaseNode(BaseModel, PolymorphicModel):
     flow_file = models.ForeignKey(
         FlowFile, on_delete=models.CASCADE, related_name="nodes"
     )
-    position = models.JSONField(default={"x": 0, "y": 0})
+    position = models.JSONField(default=default_position)
 
     @property
     def input_slots(self):
@@ -108,6 +136,14 @@ class BaseNode(BaseModel, PolymorphicModel):
 
     @property
     def special_slots(self):
+        return []
+
+    @property
+    def delayed_output_slots(self):
+        return []
+
+    @property
+    def delayed_special_output_slots(self):
         return []
 
     def execute(self, globals, locals):
@@ -147,6 +183,14 @@ class GenericNode(BaseNode):
         return self.node_class.special_slots
 
     @property
+    def delayed_output_slots(self):
+        return self.node_class.delayed_output_slots
+
+    @property
+    def delayed_special_output_slots(self):
+        return self.node_class.delayed_special_output_slots
+
+    @property
     def node_class_type(self):
         return self.node_class.get_real_instance_class().__name__
 
@@ -173,6 +217,7 @@ class DataNode(BaseNode):
         SET = "SET", "Set"
         TUPLE = "TUPLE", "Tuple"
         DICTIONARY = "DICT", "Dictionary"
+        NONE = "NONE", "None"
 
     value = models.CharField(max_length=255)
     type = models.CharField(choices=DATA_TYPE.choices, max_length=5)
@@ -241,4 +286,4 @@ class Connection(BaseModel):
     # Validate that the target parameter belong to the target node's input slot
 
     class Meta:
-        unique_together = ("source", "target")
+        unique_together = ("source", "target", "source_slot", "target_slot")

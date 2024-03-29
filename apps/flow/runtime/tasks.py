@@ -26,7 +26,6 @@ def execute_node(node):
     if all(param in inputs for param in node.input_slots):
         # execute the node
         outputs = node.execute(globals, inputs)
-        print("outputs:", outputs, node)
 
         # for all output parameters, update the parameter map and submit the child nodes for execution
         source_connections: QuerySet[Connection] = node.source_connections.all()

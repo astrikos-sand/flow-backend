@@ -59,6 +59,7 @@ services:
     image: astrikos_celery
     env_file: .env
     networks:
+      - db
       - broker
     healthcheck:
       test: ["CMD", "celery", "-A", "config", "inspect","ping"]

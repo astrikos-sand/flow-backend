@@ -1,9 +1,5 @@
 from django.urls import path, include
-from apps.flow.views import (
-    router,
-    SaveAPIView,
-    SaveCodeFileAPIView
-)
+from apps.flow.views import router, SaveAPIView, SaveCodeFileAPIView
 
 urlpatterns = [
     path("", include(router.urls)),

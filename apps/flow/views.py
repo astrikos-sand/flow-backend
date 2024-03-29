@@ -13,12 +13,14 @@ from apps.flow.models import (
     FlowFile,
     GenericNodeClass,
 )
+
 from apps.flow.serializers import (
     BaseNodeSerializer,
     BaseNodeClassSerializer,
     FlowFileSerializer,
-    SlotSerializer
+    SlotSerializer,
 )
+
 from apps.flow.runtime.worker import submit_task
 from .serializers import ConnectionSerializer
 
@@ -133,20 +135,21 @@ class SaveCodeFileAPIView(APIView):
             name = request.data.get("name")
             description = request.data.get("description")
             code_file = request.FILES.get("code_file")
-            print(request.data)
             slots_data = json.loads(request.data.get("slots", []))
-            print(slots_data)
+
             if not name:
                 return Response(
                     {"error": "Name is required"}, status=status.HTTP_400_BAD_REQUEST
                 )
             if not code_file:
                 return Response(
-                    {"error": "Code file is required"}, status=status.HTTP_400_BAD_REQUEST
+                    {"error": "Code file is required"},
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
             if not slots_data:
                 return Response(
-                    {"error": "Slots data is required"}, status=status.HTTP_400_BAD_REQUEST
+                    {"error": "Slots data is required"},
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
 
             node_class = GenericNodeClass.objects.create(
@@ -154,9 +157,10 @@ class SaveCodeFileAPIView(APIView):
             )
 
             for slot_data in slots_data:
+                slot_data["node_class"] = node_class.id
                 slot_serializer = SlotSerializer(data=slot_data)
                 if slot_serializer.is_valid():
-                    slot_serializer.save(node_class=node_class)
+                    slot_serializer.save()
                 else:
                     node_class.delete()
                     return Response(
@@ -169,6 +173,7 @@ class SaveCodeFileAPIView(APIView):
             )
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
 router = DefaultRouter()
 router.register(r"nodes", BaseNodeViewSet, basename="node")

@@ -43,6 +43,8 @@ class GenericNodeSerializer(serializers.ModelSerializer):
     node_class_name = serializers.ReadOnlyField(read_only=True)
     input_slots = serializers.ReadOnlyField(read_only=True)
     output_slots = serializers.ReadOnlyField(read_only=True)
+    delayed_output_slots = serializers.ReadOnlyField(read_only=True)
+    delayed_special_output_slots = serializers.ReadOnlyField(read_only=True)
     special_slots = serializers.ReadOnlyField(read_only=True)
     code = serializers.FileField(read_only=True)
     source_connections = ConnectionSerializer(many=True)
@@ -56,28 +58,31 @@ class GenericNodeSerializer(serializers.ModelSerializer):
             "input_slots",
             "output_slots",
             "special_slots",
+            "delayed_output_slots",
+            "delayed_special_output_slots",
             "node_class_type",
             "node_class_name",
             "source_connections",
             "target_connections",
             "code",
             "flow_file",
-            "position"
+            "position",
         )
 
     def create(self, validated_data):
-        source_connections_data = validated_data.pop('source_connections', [])
-        target_connections_data = validated_data.pop('target_connections', [])
-        
+        source_connections_data = validated_data.pop("source_connections", [])
+        target_connections_data = validated_data.pop("target_connections", [])
+
         generic_node = GenericNode.objects.create(**validated_data)
 
         for connection_data in source_connections_data:
             Connection.objects.create(source=generic_node, **connection_data)
-        
+
         for connection_data in target_connections_data:
             Connection.objects.create(target=generic_node, **connection_data)
 
         return generic_node
+
 
 class DataNodeSerializer(serializers.ModelSerializer):
     input_slots = serializers.ReadOnlyField(read_only=True)
@@ -98,22 +103,23 @@ class DataNodeSerializer(serializers.ModelSerializer):
             "source_connections",
             "target_connections",
             "flow_file",
-            "position"
+            "position",
         )
 
     def create(self, validated_data):
-        source_connections_data = validated_data.pop('source_connections', [])
-        target_connections_data = validated_data.pop('target_connections', [])
-        
+        source_connections_data = validated_data.pop("source_connections", [])
+        target_connections_data = validated_data.pop("target_connections", [])
+
         data_node = DataNode.objects.create(**validated_data)
 
         for connection_data in source_connections_data:
             Connection.objects.create(source=data_node, **connection_data)
-        
+
         for connection_data in target_connections_data:
             Connection.objects.create(target=data_node, **connection_data)
 
         return data_node
+
 
 class BaseNodeSerializer(PolymorphicSerializer):
     resource_type_field_name = "node_type"
@@ -137,7 +143,17 @@ class SlotSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Slot
-        fields = ("id", "name", "attachment_type")
+        fields = ("id", "name", "attachment_type", "node_class")
+
+    def validate(self, data: dict):
+        node_class = data.get("node_class")
+        attachment_type = data.get("attachment_type")
+        if (
+            attachment_type
+            not in node_class.get_real_instance_class().get_allowed_attachment_types()
+        ):
+            raise serializers.ValidationError("Invalid attachment type")
+        return super().validate(data)
 
 
 class GenericNodeClassSerializer(serializers.ModelSerializer):
@@ -149,12 +165,12 @@ class GenericNodeClassSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "description", "code", "slots")
 
     def create(self, validated_data):
-        print(validated_data)
-        slots_data = validated_data.pop('slots')
+        slots_data = validated_data.pop("slots")
         generic_node_class = GenericNodeClass.objects.create(**validated_data)
         for slot_data in slots_data:
             Slot.objects.create(node_class=generic_node_class, **slot_data)
-        return generic_node_class1
+        return generic_node_class
+
 
 class TriggerNodeClassSerializer(serializers.ModelSerializer):
 
