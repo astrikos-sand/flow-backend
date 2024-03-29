@@ -43,6 +43,8 @@ class GenericNodeSerializer(serializers.ModelSerializer):
     node_class_name = serializers.ReadOnlyField(read_only=True)
     input_slots = serializers.ReadOnlyField(read_only=True)
     output_slots = serializers.ReadOnlyField(read_only=True)
+    delayed_output_slots = serializers.ReadOnlyField(read_only=True)
+    delayed_special_output_slots = serializers.ReadOnlyField(read_only=True)
     special_slots = serializers.ReadOnlyField(read_only=True)
     code = serializers.FileField(read_only=True)
     source_connections = ConnectionSerializer(many=True)
@@ -56,6 +58,8 @@ class GenericNodeSerializer(serializers.ModelSerializer):
             "input_slots",
             "output_slots",
             "special_slots",
+            "delayed_output_slots",
+            "delayed_special_output_slots",
             "node_class_type",
             "node_class_name",
             "source_connections",
@@ -139,7 +143,14 @@ class SlotSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Slot
-        fields = ("id", "name", "attachment_type")
+        fields = ("id", "name", "attachment_type", "node_class")
+        
+    def validate(self, data: dict):
+        node_class = data.get("node_class")
+        attachment_type = data.get("attachment_type")
+        if attachment_type not in node_class.get_real_instance_class().get_allowed_attachment_types():
+            raise serializers.ValidationError("Invalid attachment type")
+        return super().validate(data)
 
 
 class GenericNodeClassSerializer(serializers.ModelSerializer):

@@ -1,9 +1,11 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 
 from timezone_field import TimeZoneField
 from django_celery_beat import validators
-from django_celery_beat.models import crontab_schedule_celery_timezone
+from django_celery_beat.models import crontab_schedule_celery_timezone, PeriodicTask
 from datetime import timedelta
 
 from apps.common.models import BaseModel
@@ -30,6 +32,8 @@ class PeriodicTrigger(Trigger):
     scheduler_type = models.CharField(
         choices=SCHDULER_TYPE.choices, default=SCHDULER_TYPE.INTERVAL, max_length=10
     )
+    
+    task = models.OneToOneField(PeriodicTask, on_delete=models.CASCADE, null=True, blank=True)
 
     # interval scheduler
     duration = models.DurationField(
@@ -39,6 +43,8 @@ class PeriodicTrigger(Trigger):
     # crontab scheduler
     minute = models.CharField(
         max_length=60 * 4,
+        null=True,
+        blank=True,
         default="*",
         verbose_name=_("Minute(s)"),
         help_text=_('Cron Minutes to Run. Use "*" for "all". (Example: "0,30")'),
@@ -48,6 +54,8 @@ class PeriodicTrigger(Trigger):
     hour = models.CharField(
         max_length=24 * 4,
         default="*",
+        null=True,
+        blank=True,
         verbose_name=_("Hour(s)"),
         help_text=_('Cron Hours to Run. Use "*" for "all". (Example: "8,20")'),
         validators=[validators.hour_validator],
@@ -56,6 +64,8 @@ class PeriodicTrigger(Trigger):
     day_of_month = models.CharField(
         max_length=31 * 4,
         default="*",
+        null=True,
+        blank=True,
         verbose_name=_("Day(s) Of The Month"),
         help_text=_(
             'Cron Days Of The Month to Run. Use "*" for "all". ' '(Example: "1,15")'
@@ -66,6 +76,8 @@ class PeriodicTrigger(Trigger):
     month_of_year = models.CharField(
         max_length=64,
         default="*",
+        null=True,
+        blank=True,
         verbose_name=_("Month(s) Of The Year"),
         help_text=_(
             'Cron Months (1-12) Of The Year to Run. Use "*" for "all". '
@@ -77,6 +89,8 @@ class PeriodicTrigger(Trigger):
     day_of_week = models.CharField(
         max_length=64,
         default="*",
+        null=True,
+        blank=True,
         verbose_name=_("Day(s) Of The Week"),
         help_text=_(
             'Cron Days Of The Week to Run. Use "*" for "all", Sunday '
@@ -88,6 +102,9 @@ class PeriodicTrigger(Trigger):
     timezone = TimeZoneField(
         default=crontab_schedule_celery_timezone,
         use_pytz=False,
+        null=True,
+        blank=True,
         verbose_name=_("Cron Timezone"),
         help_text=_("Timezone to Run the Cron Schedule on. Default is UTC."),
     )
+

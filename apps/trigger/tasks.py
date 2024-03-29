@@ -1,6 +1,7 @@
 from apps.flow.models import BaseNode
 from apps.flow.serializers import BaseNodeSerializer
 from apps.flow.runtime.worker import submit_task, SUBMIT_TASK_TYPE
+from celery import shared_task
 
 
 def create_nodes(node: BaseNode, nodes_list: list):
@@ -10,13 +11,10 @@ def create_nodes(node: BaseNode, nodes_list: list):
         create_nodes(target_node, nodes_list)
 
 
-def period_task(node, context):
-    nodes_list = []
-    node = node.get_real_instance()
-    create_nodes(node=node, nodes_list=nodes_list)
-    nodes_data = BaseNodeSerializer(nodes_list, many=True, context=context).data
+@shared_task
+def periodic_task(node_id, node_list):
     return submit_task(
-        nodes=nodes_data, type=SUBMIT_TASK_TYPE.TRIGGERED, trigger_node=node.id
+        nodes=node_list, type=SUBMIT_TASK_TYPE.TRIGGERED, trigger_node=node_id
     )
 
 
