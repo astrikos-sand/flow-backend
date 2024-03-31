@@ -78,12 +78,11 @@ class TaskViewSet(ViewSet):
         ).data
         try:
             response = submit_task(nodes_data)
+            return Response(response, status=status.HTTP_200_OK)
         except Exception as e:
             response = {"error": str(e)}
             print({"error": str(e)})
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
-
-        return Response(response, status=status.HTTP_200_OK)
 
 
 class SaveAPIView(APIView):
