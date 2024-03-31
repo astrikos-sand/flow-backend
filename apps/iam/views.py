@@ -79,7 +79,9 @@ class LoginViewSet(ViewSet):
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
         login(request, user)
-        return Response(status=status.HTTP_200_OK)
+
+        data = IAMUserSerialzier(user).data
+        return Response(data, status=status.HTTP_200_OK)
 
 
 router = DefaultRouter()

@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ViewSet
 from rest_framework.routers import DefaultRouter
 from rest_framework.views import APIView
+from rest_framework.decorators import action
 
 from apps.flow.models import (
     BaseNode,
@@ -22,7 +23,8 @@ from apps.flow.serializers import (
 )
 
 from apps.flow.runtime.worker import submit_task
-from .serializers import ConnectionSerializer
+from apps.flow.serializers import ConnectionSerializer
+from apps.common.permission import IsSuperUser
 
 
 class BaseNodeViewSet(ModelViewSet):
@@ -48,6 +50,17 @@ class BaseNodeClassViewSet(ModelViewSet):
 class FlowFileViewSet(ModelViewSet):
     queryset = FlowFile.objects.all()
     serializer_class = FlowFileSerializer
+    permission_classes = (IsSuperUser,)
+
+    @action(
+        detail=False,
+        methods=["POST"],
+    )
+    def create_file(self, request):
+        name = request.data.get("name", None)
+        desc = request.data.get("description", None)
+        FlowFile.objects.create(name=name, description=desc)
+        return Response(status=status.HTTP_201_CREATED)
 
 
 class TaskViewSet(ViewSet):
