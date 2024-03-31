@@ -9,10 +9,4 @@ class Migration(migrations.Migration):
         ("flow", "0003_slot_speciality"),
     ]
 
-    operations = [
-        migrations.AddField(
-            model_name="basenode",
-            name="position",
-            field=models.JSONField(default={"x": 0, "y": 0}),
-        ),
-    ]
+    operations = []

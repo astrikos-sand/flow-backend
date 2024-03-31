@@ -32,7 +32,7 @@ down:
 	docker compose down
 
 black:
-	docker exec -it astrikos_backend black --exclude '^.+/migrations/[^/]+.py' .
+	docker exec -it astrikos_backend black --exclude '^.+/migrations/[^/]+.py' --exclude 'media/' .
 
 broker-shell:
 	docker exec -it astrikos_broker bash
