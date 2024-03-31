@@ -47,12 +47,41 @@ class ResourceGroup(NS_Node, BaseModel):
 
     @property
     def data(self) -> dict:
-        query = f'from(bucket: "{const.INFLUXDB_BUCKET}") |> range(start: -1h) |> filter(fn: (r) => r["_measurement"] == "{self.id}")'
-        result = influx.get_data(query)
-        return result
+        measurement_name = self.path
+        query = f'from(bucket: "{const.INFLUXDB_BUCKET}") |> range(start: -100h) |> filter(fn: (r) => r["_measurement"] == "{measurement_name}")'
+        data = influx.get_data(query)
+        transformed_data = {}
+        for entry in data:
+            measurement = entry["_measurement"]
+            kpi = entry["_field"]
+            values = entry["_value"]
+            time = entry["_time"]
+
+            if measurement not in transformed_data:
+                transformed_data[measurement] = {
+                    "measurement": measurement,
+                    "kpi": kpi,
+                    "values": [],
+                    "time": [],
+                }
+            transformed_data[measurement]["values"].append(values)
+            transformed_data[measurement]["time"].append(time)
+
+        transformed_data_list = list(transformed_data.values())
+        return transformed_data_list
 
     def store_data(self, data: dict) -> None:
-        influx.write({"measurement": self.id, "value": json.dumps(data)})
+
+        for kpi_data in data.get("kpis", []):
+            for value, time in zip(kpi_data["values"], kpi_data["time"]):
+                data_point = {
+                    "measurement": self.path,
+                    "kpi": kpi_data["kpi"],
+                    "value": value,
+                    "time": time,
+                }
+                print(data_point)
+                influx.write(data_point)
 
     def check_permission(
         self, action: "ResourcePermission.Action", user: "IAMUser"
