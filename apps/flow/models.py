@@ -61,6 +61,22 @@ class BaseNodeClass(BaseModel, PolymorphicModel):
         )
 
     @property
+    def special_input_slots(self):
+        return list(
+            self.slots.filter(attachment_type=Slot.ATTACHMENT_TYPE.INPUT)
+            .exclude(speciality=Slot.SPECIAL_SLOT.NONE)
+            .values_list("name", flat=True)
+        )
+
+    @property
+    def special_output_slots(self):
+        return list(
+            self.slots.filter(attachment_type=Slot.ATTACHMENT_TYPE.OUTPUT)
+            .exclude(speciality=Slot.SPECIAL_SLOT.NONE)
+            .values_list("name", flat=True)
+        )
+
+    @property
     def delayed_special_output_slots(self):
         return list(
             self.slots.filter(attachment_type=Slot.ATTACHMENT_TYPE.DELAYED_OUTPUT)
@@ -136,6 +152,14 @@ class BaseNode(BaseModel, PolymorphicModel):
 
     @property
     def special_slots(self):
+        return []
+
+    @property
+    def special_input_slots(self):
+        return []
+
+    @property
+    def special_output_slots(self):
         return []
 
     @property
