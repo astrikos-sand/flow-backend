@@ -55,9 +55,9 @@ class BaseNodeClass(BaseModel, PolymorphicModel):
     @property
     def special_slots(self):
         return list(
-            self.slots.exclude(speciality=Slot.SPECIAL_SLOT.NONE).values(
-                "name", "speciality", "attachment_type"
-            )
+            self.slots.exclude(speciality=Slot.SPECIAL_SLOT.NONE)
+            .exclude(attachment_type=Slot.ATTACHMENT_TYPE.DELAYED_OUTPUT)
+            .values("name", "speciality", "attachment_type")
         )
 
     @property
@@ -205,6 +205,14 @@ class GenericNode(BaseNode):
     @property
     def special_slots(self):
         return self.node_class.special_slots
+
+    @property
+    def special_input_slots(self):
+        return self.node_class.special_input_slots
+
+    @property
+    def special_output_slots(self):
+        return self.node_class.special_output_slots
 
     @property
     def delayed_output_slots(self):
