@@ -83,12 +83,7 @@ class ResourceViewSet(ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         for instance in serializer.data:
             instance_obj = ResourceGroup.objects.get(id=instance["id"])
-            print(instance_obj.data)
-            instance["data"] = (
-                json.loads(instance_obj.data[0]["_value"])
-                if instance_obj.data
-                else None
-            )
+            instance["data"] = instance_obj.data
         return Response(serializer.data)
 
 

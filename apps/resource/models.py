@@ -47,12 +47,36 @@ class ResourceGroup(NS_Node, BaseModel):
 
     @property
     def data(self) -> dict:
-        query = f'from(bucket: "{const.INFLUXDB_BUCKET}") |> range(start: -1h) |> filter(fn: (r) => r["_measurement"] == "{self.id}")'
-        result = influx.get_data(query)
-        return result
+        measurement_name = self.path
+        query = f'from(bucket: "{const.INFLUXDB_BUCKET}") |> range(start: -100h) |> filter(fn: (r) => r["_measurement"] == "{measurement_name}")'
+        data = influx.get_data(query)
+        transformed_data = {}
+        for entry in data:
+            measurement = entry["_measurement"]
+            kpi = entry["_field"]
+            value = entry["_value"]
+            time = entry["_time"]
+
+            if measurement not in transformed_data:
+                transformed_data[measurement] = {
+                    "measurement": measurement,
+                    "kpi": kpi,
+                    "value": value,
+                    "time": time,
+                }
+
+        transformed_data_list = list(transformed_data.values())
+        return transformed_data_list
 
     def store_data(self, data: dict) -> None:
-        influx.write({"measurement": self.id, "value": json.dumps(data)})
+        for kpi_data in data.get("kpis", []):
+            data_point = {
+                "measurement": self.path,
+                "kpi": kpi_data["kpi"],
+                "value": kpi_data["value"],
+                "time": kpi_data["time"],
+            }
+            influx.write(data_point)
 
     def check_permission(
         self, action: "ResourcePermission.Action", user: "IAMUser"

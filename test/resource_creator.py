@@ -1,6 +1,14 @@
 def fun(db):
     model = db.model("resources")
-    data = {"name": "testing", "resource_type": "test", "data": {"key": "value"}}
+    data = {"name": "mdg123", "resource_type": "test", "data": {
+        "kpis": [
+            {
+                "kpi": "kpi1",
+                "value": 10,
+                "time": "2020-01-01T00:00:00Z",
+            }
+        ]
+    }}
     response = model.insert(data)
     return response
 

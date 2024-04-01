@@ -16,12 +16,17 @@ class InfluxDB:
 
     def write(self, data: dict) -> None:
         write_api = self.client.write_api(write_options=SYNCHRONOUS)
-        record = influxdb_client.Point(data["measurement"]).field(
-            "value", data["value"]
+        record = (
+            influxdb_client.Point(data["measurement"])
+            .field(data["kpi"], data["value"])
+            .time(data["time"])
         )
-        write_api.write(
-            bucket=const.INFLUXDB_BUCKET, org=const.INFLUXDB_ORG, record=record
-        )
+        try:
+            write_api.write(
+                bucket=const.INFLUXDB_BUCKET, org=const.INFLUXDB_ORG, record=record
+            )
+        except Exception as e:
+            print(e, flush=True)
         write_api.__del__()
 
     def get_data(self, query: str) -> list:
