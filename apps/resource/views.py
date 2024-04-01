@@ -14,12 +14,7 @@ from apps.resource.serializers import (
 )
 from apps.common.permission import IsSuperUser
 from apps.resource.utils import get_action
-from rest_framework.views import APIView
 
-from config import const
-from influx.connect import InfluxDB
-
-influxdb = InfluxDB()
 
 class ResourceViewSet(ModelViewSet):
     serializer_class = ResourceGroupSerializer
@@ -88,7 +83,7 @@ class ResourceViewSet(ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         for instance in serializer.data:
             instance_obj = ResourceGroup.objects.get(id=instance["id"])
-            instance["data"] = (instance_obj.data)
+            instance["data"] = instance_obj.data
         return Response(serializer.data)
 
 

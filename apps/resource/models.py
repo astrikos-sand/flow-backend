@@ -54,34 +54,29 @@ class ResourceGroup(NS_Node, BaseModel):
         for entry in data:
             measurement = entry["_measurement"]
             kpi = entry["_field"]
-            values = entry["_value"]
+            value = entry["_value"]
             time = entry["_time"]
 
             if measurement not in transformed_data:
                 transformed_data[measurement] = {
                     "measurement": measurement,
                     "kpi": kpi,
-                    "values": [],
-                    "time": [],
+                    "value": value,
+                    "time": time,
                 }
-            transformed_data[measurement]["values"].append(values)
-            transformed_data[measurement]["time"].append(time)
 
         transformed_data_list = list(transformed_data.values())
         return transformed_data_list
 
     def store_data(self, data: dict) -> None:
-
         for kpi_data in data.get("kpis", []):
-            for value, time in zip(kpi_data["values"], kpi_data["time"]):
-                data_point = {
-                    "measurement": self.path,
-                    "kpi": kpi_data["kpi"],
-                    "value": value,
-                    "time": time,
-                }
-                print(data_point)
-                influx.write(data_point)
+            data_point = {
+                "measurement": self.path,
+                "kpi": kpi_data["kpi"],
+                "value": kpi_data["value"],
+                "time": kpi_data["time"],
+            }
+            influx.write(data_point)
 
     def check_permission(
         self, action: "ResourcePermission.Action", user: "IAMUser"
