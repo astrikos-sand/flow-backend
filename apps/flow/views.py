@@ -127,7 +127,6 @@ class SaveAPIView(APIView):
         received_nodes = received_data.get("nodes", [])
 
         updated_nodes = []
-        saved_connections = []
         for node_data in received_nodes:
             node_id = node_data.get("id")
             try:
@@ -143,14 +142,25 @@ class SaveAPIView(APIView):
         existing_connections = Connection.objects.filter(
             source__id__in=current_node_ids, target__id__in=current_node_ids
         )
-        connections_to_delete = []
 
-        for existing_connection in existing_connections:
-            if not any(
-                existing_connection.id == conn.get("id")
-                for conn in incoming_connections
-            ):
-                connections_to_delete.append(existing_connection.id)
+        connections_to_delete = []
+        connections_to_create = incoming_connections.copy()
+
+        for exist_conn in existing_connections:
+            exist = False
+            for incoming_conn in incoming_connections:
+                if (
+                    str(exist_conn.source.id) == incoming_conn["source"]
+                    and str(exist_conn.target.id) == incoming_conn["target"]
+                    and exist_conn.source_slot == incoming_conn["source_slot"]
+                    and exist_conn.target_slot == incoming_conn["target_slot"]
+                ):
+                    connections_to_create.remove(incoming_conn)
+                    exist = True
+                    break
+
+            if not exist:
+                connections_to_delete.append(exist_conn.id)
 
         if connections_to_delete:
             Connection.objects.filter(id__in=connections_to_delete).delete()
@@ -161,12 +171,13 @@ class SaveAPIView(APIView):
         for node_to_delete in nodes_to_delete:
             node_to_delete.delete()
 
-        serializer = ConnectionSerializer(data=incoming_connections, many=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if connections_to_create:
+            serializer = ConnectionSerializer(data=connections_to_create, many=True)
+            if serializer.is_valid():
+                serializer.save()
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_200_OK)
 
 
 class SaveCodeFileAPIView(APIView):
