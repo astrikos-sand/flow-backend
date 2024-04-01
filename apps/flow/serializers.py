@@ -31,8 +31,14 @@ class ConnectionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("source and target can't be same")
 
         if (
-            source_slot not in source.get_real_instance().output_slots
-            and source_slot not in source.get_real_instance().special_output_slots
+            source_slot
+            not in source.get_real_instance().output_slots
+            + source.get_real_instance().special_output_slots
+            + source.get_real_instance().delayed_output_slots
+            + [
+                slot["name"]
+                for slot in source.get_real_instance().delayed_special_output_slots
+            ]
         ):
             raise serializers.ValidationError("source slot not found in source node")
 
