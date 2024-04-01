@@ -1,8 +1,19 @@
-def fun(db, id, scheduler_type, duration, minute, hour, day, month, weekday, timezone):
+def fun(
+    db,
+    id,
+    scheduler_type="interval",
+    duration=None,
+    minute=None,
+    hour=None,
+    day=None,
+    month=None,
+    weekday=None,
+    timezone=None,
+):
     model = db.model("periodic-triggers")
     data = {
         "node": id,
-        "scheduler_type": type,
+        "scheduler_type": scheduler_type,
         "duration": duration,
         "minute": minute,
         "hour": hour,

@@ -60,3 +60,6 @@ influxdb-shell:
 
 influxdb-logs:
 	docker logs -f astrikos_influxdb
+
+worker-user:
+	docker exec -it astrikos_backend python3 manage.py createsuperuser --username worker

@@ -10,6 +10,7 @@ from apps.flow.models import (
     FlowFile,
     Slot,
     Connection,
+    NodeResult,
 )
 
 
@@ -29,13 +30,25 @@ class ConnectionSerializer(serializers.ModelSerializer):
         if source.id == target.id:
             raise serializers.ValidationError("source and target can't be same")
 
-        if source_slot not in source.get_real_instance().output_slots:
+        if (
+            source_slot not in source.get_real_instance().output_slots
+            and source_slot not in source.get_real_instance().special_output_slots
+        ):
             raise serializers.ValidationError("source slot not found in source node")
 
-        if target_slot not in target.get_real_instance().input_slots:
+        if (
+            target_slot not in target.get_real_instance().input_slots
+            and target_slot not in target.get_real_instance().special_input_slots
+        ):
             raise serializers.ValidationError("target slot not found in target node")
 
         return super().validate(data)
+
+
+class NodeResultSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NodeResult
+        fields = "__all__"
 
 
 class GenericNodeSerializer(serializers.ModelSerializer):
@@ -49,6 +62,7 @@ class GenericNodeSerializer(serializers.ModelSerializer):
     code = serializers.FileField(read_only=True)
     source_connections = ConnectionSerializer(many=True)
     target_connections = ConnectionSerializer(many=True)
+    results = NodeResultSerializer(read_only=True)
 
     class Meta:
         model = GenericNode
@@ -67,6 +81,7 @@ class GenericNodeSerializer(serializers.ModelSerializer):
             "code",
             "flow_file",
             "position",
+            "results",
         )
 
     def create(self, validated_data):
@@ -90,6 +105,7 @@ class DataNodeSerializer(serializers.ModelSerializer):
     special_slots = serializers.ReadOnlyField(read_only=True)
     source_connections = ConnectionSerializer(many=True)
     target_connections = ConnectionSerializer(many=True)
+    results = NodeResultSerializer(read_only=True)
 
     class Meta:
         model = DataNode
@@ -104,6 +120,7 @@ class DataNodeSerializer(serializers.ModelSerializer):
             "target_connections",
             "flow_file",
             "position",
+            "results",
         )
 
     def create(self, validated_data):
