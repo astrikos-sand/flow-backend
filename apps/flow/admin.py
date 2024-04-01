@@ -16,6 +16,7 @@ from apps.flow.models import (
     GenericNode,
     DataNode,
     Connection,
+    NodeResult,
 )
 
 # Register your models here.
@@ -68,3 +69,6 @@ class BaseNodeAdmin(PolymorphicParentModelAdmin):
     child_models = (GenericNode, DataNode)
     list_filter = (PolymorphicChildModelFilter,)
     child_model_admin = BaseNodeChildAdmin
+
+
+admin.site.register(NodeResult)

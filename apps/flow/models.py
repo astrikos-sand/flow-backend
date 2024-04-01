@@ -311,3 +311,10 @@ class Connection(BaseModel):
 
     class Meta:
         unique_together = ("source", "target", "source_slot", "target_slot")
+
+
+class NodeResult(BaseModel):
+    node = models.OneToOneField(
+        BaseNode, on_delete=models.CASCADE, related_name="results"
+    )
+    value = models.JSONField(null=True)

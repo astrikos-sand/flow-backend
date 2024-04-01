@@ -13,6 +13,7 @@ from apps.flow.models import (
     Connection,
     FlowFile,
     GenericNodeClass,
+    NodeResult,
 )
 
 from apps.flow.serializers import (
@@ -20,6 +21,7 @@ from apps.flow.serializers import (
     BaseNodeClassSerializer,
     FlowFileSerializer,
     SlotSerializer,
+    NodeResultSerializer,
 )
 
 from apps.flow.runtime.worker import submit_task
@@ -78,10 +80,30 @@ class TaskViewSet(ViewSet):
         ).data
         try:
             response = submit_task(nodes_data)
+            results = response.get("outputs", {})
+
+            for node_id in results:
+                res = results[node_id]
+                if "outputs" in res:
+                    data = {
+                        "node": node_id,
+                        "value": json.dumps(res["outputs"]),
+                    }
+                    noderesults = NodeResult.objects.filter(node=node_id)
+                    if noderesults.exists():
+                        serializer = NodeResultSerializer(
+                            noderesults.first(), data=data, partial=True
+                        )
+                        if serializer.is_valid():
+                            serializer.save()
+                    else:
+                        serializer = NodeResultSerializer(data=data)
+                        if serializer.is_valid():
+                            serializer.save()
             return Response(response, status=status.HTTP_200_OK)
         except Exception as e:
             response = {"error": str(e)}
-            print({"error": str(e)})
+            print({"error": str(e)}, flush=True)
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
 
