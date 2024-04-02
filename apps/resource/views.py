@@ -1,5 +1,8 @@
 import json
 import re
+import json
+from rest_framework.response import Response
+from rest_framework import status
 
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
@@ -19,6 +22,7 @@ class ResourceViewSet(ModelViewSet):
     serializer_class = ResourceGroupSerializer
     permission_classes = (IsAuthenticated,)
 
+    # TODO: Optimize the query to get the resources using parent-child relationship
     def get_queryset(self):
         user = self.request.user
         if user.is_superuser:
@@ -34,12 +38,33 @@ class ResourceViewSet(ModelViewSet):
                 and permission.action == action
             ):
                 path = permission.permission_path
-                regex_pattern = re.compile(re.escape(path))
+                regex_pattern = re.compile(path)
                 all_resources = ResourceGroup.objects.all()
                 resources = list(
                     filter(lambda x: regex_pattern.search(x.path), all_resources)
                 )
                 resource_list.extend(resources)
+
+        resources_to_exclude = []
+        for perm in permissions:
+            permission = ResourcePermission.objects.get(pk=perm)
+            if (
+                permission.method == ResourcePermission.Method.DENY
+                and permission.action == action
+            ):
+                path = permission.permission_path
+                regex_pattern = re.compile(path)
+                all_resources = ResourceGroup.objects.all()
+                resources = list(
+                    filter(lambda x: regex_pattern.search(x.path), all_resources)
+                )
+                resources_to_exclude.extend(resources)
+
+        final_resource_list = []
+        for resource in resource_list:
+            if resource not in resources_to_exclude:
+                final_resource_list.append(resource)
+
         return resource_list
 
     def list(self, request, *args, **kwargs):

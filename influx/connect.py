@@ -23,9 +23,12 @@ class InfluxDB:
                 .field(data["kpi"], data["value"])
                 .time(data["time"])
             )
-            write_api.write(
-                bucket=const.INFLUXDB_BUCKET, org=const.INFLUXDB_ORG, record=record
-            )
+            try:
+                write_api.write(
+                    bucket=const.INFLUXDB_BUCKET, org=const.INFLUXDB_ORG, record=record
+                )
+            except Exception as e:
+                print(e, flush=True)
         if data.get("non_timeseries_data"):
             fixed_timestamp = datetime(
                 year=2024, month=4, day=1, hour=0, minute=0, second=0
@@ -39,9 +42,13 @@ class InfluxDB:
                         .field(key, value)
                         .time(fixed_timestamp)
                     )
-                    write_api.write(
-                        bucket=const.INFLUXDB_BUCKET, org=const.INFLUXDB_ORG, record=record
-                    )
+                    try:
+                        write_api.write(
+                            bucket=const.INFLUXDB_BUCKET, org=const.INFLUXDB_ORG, record=record
+                        )
+                    except Exception as e:
+                        print(e, flush=True)
+
         write_api.__del__()
 
     def get_data(self, query: str) -> list:

@@ -21,3 +21,4 @@ media/
 
 # static files
 static/
+venv/
