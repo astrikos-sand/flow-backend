@@ -1,9 +1,11 @@
+from datetime import datetime
 import json
 import re
 
 from django.db import models
 from django.core.validators import RegexValidator
 
+import pytz
 from treebeard.ns_tree import NS_Node
 
 from apps.common.models import BaseModel
@@ -50,28 +52,45 @@ class ResourceGroup(NS_Node, BaseModel):
         measurement_name = self.path
         query = f'from(bucket: "{const.INFLUXDB_BUCKET}") |> range(start: -100h) |> filter(fn: (r) => r["_measurement"] == "{measurement_name}")'
         data = influx.get_data(query)
-        transformed_data = {}
+
+        fixed_timestamp = datetime(
+            year=2024, month=4, day=1, hour=0, minute=0, second=0, tzinfo=pytz.UTC
+        )
+        fixed_time_query = f'from(bucket: "{const.INFLUXDB_BUCKET}") |> range(start: {fixed_timestamp.isoformat()}) |> filter(fn: (r) => r["_measurement"] == "{measurement_name}")'
+        non_timeseries_data = influx.get_data(fixed_time_query)
+
+        transformed_data = {
+            "measurement": measurement_name,
+            "kpis": [],
+        }
+
         for entry in data:
-            measurement = entry["_measurement"]
-            kpi = entry["_field"]
+            kpi_name = entry["_field"]
             values = entry["_value"]
             time = entry["_time"]
 
-            if measurement not in transformed_data:
-                transformed_data[measurement] = {
-                    "measurement": measurement,
-                    "kpi": kpi,
-                    "values": [],
-                    "time": [],
+            transformed_data["kpis"].append(
+                {
+                    "kpi": kpi_name,
+                    "values": values,
+                    "time": time,
                 }
-            transformed_data[measurement]["values"].append(values)
-            transformed_data[measurement]["time"].append(time)
+            )
 
-        transformed_data_list = list(transformed_data.values())
-        return transformed_data_list
+        for entry in non_timeseries_data:
+            kpi_name = entry["_field"]
+            values = entry["_value"]
+
+            transformed_data[kpi_name] = values
+
+        return transformed_data
 
     def store_data(self, data: dict) -> None:
-
+        non_timeseries_data = [
+            {key: value}
+            for key, value in data.items()
+            if key not in ["measurement", "kpis"]
+        ]
         for kpi_data in data.get("kpis", []):
             for value, time in zip(kpi_data["values"], kpi_data["time"]):
                 data_point = {
@@ -82,6 +101,13 @@ class ResourceGroup(NS_Node, BaseModel):
                 }
                 print(data_point)
                 influx.write(data_point)
+        if non_timeseries_data:
+            influx.write(
+                {
+                    "measurement": self.path,
+                    "non_timeseries_data": non_timeseries_data,
+                }
+            )
 
     def check_permission(
         self, action: "ResourcePermission.Action", user: "IAMUser"

@@ -1,5 +1,7 @@
+from datetime import datetime
 import re
 import json
+import pytz
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -88,7 +90,7 @@ class ResourceViewSet(ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         for instance in serializer.data:
             instance_obj = ResourceGroup.objects.get(id=instance["id"])
-            instance["data"] = (instance_obj.data)
+            instance["data"] = instance_obj.data
         return Response(serializer.data)
 
 
@@ -97,6 +99,97 @@ class ResourcePermissionViewSet(ModelViewSet):
     serializer_class = ResourcePermissionSerializer
     permission_classes = (IsSuperUser,)
 
+
+class InfluxStorage(APIView):
+    def post(self, request, format=None):
+        try:
+            data = request.data
+            measurement = data["measurement"]
+            non_timeseries_data = [
+                {key: value}
+                for key, value in data.items()
+                if key not in ["measurement", "kpis"]
+            ]
+            kpis = data.get("kpis", [])
+            print(kpis, non_timeseries_data)
+            if not isinstance(kpis, list):
+                raise ValueError("kpis should be a list of dictionaries")
+
+            for kpi_data in kpis:
+                kpi = kpi_data.get("kpi")
+                values = kpi_data.get("values")
+                times = kpi_data.get("time")
+
+                if not all([kpi, values, times]):
+                    raise ValueError(
+                        "Each kpi entry should have 'kpi', 'values', and 'time' keys."
+                    )
+
+                if len(values) != len(times):
+                    raise ValueError(
+                        "Lengths of 'values' and 'time' lists should be the same."
+                    )
+                print('hehe1')
+                for value, time in zip(values, times):
+                    data_point = {
+                        "measurement": measurement,
+                        "kpi": kpi,
+                        "value": value,
+                        "time": time,
+                    }
+                    print('hehe2', data_point)
+                    influxdb.write(data_point)
+
+            if non_timeseries_data:
+                influxdb.write(
+                    {
+                        "measurement": measurement,
+                        "non_timeseries_data": non_timeseries_data,
+                    }
+                )
+
+            return Response(
+                {"message": "Data stored successfully"}, status=status.HTTP_201_CREATED
+            )
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request, format=None):
+        try:
+            measurement_name = request.data.get("measurement", "huihui")
+            time = request.data.get("time", "100h")
+            query = f'from(bucket: "{const.INFLUXDB_BUCKET}") |> range(start: -{time}) |> filter(fn: (r) => r["_measurement"] == "{measurement_name}")'
+            data = influxdb.get_data(query)
+
+            fixed_timestamp = datetime(year=2024, month=4, day=1, hour=0, minute=0, second=0, tzinfo=pytz.UTC)
+            fixed_time_query = f'from(bucket: "{const.INFLUXDB_BUCKET}") |> range(start: {fixed_timestamp.isoformat()}) |> filter(fn: (r) => r["_measurement"] == "{measurement_name}")'
+            non_timeseries_data = influxdb.get_data(fixed_time_query)
+
+            transformed_data = {
+                "measurement": measurement_name,
+                "kpis": [],
+            }
+
+            for entry in data:
+                kpi_name = entry["_field"]
+                values = entry["_value"]
+                time = entry["_time"]
+
+                transformed_data["kpis"].append({
+                    "kpi": kpi_name,
+                    "values": values,
+                    "time": time,
+                })
+            
+            for entry in non_timeseries_data:
+                kpi_name = entry["_field"]
+                values = entry["_value"]
+
+                transformed_data[kpi_name]=values
+
+            return Response(transformed_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 router = DefaultRouter()
 router.register(r"resources", ResourceViewSet, basename="resource")
