@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models import Max, F
+import json
 
 from polymorphic.models import PolymorphicModel
 
@@ -170,6 +172,16 @@ class BaseNode(BaseModel, PolymorphicModel):
     def delayed_special_output_slots(self):
         return []
 
+    @property
+    def outputs(self):
+        outputs = self.results.first().outputs
+        return outputs
+
+    @property
+    def inputs(self):
+        inputs = self.results.first().inputs
+        return inputs
+
     def execute(self, globals, locals):
         return locals
 
@@ -322,7 +334,6 @@ class Connection(BaseModel):
 
 
 class NodeResult(BaseModel):
-    node = models.OneToOneField(
-        BaseNode, on_delete=models.CASCADE, related_name="results"
-    )
-    value = models.JSONField(null=True)
+    node = models.ForeignKey(BaseNode, on_delete=models.CASCADE, related_name="results")
+    outputs = models.JSONField(null=True, blank=True, default=dict)
+    inputs = models.JSONField(null=True, blank=True, default=dict)

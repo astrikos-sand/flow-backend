@@ -43,7 +43,6 @@ class PeriodicTriggerSerializer(serializers.ModelSerializer):
         return value
 
     def validate_timezone(self, value):
-        print("timzone value", value, flush=True)
         return self._validate_nullable_choice_field(
             value, self.fields["timezone"].choices, self.fields["timezone"].default
         )
@@ -70,18 +69,7 @@ class PeriodicTriggerSerializer(serializers.ModelSerializer):
 
         task_name = f"{node.flow_file.name} - {node.id}"
         task = "apps.trigger.tasks.periodic_task"
-
         node_id = node.id
-        nodes_list = []
-        delayed_slots = node.delayed_output_slots + [slot.get("name") for slot in node.delayed_special_output_slots]
-        nodes_list.append(node)
-        # only append nodes connected to delayed output slots
-        for connection in node.source_connections.all():
-            source_slot = connection.source_slot
-            if source_slot in delayed_slots:
-                create_nodes(connection.target.get_real_instance(), nodes_list)
-        nodes_list = list(set(nodes_list))
-        nodes_list = BaseNodeSerializer(nodes_list, many=True, context=self.context).data
 
         if scheduler_type == PeriodicTrigger.SCHDULER_TYPE.INTERVAL:
             task_interval, created = IntervalSchedule.objects.get_or_create(
@@ -92,9 +80,7 @@ class PeriodicTriggerSerializer(serializers.ModelSerializer):
                 interval=task_interval,
                 name=task_name,
                 task=task,
-                kwargs=json.dumps(
-                    {"node_id": node.id, "node_list": nodes_list}, cls=DjangoJSONEncoder
-                ),
+                kwargs=json.dumps({"node_id": node.id}, cls=DjangoJSONEncoder),
             )
         elif scheduler_type == PeriodicTrigger.SCHDULER_TYPE.CRONTAB:
             task_schedule, _ = CrontabSchedule.objects.get_or_create(
@@ -110,9 +96,7 @@ class PeriodicTriggerSerializer(serializers.ModelSerializer):
                 crontab=task_schedule,
                 name=task_name,
                 task=task,
-                kwargs=json.dumps(
-                    {"node_id": node_id, "node_list": nodes_list}, cls=DjangoJSONEncoder
-                ),
+                kwargs=json.dumps({"node_id": node_id}, cls=DjangoJSONEncoder),
             )
 
         scheduler: PeriodicTrigger = PeriodicTrigger.objects.create(

@@ -39,7 +39,6 @@ class PeriodicTriggerViewSet(ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         instance.task.delete()
-        print("deleted task, instance will be automatcally deleted by cascade")
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

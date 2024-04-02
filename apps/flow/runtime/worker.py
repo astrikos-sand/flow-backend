@@ -6,6 +6,8 @@ from strenum import StrEnum
 from config.const import WORKER_URL
 from django.core.serializers.json import DjangoJSONEncoder
 
+from apps.flow.serializers import NodeResultSerializer
+
 
 # type = "Normal" | "Triggered"
 
@@ -32,3 +34,16 @@ def submit_task(
     )
     response.raise_for_status()
     return response.json()
+
+
+def save_results(results: dict):
+    for node_id in results:
+        res = results[node_id]
+        data = {
+            "node": node_id,
+            "outputs": res.get("outputs", {}),
+            "inputs": res.get("inputs", {}),
+        }
+        serializer = NodeResultSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
