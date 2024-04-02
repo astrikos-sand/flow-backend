@@ -2,9 +2,11 @@ import re
 import json
 from rest_framework.response import Response
 
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, ViewSet
 from rest_framework.routers import DefaultRouter
 from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
+from rest_framework.decorators import action
 
 from apps.resource.models import ResourceGroup, ResourcePermission
 from apps.resource.serializers import (
@@ -93,6 +95,21 @@ class ResourcePermissionViewSet(ModelViewSet):
     permission_classes = (IsSuperUser,)
 
 
+class KPIViewSet(ViewSet):
+    permission_classes = (IsAuthenticated,)
+
+    @action(
+        detail=True,
+        methods=["Patch"],
+    )
+    def update_data(self, request, pk=None):
+        new_data = request.data
+        resource = ResourceGroup.objects.get(id=pk)
+        resource.store_data(new_data)
+        return Response(status=status.HTTP_200_OK)
+
+
 router = DefaultRouter()
 router.register(r"resources", ResourceViewSet, basename="resource")
 router.register(r"permissions", ResourcePermissionViewSet, basename="permission")
+router.register(r"kpi", KPIViewSet, basename="kpi")
