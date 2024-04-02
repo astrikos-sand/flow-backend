@@ -5,4 +5,4 @@ def fun(db, id):
     return response
 
 
-result = fun(db, id)
+response = fun(db, id)

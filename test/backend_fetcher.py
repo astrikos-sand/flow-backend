@@ -3,4 +3,4 @@ def fun(backend):
     return response
 
 
-result = fun(backend)
+response = fun(backend)

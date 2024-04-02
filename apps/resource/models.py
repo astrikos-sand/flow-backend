@@ -1,11 +1,8 @@
-from datetime import datetime
-import json
 import re
 
 from django.db import models
 from django.core.validators import RegexValidator
 
-import pytz
 from treebeard.ns_tree import NS_Node
 
 from apps.common.models import BaseModel
@@ -49,14 +46,8 @@ class ResourceGroup(NS_Node, BaseModel):
 
     @property
     def data(self) -> dict:
-        measurement_name = self.path
-        query = f'from(bucket: "{const.INFLUXDB_BUCKET}") |> range(start: -100h) |> filter(fn: (r) => r["_measurement"] == "{measurement_name}")'
-        data = influx.get_data(query)
-
-        fixed_timestamp = datetime(
-            year=2024, month=4, day=1, hour=0, minute=0, second=0, tzinfo=pytz.UTC
-        )
-        fixed_time_query = f'from(bucket: "{const.INFLUXDB_BUCKET}") |> range(start: {fixed_timestamp.isoformat()}) |> filter(fn: (r) => r["_measurement"] == "{measurement_name}")'
+        measurement_name = self.id
+        fixed_time_query = f'from(bucket: "{const.INFLUXDB_BUCKET}") |> range(start: {influx.fixed_timestamp_start}, stop: {influx.fixed_timestamp_stop}) |> filter(fn: (r) => r["_measurement"] == "{measurement_name}")'
         non_timeseries_data = influx.get_data(fixed_time_query)
 
         transformed_data = {
@@ -64,47 +55,55 @@ class ResourceGroup(NS_Node, BaseModel):
             "kpis": [],
         }
 
+        for entry in non_timeseries_data:
+            kpi_name = entry["_field"]
+            value = entry["_value"]
+
+            transformed_data[kpi_name] = value
+
+        start_time = (
+            transformed_data["start_time"]
+            if "start_time" in transformed_data
+            else "-1h"
+        )
+        query = f'from(bucket: "{const.INFLUXDB_BUCKET}") |> range(start: {start_time}) |> filter(fn: (r) => r["_measurement"] == "{measurement_name}")'
+        data = influx.get_data(query)
+
         for entry in data:
             kpi_name = entry["_field"]
-            values = entry["_value"]
+            value = entry["_value"]
             time = entry["_time"]
 
             transformed_data["kpis"].append(
                 {
                     "kpi": kpi_name,
-                    "values": values,
+                    "values": value,
                     "time": time,
                 }
             )
 
-        for entry in non_timeseries_data:
-            kpi_name = entry["_field"]
-            values = entry["_value"]
-
-            transformed_data[kpi_name] = values
-
         return transformed_data
 
     def store_data(self, data: dict) -> None:
-        non_timeseries_data = [
-            {key: value}
-            for key, value in data.items()
-            if key not in ["measurement", "kpis"]
-        ]
+        non_timeseries_data = {}
+
+        for key, value in data.items():
+            if key != "kpis":
+                non_timeseries_data[key] = value
+
         for kpi_data in data.get("kpis", []):
-            for value, time in zip(kpi_data["values"], kpi_data["time"]):
-                data_point = {
-                    "measurement": self.path,
-                    "kpi": kpi_data["kpi"],
-                    "value": value,
-                    "time": time,
-                }
-                print(data_point)
-                influx.write(data_point)
+            data_point = {
+                "measurement": self.id,
+                "kpi": kpi_data["kpi"],
+                "value": kpi_data["value"],
+                "time": kpi_data["time"],
+            }
+            influx.write(data_point)
+
         if non_timeseries_data:
             influx.write(
                 {
-                    "measurement": self.path,
+                    "measurement": self.id,
                     "non_timeseries_data": non_timeseries_data,
                 }
             )
