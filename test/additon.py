@@ -1,5 +1,6 @@
 def fun(a, b):
-    return a + b
+    result = a + b
+    return result
 
 
 result = fun(a, b)

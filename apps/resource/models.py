@@ -1,4 +1,3 @@
-import json
 import re
 
 from django.db import models
@@ -47,36 +46,67 @@ class ResourceGroup(NS_Node, BaseModel):
 
     @property
     def data(self) -> dict:
-        measurement_name = self.path
-        query = f'from(bucket: "{const.INFLUXDB_BUCKET}") |> range(start: -100h) |> filter(fn: (r) => r["_measurement"] == "{measurement_name}")'
+        measurement_name = self.id
+        fixed_time_query = f'from(bucket: "{const.INFLUXDB_BUCKET}") |> range(start: {influx.fixed_timestamp_start}, stop: {influx.fixed_timestamp_stop}) |> filter(fn: (r) => r["_measurement"] == "{measurement_name}")'
+        non_timeseries_data = influx.get_data(fixed_time_query)
+
+        transformed_data = {
+            "measurement": measurement_name,
+            "kpis": [],
+        }
+
+        for entry in non_timeseries_data:
+            kpi_name = entry["_field"]
+            value = entry["_value"]
+
+            transformed_data[kpi_name] = value
+
+        start_time = (
+            transformed_data["start_time"]
+            if "start_time" in transformed_data
+            else "-1h"
+        )
+        query = f'from(bucket: "{const.INFLUXDB_BUCKET}") |> range(start: {start_time}) |> filter(fn: (r) => r["_measurement"] == "{measurement_name}")'
         data = influx.get_data(query)
-        transformed_data = {}
+
         for entry in data:
-            measurement = entry["_measurement"]
-            kpi = entry["_field"]
+            kpi_name = entry["_field"]
             value = entry["_value"]
             time = entry["_time"]
 
-            if measurement not in transformed_data:
-                transformed_data[measurement] = {
-                    "measurement": measurement,
-                    "kpi": kpi,
-                    "value": value,
+            transformed_data["kpis"].append(
+                {
+                    "kpi": kpi_name,
+                    "values": value,
                     "time": time,
                 }
+            )
 
-        transformed_data_list = list(transformed_data.values())
-        return transformed_data_list
+        return transformed_data
 
     def store_data(self, data: dict) -> None:
+        non_timeseries_data = {}
+
+        for key, value in data.items():
+            if key != "kpis":
+                non_timeseries_data[key] = value
+
         for kpi_data in data.get("kpis", []):
             data_point = {
-                "measurement": self.path,
+                "measurement": self.id,
                 "kpi": kpi_data["kpi"],
                 "value": kpi_data["value"],
                 "time": kpi_data["time"],
             }
             influx.write(data_point)
+
+        if non_timeseries_data:
+            influx.write(
+                {
+                    "measurement": self.id,
+                    "non_timeseries_data": non_timeseries_data,
+                }
+            )
 
     def check_permission(
         self, action: "ResourcePermission.Action", user: "IAMUser"

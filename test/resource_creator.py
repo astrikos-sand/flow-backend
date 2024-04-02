@@ -10,11 +10,15 @@ def fun(db):
                     "value": 10,
                     "time": "2020-01-01T00:00:00Z",
                 }
-            ]
+            ],
+            "start_time": "-4000d",
+            "server_id": "server1233",
+            "server_name": "server1233",
+            "server_type": "server1233",
         },
     }
     response = model.insert(data)
     return response
 
 
-result = fun(db)
+response = fun(db)

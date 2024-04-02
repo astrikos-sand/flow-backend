@@ -1,7 +1,6 @@
 import re
 import json
 from rest_framework.response import Response
-from rest_framework import status
 
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.routers import DefaultRouter
@@ -84,6 +83,7 @@ class ResourceViewSet(ModelViewSet):
         for instance in serializer.data:
             instance_obj = ResourceGroup.objects.get(id=instance["id"])
             instance["data"] = instance_obj.data
+
         return Response(serializer.data)
 
 

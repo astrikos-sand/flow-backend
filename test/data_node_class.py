@@ -1,5 +1,6 @@
 def fun():
-    return 2
+    data = 2
+    return data
 
 
-result = fun()
+data = fun()

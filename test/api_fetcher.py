@@ -4,4 +4,4 @@ def fun(api):
     return response
 
 
-result = fun(api)
+response = fun(api)

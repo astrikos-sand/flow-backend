@@ -26,6 +26,6 @@ def fun(
     return response
 
 
-result = fun(
+response = fun(
     db, id, scheduler_type, duration, minute, hour, day, month, weekday, timezone
 )
