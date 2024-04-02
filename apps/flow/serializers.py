@@ -52,6 +52,8 @@ class ConnectionSerializer(serializers.ModelSerializer):
 
 
 class NodeResultSerializer(serializers.ModelSerializer):
+    node = serializers.PrimaryKeyRelatedField(queryset=BaseNode.objects.all())
+
     class Meta:
         model = NodeResult
         fields = "__all__"
@@ -68,7 +70,7 @@ class GenericNodeSerializer(serializers.ModelSerializer):
     code = serializers.FileField(read_only=True)
     source_connections = ConnectionSerializer(many=True)
     target_connections = ConnectionSerializer(many=True)
-    results = NodeResultSerializer(read_only=True)
+    results = NodeResultSerializer(read_only=True, many=True)
 
     class Meta:
         model = GenericNode
@@ -88,6 +90,8 @@ class GenericNodeSerializer(serializers.ModelSerializer):
             "flow_file",
             "position",
             "results",
+            "inputs",
+            "outputs",
         )
 
     def create(self, validated_data):
@@ -111,7 +115,7 @@ class DataNodeSerializer(serializers.ModelSerializer):
     special_slots = serializers.ReadOnlyField(read_only=True)
     source_connections = ConnectionSerializer(many=True)
     target_connections = ConnectionSerializer(many=True)
-    results = NodeResultSerializer(read_only=True)
+    results = NodeResultSerializer(read_only=True, many=True)
 
     class Meta:
         model = DataNode
@@ -127,6 +131,8 @@ class DataNodeSerializer(serializers.ModelSerializer):
             "flow_file",
             "position",
             "results",
+            "inputs",
+            "outputs",
         )
 
     def create(self, validated_data):

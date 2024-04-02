@@ -43,7 +43,6 @@ class PeriodicTriggerSerializer(serializers.ModelSerializer):
         return value
 
     def validate_timezone(self, value):
-        print("timzone value", value, flush=True)
         return self._validate_nullable_choice_field(
             value, self.fields["timezone"].choices, self.fields["timezone"].default
         )
@@ -70,27 +69,18 @@ class PeriodicTriggerSerializer(serializers.ModelSerializer):
 
         task_name = f"{node.flow_file.name} - {node.id}"
         task = "apps.trigger.tasks.periodic_task"
-
         node_id = node.id
-        node_list = []
-        create_nodes(node, node_list)
-        node_list = BaseNodeSerializer(node_list, many=True, context=self.context).data
 
         if scheduler_type == PeriodicTrigger.SCHDULER_TYPE.INTERVAL:
-            print("inside interval", flush=True)
             task_interval, created = IntervalSchedule.objects.get_or_create(
                 every=duration.seconds, period=IntervalSchedule.SECONDS
             )
-
-            print(f"created interval {created}", flush=True)
 
             periodic_task = PeriodicTask.objects.create(
                 interval=task_interval,
                 name=task_name,
                 task=task,
-                kwargs=json.dumps(
-                    {"node_id": node.id, "node_list": node_list}, cls=DjangoJSONEncoder
-                ),
+                kwargs=json.dumps({"node_id": node.id}, cls=DjangoJSONEncoder),
             )
         elif scheduler_type == PeriodicTrigger.SCHDULER_TYPE.CRONTAB:
             task_schedule, _ = CrontabSchedule.objects.get_or_create(
@@ -106,9 +96,7 @@ class PeriodicTriggerSerializer(serializers.ModelSerializer):
                 crontab=task_schedule,
                 name=task_name,
                 task=task,
-                kwargs=json.dumps(
-                    {"node_id": node_id, "node_list": node_list}, cls=DjangoJSONEncoder
-                ),
+                kwargs=json.dumps({"node_id": node_id}, cls=DjangoJSONEncoder),
             )
 
         scheduler: PeriodicTrigger = PeriodicTrigger.objects.create(

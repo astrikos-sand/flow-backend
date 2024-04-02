@@ -24,7 +24,7 @@ from apps.flow.serializers import (
     NodeResultSerializer,
 )
 
-from apps.flow.runtime.worker import submit_task
+from apps.flow.runtime.worker import submit_task, save_results
 from apps.flow.serializers import ConnectionSerializer
 from apps.common.permission import IsSuperUser
 
@@ -81,25 +81,7 @@ class TaskViewSet(ViewSet):
         try:
             response = submit_task(nodes_data)
             results = response.get("outputs", {})
-
-            for node_id in results:
-                res = results[node_id]
-                if "outputs" in res:
-                    data = {
-                        "node": node_id,
-                        "value": json.dumps(res["outputs"]),
-                    }
-                    noderesults = NodeResult.objects.filter(node=node_id)
-                    if noderesults.exists():
-                        serializer = NodeResultSerializer(
-                            noderesults.first(), data=data, partial=True
-                        )
-                        if serializer.is_valid():
-                            serializer.save()
-                    else:
-                        serializer = NodeResultSerializer(data=data)
-                        if serializer.is_valid():
-                            serializer.save()
+            save_results(results)
             return Response(response, status=status.HTTP_200_OK)
         except Exception as e:
             response = {"error": str(e)}
