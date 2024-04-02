@@ -18,10 +18,17 @@ def periodic_task(node_id, node_list):
     )
 
 
-def webhook_task(node, data, request):
+def webhook_task(node: BaseNode, data, request):
     nodes_list = []
     node = node.get_real_instance()
-    create_nodes(node=node, nodes_list=nodes_list)
+    delayed_slots = node.delayed_output_slots + [slot.get("name") for slot in node.delayed_special_output_slots]
+    nodes_list.append(node)
+    # only append nodes connected to delayed output slots
+    for connection in node.source_connections.all():
+        source_slot = connection.source_slot
+        if source_slot in delayed_slots:
+            create_nodes(connection.target.get_real_instance(), nodes_list)
+    nodes_list = list(set(nodes_list))
     nodes_data = BaseNodeSerializer(
         nodes_list, many=True, context={"request": request}
     ).data

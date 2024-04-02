@@ -72,24 +72,28 @@ class PeriodicTriggerSerializer(serializers.ModelSerializer):
         task = "apps.trigger.tasks.periodic_task"
 
         node_id = node.id
-        node_list = []
-        create_nodes(node, node_list)
-        node_list = BaseNodeSerializer(node_list, many=True, context=self.context).data
+        nodes_list = []
+        delayed_slots = node.delayed_output_slots + [slot.get("name") for slot in node.delayed_special_output_slots]
+        nodes_list.append(node)
+        # only append nodes connected to delayed output slots
+        for connection in node.source_connections.all():
+            source_slot = connection.source_slot
+            if source_slot in delayed_slots:
+                create_nodes(connection.target.get_real_instance(), nodes_list)
+        nodes_list = list(set(nodes_list))
+        nodes_list = BaseNodeSerializer(nodes_list, many=True, context=self.context).data
 
         if scheduler_type == PeriodicTrigger.SCHDULER_TYPE.INTERVAL:
-            print("inside interval", flush=True)
             task_interval, created = IntervalSchedule.objects.get_or_create(
                 every=duration.seconds, period=IntervalSchedule.SECONDS
             )
-
-            print(f"created interval {created}", flush=True)
 
             periodic_task = PeriodicTask.objects.create(
                 interval=task_interval,
                 name=task_name,
                 task=task,
                 kwargs=json.dumps(
-                    {"node_id": node.id, "node_list": node_list}, cls=DjangoJSONEncoder
+                    {"node_id": node.id, "node_list": nodes_list}, cls=DjangoJSONEncoder
                 ),
             )
         elif scheduler_type == PeriodicTrigger.SCHDULER_TYPE.CRONTAB:
@@ -107,7 +111,7 @@ class PeriodicTriggerSerializer(serializers.ModelSerializer):
                 name=task_name,
                 task=task,
                 kwargs=json.dumps(
-                    {"node_id": node_id, "node_list": node_list}, cls=DjangoJSONEncoder
+                    {"node_id": node_id, "node_list": nodes_list}, cls=DjangoJSONEncoder
                 ),
             )
 
