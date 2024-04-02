@@ -1,5 +1,7 @@
+import json
 import re
 
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.routers import DefaultRouter
 from rest_framework.permissions import IsAuthenticated
@@ -39,6 +41,28 @@ class ResourceViewSet(ModelViewSet):
                 )
                 resource_list.extend(resources)
         return resource_list
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            for instance in serializer.data:
+                instance_obj = ResourceGroup.objects.get(id=instance["id"])
+                instance["data"] = (
+                    json.loads(instance_obj.data[0]["_value"])
+                    if instance_obj.data
+                    else None
+                )
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        for instance in serializer.data:
+            instance_obj = ResourceGroup.objects.get(id=instance["id"])
+            instance["data"] = instance_obj.data
+
+        return Response(serializer.data)
 
 
 class ResourcePermissionViewSet(ModelViewSet):
