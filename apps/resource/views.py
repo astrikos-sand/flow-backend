@@ -98,6 +98,16 @@ class ResourceViewSet(ModelViewSet):
         resource.store_data(new_data)
         return Response(status=status.HTTP_200_OK)
 
+    @action(
+        detail=True,
+        methods=["GET"],
+    )
+    def data(self, request, pk=None):
+        start = request.query_params.get("start", None)
+        resource = self.get_queryset().get(id=pk)
+        data = resource.get_data(start)
+        return Response(data)
+
 
 class ResourcePermissionViewSet(ModelViewSet):
     queryset = ResourcePermission.objects.all()

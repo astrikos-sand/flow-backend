@@ -44,8 +44,7 @@ class ResourceGroup(NS_Node, BaseModel):
         )
         return self._cached_path
 
-    @property
-    def data(self) -> dict:
+    def get_data(self, time: str | None = None):
         measurement_name = self.id
         fixed_time_query = f'from(bucket: "{const.INFLUXDB_BUCKET}") |> range(start: {influx.fixed_timestamp_start}, stop: {influx.fixed_timestamp_stop}) |> filter(fn: (r) => r["_measurement"] == "{measurement_name}")'
         non_timeseries_data = influx.get_data(fixed_time_query)
@@ -62,9 +61,13 @@ class ResourceGroup(NS_Node, BaseModel):
             transformed_data[kpi_name] = value
 
         start_time = (
-            transformed_data["start_time"]
-            if "start_time" in transformed_data
-            else "-1h"
+            time
+            if time is not None
+            else (
+                transformed_data["start_time"]
+                if "start_time" in transformed_data
+                else "-1h"
+            )
         )
         query = f'from(bucket: "{const.INFLUXDB_BUCKET}") |> range(start: {start_time}) |> filter(fn: (r) => r["_measurement"] == "{measurement_name}")'
         data = influx.get_data(query)
@@ -83,6 +86,10 @@ class ResourceGroup(NS_Node, BaseModel):
             )
 
         return transformed_data
+
+    @property
+    def data(self) -> dict:
+        return self.get_data()
 
     def store_data(self, data: dict) -> None:
         non_timeseries_data = {}
