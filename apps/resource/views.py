@@ -90,7 +90,7 @@ class ResourceViewSet(ModelViewSet):
 
     @action(
         detail=True,
-        methods=["Patch"],
+        methods=["PATCH"],
     )
     def data(self, request, pk=None):
         new_data = request.data
