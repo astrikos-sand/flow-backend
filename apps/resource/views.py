@@ -102,7 +102,7 @@ class ResourceViewSet(ModelViewSet):
         detail=True,
         methods=["GET"],
     )
-    def data(self, request, pk=None):
+    def retrieve_data(self, request, pk=None):
         start = request.query_params.get("start", None)
         resource = self.get_queryset().get(id=pk)
         data = resource.get_data(start)
