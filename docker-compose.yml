@@ -14,7 +14,6 @@ services:
       - ./media:/astrikos/media
       - ./requirements.txt:/astrikos/requirements.txt
       - ./manage.py:/astrikos/manage.py
-      - ./mongodb:/astrikos/mongodb
       - ./influx:/astrikos/influx
     networks:
       - db

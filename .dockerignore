@@ -1,7 +1,6 @@
 *
 !apps/
 !config/
-!mongodb/
 !influx/
 !manage.py
 !requirements.txt
