@@ -24,7 +24,7 @@ class FlowFile(BaseModel):
 
 
 class Environment(BaseModel):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     requirements = models.FileField(upload_to="flow/environments/")
 
     def __str__(self):
@@ -212,13 +212,13 @@ class GenericNode(BaseNode):
     def execute(self, globals, locals):
         self.node_class.execute(globals, locals)
         outputs = {}
-        # for slot in self.output_slots:
-        #     if slot in locals:
-        #         outputs.update({slot: locals[slot]})
-        #     else:
-        #         raise ValueError(
-        #             "Slot is not found in function output, check values returned by function"
-        #         )
+        for slot in self.output_slots:
+            if slot in locals:
+                outputs.update({slot: locals[slot]})
+            else:
+                raise ValueError(
+                    "Slot is not found in function output, check values returned by function"
+                )
         return outputs
 
     @property
