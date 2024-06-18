@@ -83,6 +83,14 @@ DATABASES = {
         "PASSWORD": const.POSTGRES_PASSWORD,
         "PORT": const.POSTGRES_PORT,
     },
+    "timescaledb": {
+        "ENGINE": "django.db.backends.postgresql",
+        "HOST": const.TIMESCALE_HOST,
+        "NAME": const.TIMESCALE_DB,
+        "USER": const.TIMESCALE_USER,
+        "PASSWORD": const.TIMESCALE_PASSWORD,
+        "PORT": const.TIMESCALE_PORT,
+    },
 }
 
 
