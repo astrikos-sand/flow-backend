@@ -47,3 +47,15 @@ def save_results(results: dict):
         serializer = NodeResultSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
+
+
+def create_environment(requirements: str, id: str):
+    data = {"requirements": requirements, "id": id}
+    headers = {"Content-type": "application/json", "Accept": "application/json"}
+    response = requests.post(
+        f"{WORKER_URL}/env/",
+        data=json.dumps(data, cls=DjangoJSONEncoder),
+        headers=headers,
+    )
+    response.raise_for_status()
+    return response.json()

@@ -6,6 +6,7 @@ from rest_framework.viewsets import ModelViewSet, ViewSet
 from rest_framework.routers import DefaultRouter
 from rest_framework.views import APIView
 from rest_framework.decorators import action
+from apps.flow.runtime.worker import create_environment
 
 from apps.flow.models import (
     BaseNode,
@@ -84,14 +85,23 @@ class TaskViewSet(ViewSet):
             nodes, many=True, context={"request": request}
         ).data
         try:
-            response = submit_task(nodes_data)
-            results = response.get("outputs", {})
-            save_results(results)
+            response = submit_task(
+                nodes_data, data={"env_id": str(nodes[0].flow_file.environment.id)}
+            )
             return Response(response, status=status.HTTP_200_OK)
         except Exception as e:
             response = {"error": str(e)}
             print({"error": str(e)}, flush=True)
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(
+        detail=False,
+        methods=["POST"],
+    )
+    def save_outputs(self, request):
+        results = request.data.get("outputs", {})
+        save_results(results)
+        return Response(status=status.HTTP_200_OK)
 
 
 class SaveAPIView(APIView):
@@ -219,6 +229,13 @@ class ENVIRONMENTViewSet(ModelViewSet):
     queryset = Environment.objects.all()
     serializer_class = EnvironmentSerializer
     permission_classes = (IsSuperUser,)
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        create_environment(
+            response.data.get("requirements"), str(response.data.get("id"))
+        )
+        return response
 
 
 router = DefaultRouter()
