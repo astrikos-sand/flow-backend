@@ -11,6 +11,7 @@ from apps.flow.models import (
     Slot,
     Connection,
     NodeResult,
+    Environment,
 )
 
 
@@ -228,4 +229,10 @@ class FlowFileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FlowFile
-        fields = ("id", "name", "nodes", "description")
+        fields = "__all__"
+
+
+class EnvironmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Environment
+        fields = "__all__"

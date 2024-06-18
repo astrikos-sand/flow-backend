@@ -13,7 +13,7 @@ from apps.flow.models import (
     Connection,
     FlowFile,
     GenericNodeClass,
-    NodeResult,
+    Environment,
 )
 
 from apps.flow.serializers import (
@@ -25,7 +25,7 @@ from apps.flow.serializers import (
 )
 
 from apps.flow.runtime.worker import submit_task, save_results
-from apps.flow.serializers import ConnectionSerializer
+from apps.flow.serializers import ConnectionSerializer, EnvironmentSerializer
 from apps.common.permission import IsSuperUser
 
 
@@ -61,7 +61,12 @@ class FlowFileViewSet(ModelViewSet):
     def create_file(self, request):
         name = request.data.get("name", None)
         desc = request.data.get("description", None)
-        FlowFile.objects.create(name=name, description=desc)
+        env = request.data.get("environment", None)
+
+        if env is not None:
+            env = Environment.objects.get(id=env)
+
+        FlowFile.objects.create(name=name, description=desc, environment=env)
         return Response(status=status.HTTP_201_CREATED)
 
 
@@ -210,8 +215,15 @@ class SaveCodeFileAPIView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
+class ENVIRONMENTViewSet(ModelViewSet):
+    queryset = Environment.objects.all()
+    serializer_class = EnvironmentSerializer
+    permission_classes = (IsSuperUser,)
+
+
 router = DefaultRouter()
 router.register(r"nodes", BaseNodeViewSet, basename="node")
 router.register(r"flows", FlowFileViewSet, basename="flow")
 router.register(r"node-classes", BaseNodeClassViewSet, basename="node-class")
 router.register(r"tasks", TaskViewSet, basename="task")
+router.register(r"env", ENVIRONMENTViewSet, basename="environment")

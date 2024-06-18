@@ -11,9 +11,24 @@ from apps.flow.utils import default_position
 class FlowFile(BaseModel):
     name = models.CharField(max_length=100)
     description = models.TextField(null=True, blank=True)
+    environment = models.ForeignKey(
+        "Environment",
+        related_name="flow_files",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
 
     def __str__(self):
         return f"{self.name} ( {self.description} )"
+
+
+class Environment(BaseModel):
+    name = models.CharField(max_length=100)
+    requirements = models.FileField(upload_to="flow/environments/")
+
+    def __str__(self):
+        return f"{self.name}"
 
 
 class BaseNodeClass(BaseModel, PolymorphicModel):
@@ -197,13 +212,13 @@ class GenericNode(BaseNode):
     def execute(self, globals, locals):
         self.node_class.execute(globals, locals)
         outputs = {}
-        for slot in self.output_slots:
-            if slot in locals:
-                outputs.update({slot: locals[slot]})
-            else:
-                raise ValueError(
-                    "Slot is not found in function output, check values returned by function"
-                )
+        # for slot in self.output_slots:
+        #     if slot in locals:
+        #         outputs.update({slot: locals[slot]})
+        #     else:
+        #         raise ValueError(
+        #             "Slot is not found in function output, check values returned by function"
+        #         )
         return outputs
 
     @property

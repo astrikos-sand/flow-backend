@@ -17,6 +17,7 @@ from apps.flow.models import (
     DataNode,
     Connection,
     NodeResult,
+    Environment,
 )
 
 # Register your models here.
@@ -72,3 +73,4 @@ class BaseNodeAdmin(PolymorphicParentModelAdmin):
 
 
 admin.site.register(NodeResult)
+admin.site.register(Environment)
