@@ -2,7 +2,7 @@ import re
 import json
 from rest_framework.response import Response
 
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, ViewSet
 from rest_framework.routers import DefaultRouter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
@@ -15,6 +15,9 @@ from apps.resource.serializers import (
 )
 from apps.common.permission import IsSuperUser
 from apps.resource.utils import get_action
+
+from apps.common.timescale.execute import execute_query
+from apps.common.timescale.queries import QUERIES
 
 
 class ResourceViewSet(ModelViewSet):
@@ -115,6 +118,19 @@ class ResourcePermissionViewSet(ModelViewSet):
     permission_classes = (IsSuperUser,)
 
 
+class TelemetryViewset(ViewSet):
+    @action(detail=False, methods=["POST"])
+    def query(self, request):
+        data = request.data
+        start = data.get("start", None)
+        end = data.get("end", None)
+        key = data.get("key", None)
+        query = QUERIES.START_END_KEY.format(start=start, end=end, key=key)
+        result = execute_query(query)
+        return Response(result)
+
+
 router = DefaultRouter()
 router.register(r"resources", ResourceViewSet, basename="resource")
 router.register(r"permissions", ResourcePermissionViewSet, basename="permission")
+router.register(r"telemetry", TelemetryViewset, basename="telemetry")
