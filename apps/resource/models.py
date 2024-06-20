@@ -185,3 +185,7 @@ class ResourcePermission(BaseModel):
 
     def __str__(self) -> str:
         return f"{self.name} ( {self.long_name} )" if self.name else self.long_name
+
+
+class UploadedFile(models.Model):
+    file = models.FileField(upload_to='uploads/')

@@ -53,7 +53,7 @@ class BaseNodeClassViewSet(ModelViewSet):
 class FlowFileViewSet(ModelViewSet):
     queryset = FlowFile.objects.all()
     serializer_class = FlowFileSerializer
-    permission_classes = (IsSuperUser,)
+    # permission_classes = (IsSuperUser,)
 
     @action(
         detail=False,
@@ -228,7 +228,7 @@ class SaveCodeFileAPIView(APIView):
 class ENVIRONMENTViewSet(ModelViewSet):
     queryset = Environment.objects.all()
     serializer_class = EnvironmentSerializer
-    permission_classes = (IsSuperUser,)
+    # permission_classes = (IsSuperUser,)
 
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
