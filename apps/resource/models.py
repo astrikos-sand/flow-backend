@@ -188,4 +188,4 @@ class ResourcePermission(BaseModel):
 
 
 class UploadedFile(models.Model):
-    file = models.FileField(upload_to='uploads/')
+    file = models.FileField(upload_to="uploads/")

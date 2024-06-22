@@ -214,7 +214,7 @@ def func(
                 print("y_train_data_path exists", flush=True)
             if os.path.exists(y_test_data_path):
                 print("y_test_data_path exists", flush=True)
-        
+
             if X_train is None:
                 X_train = pd.read_csv(X_train_data_path)
             if X_test is None:
@@ -285,7 +285,7 @@ def func(
 
             with open("evaluation_metrics.pkl", "wb") as file:
                 pickle.dump(evaluation_metrics, file)
-            
+
             if os.path.exists("evaluation_metrics.pkl"):
                 print("evaluation_metrics.pkl exists", flush=True)
                 save_csv("evaluation_metrics.pkl")

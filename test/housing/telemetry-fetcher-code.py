@@ -9,4 +9,5 @@ def func(db):
     c = model.insert(data)
     return c
 
+
 c = func(db)

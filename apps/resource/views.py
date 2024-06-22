@@ -131,31 +131,36 @@ class TelemetryViewset(ViewSet):
         query = QUERIES.START_END_KEY.format(start=start, end=end)
         result = execute_query(query)
         return Response(result)
-    
+
     @action(detail=False, methods=["POST"])
     def insert(self, request):
         data = request.data
         print(data, flush=True)
         ts = data.get("ts")
         key = data.get("key")
-        long_v = data.get("long_v", 'null')
-        dbl_v = data.get("double_v", 'null')
-        str_v = data.get("str_v", 'null')
-        bool_v = data.get("bool_v", 'null')
-        json_v = data.get("json_v", 'null')
+        long_v = data.get("long_v", "null")
+        dbl_v = data.get("double_v", "null")
+        str_v = data.get("str_v", "null")
+        bool_v = data.get("bool_v", "null")
+        json_v = data.get("json_v", "null")
 
         query = """
         INSERT INTO ts_kv (entity_id, ts, key, long_v, dbl_v, str_v, bool_v, json_v)
         Values ('ead91e90-2e4a-11ef-b1c5-0d3ef55d4ec9', {ts}, {key}, {long_v}, {dbl_v}, '{str_v}', {bool_v}, '{json_v}');
         """.format(
-            ts=ts, key=key, long_v=long_v, dbl_v=dbl_v, str_v=str_v, bool_v=bool_v, json_v=json_v
+            ts=ts,
+            key=key,
+            long_v=long_v,
+            dbl_v=dbl_v,
+            str_v=str_v,
+            bool_v=bool_v,
+            json_v=json_v,
         )
         execute_query(query)
         return Response("ok")
-    
-class FileUploadView(APIView):
-    parser_classes = [MultiPartParser]
 
+
+class FileUploadView(APIView):
     def post(self, request, format=None):
         serializer = UploadedFileSerializer(data=request.data)
         if serializer.is_valid():

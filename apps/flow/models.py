@@ -131,7 +131,22 @@ class Slot(BaseModel):
 
     class SPECIAL_SLOT(models.TextChoices):
         DATABASE = "DB", "Database"
-        API = "API", "API"
+        API = (
+            "API",
+            "API",
+        )
+        TB = (
+            "TB",
+            "Thingsboard",
+        )
+        TB_QUEUE = (
+            "TBQ",
+            "Thingsboard Queue",
+        )
+        DB_CONNECTOR = (
+            "DB_CONNECTOR",
+            "Database Connector",
+        )
         BACKEND = "BACKEND", "Backend"
         NODE_ID = "NODE_ID", "Node ID"
         NONE = "NONE", "None"
@@ -143,7 +158,7 @@ class Slot(BaseModel):
         BaseNodeClass, on_delete=models.CASCADE, related_name="slots"
     )
     speciality = models.CharField(
-        choices=SPECIAL_SLOT.choices, max_length=10, default=SPECIAL_SLOT.NONE
+        choices=SPECIAL_SLOT.choices, max_length=50, default=SPECIAL_SLOT.NONE
     )
 
     class Meta:
@@ -266,6 +281,7 @@ class GenericNode(BaseNode):
 
 
 class DataNode(BaseNode):
+    name = models.CharField(max_length=100, null=True, blank=True)
 
     class DATA_TYPE(models.TextChoices):
         INTEGER = "INT", "Integer"
@@ -278,7 +294,7 @@ class DataNode(BaseNode):
         DICTIONARY = "DICT", "Dictionary"
         NONE = "NONE", "None"
 
-    value = models.CharField(max_length=255)
+    value = models.CharField(max_length=10000)
     type = models.CharField(choices=DATA_TYPE.choices, max_length=5)
 
     @property

@@ -4,8 +4,8 @@ def func(db):
     # Implement your logic here
     model = db.model("telemetry/query")
     data = {
-      "start": 0,
-      "end": 101,
+        "start": 0,
+        "end": 101,
     }
     response = model.insert(data)
     COLUMNS = {
@@ -33,13 +33,14 @@ def func(db):
 
     data = [{} for _ in range(102)]
     for res in response:
-        data[res[2]-1] = {
-            **data[res[2]-1],
-            get_column_name(res[1]): res[5] or res[4] or res[6] or res[3] or res[7]
-        } 
+        data[res[2] - 1] = {
+            **data[res[2] - 1],
+            get_column_name(res[1]): res[5] or res[4] or res[6] or res[3] or res[7],
+        }
 
     df = pd.DataFrame(data)
     print(df, flush=True)
     return df
+
 
 df = func(db)

@@ -1,6 +1,6 @@
 def func(df, db):
     # Implement your logic here
-    
+
     COLUMNS = {
         "RowNumber": 100,
         "CustomerId": 101,
@@ -19,21 +19,21 @@ def func(df, db):
     }
 
     import json
-    
+
     def chunkify(df, chunk_size):
         return [df[i : i + chunk_size] for i in range(0, df.shape[0], chunk_size)]
 
     chunks = chunkify(df, 100)
-    
+
     columns = chunks[0].columns.to_list()
-    
+
     for _, chunk in chunks[0].iterrows():
         for column in columns:
             data = {
                 "ts": int(chunk["RowNumber"]),
                 "key": COLUMNS[column],
             }
-    
+
             if type(chunk[column]) == int:
                 data["long_v"] = chunk[column]
             elif type(chunk[column]) == float:
@@ -44,9 +44,10 @@ def func(df, db):
                 data["bool_v"] = chunk[column]
             else:
                 data["json_v"] = json.dumps(chunk[column])
-    
+
             model = db.model("telemetry/insert")
             model.insert(data)
-    return 
+    return
+
 
 func(df, db)

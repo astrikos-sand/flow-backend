@@ -10,7 +10,9 @@ def func(flow_df, config_details, output_block, download_file, trained_model_url
             print("preprocessing_dict_path", preprocessing_dict_path, flush=True)
             print("trained_model_url", trained_model_url, flush=True)
             download_file(trained_model_url, preprocessing_dict_path)
-            download_file("http://172.21.0.1:8000/media/uploads/new_df.csv", "new_df.csv")
+            download_file(
+                "http://172.21.0.1:8000/media/uploads/new_df.csv", "new_df.csv"
+            )
 
             if preprocessing_dict_path is not None:
                 file_exists = os.path.exists(preprocessing_dict_path)
@@ -28,8 +30,9 @@ def func(flow_df, config_details, output_block, download_file, trained_model_url
                 output_block(preprocessing_dict, params.get("output_path"), data)
 
             break
-  
+
     ok = "ok"
     return ok
+
 
 ok = func(flow_df, config_details, output_block, download_file, trained_model_url)
