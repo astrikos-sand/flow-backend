@@ -53,7 +53,7 @@ class BaseNodeClassViewSet(ModelViewSet):
 class FlowFileViewSet(ModelViewSet):
     queryset = FlowFile.objects.all()
     serializer_class = FlowFileSerializer
-    permission_classes = (IsSuperUser,)
+    # permission_classes = (IsSuperUser,)
 
     @action(
         detail=False,
@@ -85,8 +85,13 @@ class TaskViewSet(ViewSet):
             nodes, many=True, context={"request": request}
         ).data
         try:
+            data = {}
+            if nodes[0].flow_file.environment is not None:
+                data["env_id"] = str(nodes[0].flow_file.environment.id)
+
             response = submit_task(
-                nodes_data, data={"env_id": str(nodes[0].flow_file.environment.id)}
+                nodes_data,
+                data=data,
             )
             return Response(response, status=status.HTTP_200_OK)
         except Exception as e:
@@ -228,7 +233,7 @@ class SaveCodeFileAPIView(APIView):
 class ENVIRONMENTViewSet(ModelViewSet):
     queryset = Environment.objects.all()
     serializer_class = EnvironmentSerializer
-    permission_classes = (IsSuperUser,)
+    # permission_classes = (IsSuperUser,)
 
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)

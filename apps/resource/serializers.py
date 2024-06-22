@@ -191,3 +191,12 @@ class ResourcePermissionSerializer(serializers.ModelSerializer):
         )
         instance.save()
         return instance
+
+
+from apps.resource.models import UploadedFile
+
+
+class UploadedFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UploadedFile
+        fields = ("file",)

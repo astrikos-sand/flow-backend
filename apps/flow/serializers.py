@@ -134,6 +134,7 @@ class DataNodeSerializer(serializers.ModelSerializer):
             "results",
             "inputs",
             "outputs",
+            "name",
         )
 
     def create(self, validated_data):
