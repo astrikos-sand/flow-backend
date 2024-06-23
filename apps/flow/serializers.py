@@ -3,6 +3,7 @@ from rest_polymorphic.serializers import PolymorphicSerializer
 from apps.flow.models import (
     BaseNode,
     DataNode,
+    FileArchive,
     GenericNode,
     GenericNodeClass,
     TriggerNodeClass,
@@ -237,3 +238,9 @@ class EnvironmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Environment
         fields = "__all__"
+
+
+class FileArchiveSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FileArchive
+        fields = ["id", "filename", "file", "file_url"]
