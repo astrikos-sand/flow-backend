@@ -66,6 +66,7 @@ class PeriodicTriggerSerializer(serializers.ModelSerializer):
         day_of_month = validated_data.get("day_of_month", None)
         month_of_year = validated_data.get("month_of_year", None)
         timezone = validated_data.get("timezone", None)
+        flow_id = validated_data.get("flow_file").id
 
         task_name = f"{node.flow_file.name} - {node.id}"
         task = "apps.trigger.tasks.periodic_task"
@@ -80,7 +81,7 @@ class PeriodicTriggerSerializer(serializers.ModelSerializer):
                 interval=task_interval,
                 name=task_name,
                 task=task,
-                kwargs=json.dumps({"node_id": node.id}, cls=DjangoJSONEncoder),
+                kwargs=json.dumps({"flow_id": flow_id}, cls=DjangoJSONEncoder),
             )
         elif scheduler_type == PeriodicTrigger.SCHDULER_TYPE.CRONTAB:
             task_schedule, _ = CrontabSchedule.objects.get_or_create(

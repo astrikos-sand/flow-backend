@@ -9,7 +9,7 @@ from django_celery_beat.models import crontab_schedule_celery_timezone, Periodic
 from datetime import timedelta
 
 from apps.common.models import BaseModel
-from apps.flow.models import BaseNode
+from apps.flow.models import BaseNode, FlowFile
 
 
 class Trigger(BaseModel):
@@ -31,6 +31,14 @@ class PeriodicTrigger(Trigger):
 
     scheduler_type = models.CharField(
         choices=SCHDULER_TYPE.choices, default=SCHDULER_TYPE.INTERVAL, max_length=10
+    )
+
+    flow_file = models.ForeignKey(
+        FlowFile,
+        on_delete=models.CASCADE,
+        related_name="periodic_triggers",
+        null=True,
+        blank=True,
     )
 
     task = models.OneToOneField(
