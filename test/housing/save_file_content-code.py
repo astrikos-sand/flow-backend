@@ -7,6 +7,8 @@ def func(content, file_path, db):
         files = {"file": (file_path, f)}
         model = db.model("upload/csv")
         model.insert(files=files)
+
+    print("File saved successfully")
     return
 
 

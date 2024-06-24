@@ -108,7 +108,7 @@ class TaskViewSet(ViewSet):
     def save_outputs(self, request):
         results = request.data.get("outputs", {})
         save_results(results)
-        return Response(status=status.HTTP_200_OK)
+        return Response("ok", status=status.HTTP_200_OK)
 
 
 class SaveAPIView(APIView):
