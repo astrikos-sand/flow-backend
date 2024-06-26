@@ -36,7 +36,9 @@ def func(
     print("Save_csv", save_csv, flush=True)
     print("new_df_url", new_df_url, flush=True)
     print("flow_df", flow_df, flush=True)
-    download_file("http://172.21.0.1:8000/media/uploads/Churndata.csv", "Churndata.csv")
+    download_file(
+        "http://astrikos-dev.com:8000/media/uploads/Churndata.csv", "Churndata.csv"
+    )
     # check if the file is downloaded
     if os.path.exists("Churndata.csv"):
         print("File downloaded successfully", flush=True)

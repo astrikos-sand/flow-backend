@@ -87,7 +87,9 @@ class TaskViewSet(ViewSet):
             nodes, many=True, context={"request": request}
         ).data
         try:
-            data = {}
+            data = {
+                "flow_id": file_id,
+            }
             if nodes[0].flow_file.environment is not None:
                 data["env_id"] = str(nodes[0].flow_file.environment.id)
 

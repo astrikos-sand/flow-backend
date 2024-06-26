@@ -2,7 +2,7 @@ from django.core.validators import RegexValidator
 
 from rest_framework import serializers
 
-from apps.resource.models import ResourceGroup, ResourcePermission
+from apps.resource.models import ResourceGroup, ResourcePermission, DataStore
 
 
 class ResourceGroupSerializer(serializers.ModelSerializer):
@@ -200,3 +200,9 @@ class UploadedFileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UploadedFile
         fields = ("file",)
+
+
+class DataStoreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DataStore
+        fields = "__all__"

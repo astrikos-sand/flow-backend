@@ -13,13 +13,14 @@ def create_nodes(node: BaseNode, nodes_list: list):
 
 @shared_task
 def periodic_task(flow_id: str):
-    print("Periodic Task for Flow ID: ", flow_id)
     nodes = BaseNode.objects.filter(flow_file__id=flow_id)
     nodes_data = BaseNodeSerializer(
         nodes,
         many=True,
     ).data
-    data = {}
+    data = {
+        "flow_id": flow_id,
+    }
     if nodes[0].flow_file.environment is not None:
         data["env_id"] = str(nodes[0].flow_file.environment.id)
 
