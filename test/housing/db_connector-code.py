@@ -1,18 +1,18 @@
-def func(db):
+def func(db, dbname, user, password, host, port):
     # Implement your logic here
     connector = db.connect(
-        dbname="astrikos_db",
-        user="dummy",
-        password="dummy",
-        host="localhost",
-        port="5436",
+        dbname=dbname,
+        user=user,
+        password=password,
+        host=host,
+        port=port,
     )
-    connector.cursor.execute("SELECT * FROM flow_slot;")
+    connector.cursor.execute("SELECT * FROM flow_flowfile;")
     res = connector.cursor.fetchall()
     connector.close()
-    print(type(res), flush=True)
+    print(res, flush=True)
 
     return res
 
 
-res = func(db)
+res = func(db, dbname, user, password, host, port)

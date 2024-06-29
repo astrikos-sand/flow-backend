@@ -189,3 +189,11 @@ class ResourcePermission(BaseModel):
 
 class UploadedFile(models.Model):
     file = models.FileField(upload_to="uploads/")
+
+
+class DataStore(BaseModel):
+    identifier = models.CharField(max_length=1000, db_index=True, unique=True)
+    data = models.JSONField()
+
+    def __str__(self):
+        return self.identifier

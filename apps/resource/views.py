@@ -1,5 +1,6 @@
 import re
 import json
+from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 
 from rest_framework.viewsets import ModelViewSet, ViewSet
@@ -8,10 +9,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.decorators import action
 
-from apps.resource.models import ResourceGroup, ResourcePermission
+from apps.resource.models import ResourceGroup, ResourcePermission, DataStore
 from apps.resource.serializers import (
     ResourceGroupSerializer,
     ResourcePermissionSerializer,
+    DataStoreSerializer,
 )
 from apps.common.permission import IsSuperUser
 from apps.resource.utils import get_action
@@ -135,7 +137,6 @@ class TelemetryViewset(ViewSet):
     @action(detail=False, methods=["POST"])
     def insert(self, request):
         data = request.data
-        print(data, flush=True)
         ts = data.get("ts")
         key = data.get("key")
         long_v = data.get("long_v", "null")
@@ -166,6 +167,34 @@ class FileUploadView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DataStoreAPIView(APIView):
+    def post(self, request):
+        data = request.data
+        serializer = DataStoreSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request):
+        query_params = request.query_params
+        print(query_params, flush=True)
+        identifier = query_params.get("identifier")
+        datastore = get_object_or_404(DataStore, identifier=identifier)
+        serializer = DataStoreSerializer(datastore)
+        return Response(serializer.data)
+
+    def put(self, request):
+        data = request.data
+        identifier = data.get("identifier")
+        datastore = get_object_or_404(DataStore, identifier=identifier)
+        serializer = DataStoreSerializer(datastore, data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

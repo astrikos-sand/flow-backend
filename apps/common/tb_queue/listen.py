@@ -15,7 +15,6 @@ class QueueListener(threading.Thread):
         self.channel.basic_consume(queue=queue_name, on_message_callback=self.callback)
 
     def callback(self, channel, method, properties, body):
-        print(body)
         channel.basic_ack(delivery_tag=method.delivery_tag)
 
     def run(self):
