@@ -1,6 +1,7 @@
 # Environment files
 .env*
 !.env.sample
+!.env.setup
 
 # IDE config folders
 .idea

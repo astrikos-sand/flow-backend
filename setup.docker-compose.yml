@@ -1,0 +1,147 @@
+services:
+  backend:
+    container_name: astrikos_backend
+    build:
+      context: .
+      dockerfile: docker/dev.Dockerfile
+    image: astrikos_backend
+    env_file: .env.setup
+    ports:
+      - "8000:8000"
+    volumes:
+      - backend_media:/app/media
+    networks:
+      - db
+      - broker
+    depends_on:
+      db:
+        condition: service_healthy
+      celery:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  db:
+    image: postgres:16-alpine
+    container_name: astrikos_db
+    hostname: db
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_DB=astrikos_db
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=dummy
+      - POSTGRES_PASSWORD=dummy
+    volumes:
+      - db:/var/lib/postgresql/data
+    ports:
+      - "5436:5432"
+    networks:
+      - db
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "pg_isready",
+          "-U",
+          "dummy",
+          "-d",
+          "astrikos_db",
+          "-h",
+          "db"
+        ]
+      interval: 5s
+      retries: 5
+      timeout: 5s
+
+  celery:
+    container_name: astrikos_celery
+    build:
+      context: .
+      dockerfile: docker/dev.Dockerfile
+    command: celery -A config worker --loglevel=info
+    image: astrikos_celery
+    env_file: .env.setup
+    depends_on:
+      broker:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_DB=astrikos_db
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=dummy
+      - POSTGRES_PASSWORD=dummy
+      - RABBITMQ_HOST=broker
+      - RABBITMQ_DEFAULT_USER=dummy
+      - RABBITMQ_DEFAULT_PASS=dummy
+      - WORKER_URL=http://host.docker.internal:5000
+    networks:
+      - db
+      - broker
+    healthcheck:
+      test: ["CMD", "celery", "-A", "config", "inspect","ping"]
+      interval: 5s
+      retries: 5
+      timeout: 5s
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  celery-beat:
+    container_name: astrikos_celery_beat
+    build:
+      context: .
+      dockerfile: docker/dev.Dockerfile
+    command: celery -A config beat --scheduler django_celery_beat.schedulers:DatabaseScheduler --loglevel=info
+    image: astrikos_celery_beat
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_DB=astrikos_db
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=dummy
+      - POSTGRES_PASSWORD=dummy
+      - RABBITMQ_HOST=broker
+      - RABBITMQ_DEFAULT_USER=dummy
+      - RABBITMQ_DEFAULT_PASS=dummy
+      - WORKER_URL=http://host.docker.internal:5000
+    env_file:
+      - .env
+    networks:
+      - broker
+      - db
+    depends_on:
+      broker:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+      celery:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "celery", "-A", "config", "inspect","ping"]
+      interval: 5s
+      retries: 5
+      timeout: 5s
+
+  broker:
+    image: rabbitmq:3.13.0-alpine
+    container_name: astrikos_broker
+    hostname: broker
+    # ports:
+    #   - "15672:15672"
+    #   - "5672:5672"
+    env_file: .env.setup
+    networks:
+      - broker
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 5s
+      retries: 5
+      timeout: 5s
+
+volumes:
+  db:
+  backend_media:
+
+networks:
+  db:
+  broker:

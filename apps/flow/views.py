@@ -31,6 +31,9 @@ from apps.flow.runtime.worker import submit_task, save_results
 from apps.flow.serializers import ConnectionSerializer, EnvironmentSerializer
 from apps.common.permission import IsSuperUser
 
+from django.http import HttpResponse
+from rest_framework.renderers import JSONRenderer
+
 
 class BaseNodeViewSet(ModelViewSet):
     queryset = BaseNode.objects.all()
@@ -74,6 +77,20 @@ class FlowFileViewSet(ModelViewSet):
 
 
 class TaskViewSet(ViewSet):
+
+    @action(
+        detail=True,
+        methods=["GET"],
+    )
+    def export_flow(self, request, pk=None):
+        nodes = BaseNode.objects.filter(flow_file__id=pk)
+        serializer = BaseNodeSerializer(nodes, many=True)
+
+        nodes_data = serializer.data
+        json_data = JSONRenderer().render(nodes_data)
+        response = HttpResponse(json_data, content_type="application/json")
+        response["Content-Disposition"] = f"attachment; filename=flow_{pk}.json"
+        return response
 
     def create(self, request):
         file_id = request.data.get("file_id", None)
