@@ -12,7 +12,6 @@ from apps.flow.models import (
     BaseNode,
     BaseNodeClass,
     Connection,
-    FileArchive,
     FlowFile,
     GenericNodeClass,
     Environment,
@@ -21,7 +20,6 @@ from apps.flow.models import (
 from apps.flow.serializers import (
     BaseNodeSerializer,
     BaseNodeClassSerializer,
-    FileArchiveSerializer,
     FlowFileSerializer,
     SlotSerializer,
     NodeResultSerializer,
@@ -264,15 +262,9 @@ class ENVIRONMENTViewSet(ModelViewSet):
         return response
 
 
-class FileArchiveViewSet(ModelViewSet):
-    queryset = FileArchive.objects.all()
-    serializer_class = FileArchiveSerializer
-
-
 router = DefaultRouter()
 router.register(r"nodes", BaseNodeViewSet, basename="node")
 router.register(r"flows", FlowFileViewSet, basename="flow")
 router.register(r"node-classes", BaseNodeClassViewSet, basename="node-class")
 router.register(r"tasks", TaskViewSet, basename="task")
 router.register(r"env", ENVIRONMENTViewSet, basename="environment")
-router.register(r"archives", FileArchiveViewSet)

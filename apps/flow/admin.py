@@ -7,7 +7,6 @@ from polymorphic.admin import (
 )
 
 from apps.flow.models import (
-    FileArchive,
     FlowFile,
     BaseNodeClass,
     GenericNodeClass,
@@ -75,4 +74,3 @@ class BaseNodeAdmin(PolymorphicParentModelAdmin):
 
 admin.site.register(NodeResult)
 admin.site.register(Environment)
-admin.site.register(FileArchive)

@@ -368,15 +368,3 @@ class NodeResult(BaseModel):
     node = models.ForeignKey(BaseNode, on_delete=models.CASCADE, related_name="results")
     outputs = models.JSONField(null=True, blank=True, default=dict)
     inputs = models.JSONField(null=True, blank=True, default=dict)
-
-
-class FileArchive(models.Model):
-    filename = models.CharField(max_length=255)
-    file = models.FileField(upload_to="uploads/")
-
-    def __str__(self):
-        return self.filename
-
-    @property
-    def file_url(self):
-        return self.file.url
