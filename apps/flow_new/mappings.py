@@ -5,7 +5,7 @@ from apps.flow_new.models import FileArchive
 
 
 ITEM_MAPS = {
-    ITEM_TYPE.ARCHIVES: {
+    ITEM_TYPE.ARCHIVES.value: {
         "serializer": FileArchiveSerializer,
         "model": FileArchive,
     },

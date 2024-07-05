@@ -3,7 +3,7 @@ from django.db import models
 from polymorphic.models import PolymorphicModel
 
 from apps.common.models import BaseModel
-from apps.flow_new.enums import ITEM_TYPE, ATTACHMENT_TYPE, VALUE_TYPE
+from apps.flow_new.enums import ITEM_TYPE
 
 
 class Tag(BaseModel):
@@ -65,3 +65,54 @@ class BaseModelWithTag(BaseModel, PolymorphicModel):
                     visit[name] = 1
 
         return all(visit.values())
+
+
+class FileArchive(BaseModelWithTag):
+    name = models.CharField(max_length=255)
+    file = models.FileField(upload_to="uploads/")
+
+    def __str__(self):
+        return f"{self.name}"
+
+    @property
+    def item_type(self) -> str:
+        return ITEM_TYPE.ARCHIVES.value
+
+    @property
+    def url(self):
+        return self.file.url
+
+
+class Dependency(BaseModelWithTag):
+    name = models.CharField(max_length=100, unique=True)
+    requirements = models.FileField(upload_to="flow/dependencies/")
+
+    @property
+    def item_type(self) -> str:
+        return ITEM_TYPE.DEPENDENCY.value
+
+    def __str__(self):
+        return f"{self.name}"
+
+    class Meta:
+        verbose_name = "Dependency"
+        verbose_name_plural = "Dependencies"
+
+
+class Flow(BaseModelWithTag):
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    lib = models.ForeignKey(
+        Dependency,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="flows",
+    )
+
+    def __str__(self):
+        return f"{self.name}"
+
+    @property
+    def item_type(self) -> str:
+        return ITEM_TYPE.FLOW.value

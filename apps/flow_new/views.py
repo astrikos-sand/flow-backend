@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.routers import DefaultRouter
 from rest_framework.decorators import action
@@ -50,22 +51,33 @@ class TagViewSet(ModelViewSet):
         return Response(result)
 
     @action(detail=False, methods=["get"])
-    def get_parent_tag(self, request: Request):
+    def parent_tag(self, request: Request):
         item_type = request.query_params.get("type", None)
-        if not item_type or item_type not in ITEM_MAPS:
+        if not item_type or ITEM_MAPS.get(item_type) is None:
             raise bad_request
 
-        tag = Tag.objects.get(
-            name=item_type,
-            parent=None,
-        )
+        tag = get_object_or_404(Tag, name=item_type, parent=None)
         serializer = TagSerializer(tag)
 
         return Response(serializer.data)
 
     @action(detail=True, methods=["get"])
-    def organized_tags(self, request: Request, pk: str):
-        tags = Tag.objects.filter(parent=pk)
+    def items(self, request: Request, pk: str):
+        if pk is None:
+            raise bad_request
+
+        tag = get_object_or_404(Tag, id=pk)
+        items = BaseModelWithTag.objects.filter(tags=tag)
+        if not items:
+            return Response([])
+
+        serializer = ITEM_MAPS[items[0].item_type]["serializer"](items, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["get"])
+    def organized_tags(self, request: Request):
+        parent = request.query_params.get("parent", None)
+        tags = Tag.objects.filter(parent=parent)
         serializer = TagSerializer(tags, many=True)
 
         return Response(serializer.data)
