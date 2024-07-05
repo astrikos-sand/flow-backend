@@ -1,7 +1,9 @@
 from django.db import models
 
+from polymorphic.models import PolymorphicModel
+
 from apps.common.models import BaseModel
-from apps.flow_new.enums import ITEM_TYPE
+from apps.flow_new.enums import ITEM_TYPE, ATTACHMENT_TYPE, VALUE_TYPE
 
 
 class Tag(BaseModel):
@@ -42,14 +44,14 @@ class Tag(BaseModel):
         ]
 
 
-class BaseModelWithTag(BaseModel):
+class BaseModelWithTag(BaseModel, PolymorphicModel):
     tags = models.ManyToManyField(
         Tag,
         blank=True,
-        related_name="items",
     )
 
-    # This method should be implemented in the child class
+    # This property should be implemented in all child class
+    @property
     def item_type(self) -> str:
         raise NotImplementedError
 
@@ -63,21 +65,3 @@ class BaseModelWithTag(BaseModel):
                     visit[name] = 1
 
         return all(visit.values())
-
-    class Meta:
-        abstract = True
-
-
-class FileArchive(BaseModelWithTag):
-    name = models.CharField(max_length=255)
-    file = models.FileField(upload_to="uploads/")
-
-    def __str__(self):
-        return f"{self.name} - {self.tags.all()}"
-
-    def item_type(self) -> str:
-        return ITEM_TYPE.ARCHIVES
-
-    @property
-    def url(self):
-        return self.file.url

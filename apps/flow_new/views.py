@@ -1,5 +1,3 @@
-from django.db.models import Count
-
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.routers import DefaultRouter
 from rest_framework.decorators import action
@@ -7,7 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.request import Request
 
-from apps.flow_new.models import Tag, FileArchive
+from apps.flow_new.models import Tag, FileArchive, BaseModelWithTag
 from apps.flow_new.serializers import TagSerializer, FileArchiveSerializer
 from apps.flow_new.mappings import ITEM_MAPS
 from apps.common.exceptions import bad_request
@@ -35,7 +33,8 @@ class TagViewSet(ModelViewSet):
 
         items = []
         for tag in tags:
-            items.extend(tag.items.all())
+            tag_items = BaseModelWithTag.objects.filter(tags=tag)
+            items.extend(tag_items)
 
         items = list(set(items))
 

@@ -10,7 +10,7 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class FileArchiveSerializer(serializers.ModelSerializer):
-    url = serializers.CharField(source="url", read_only=True)
+    url = serializers.CharField(read_only=True)
 
     class Meta:
         model = FileArchive
