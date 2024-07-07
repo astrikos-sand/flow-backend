@@ -1,6 +1,5 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.routers import DefaultRouter
 from rest_framework.decorators import action
 
 from rest_framework.response import Response
@@ -39,6 +38,7 @@ class TagViewSet(ModelViewSet):
 
         items = list(set(items))
 
+        # TODO: optimize this
         result = []
         for item in items:
             serializer = ITEM_MAPS[item.item_type]["serializer"]
@@ -60,6 +60,8 @@ class TagViewSet(ModelViewSet):
         serializer = TagSerializer(tag)
 
         return Response(serializer.data)
+
+    # TODO: Get all root tags
 
     @action(detail=True, methods=["get"])
     def items(self, request: Request, pk: str):
@@ -86,8 +88,3 @@ class TagViewSet(ModelViewSet):
 class FileArchiveViewSet(ModelViewSet):
     queryset = FileArchive.objects.all()
     serializer_class = FileArchiveSerializer
-
-
-router = DefaultRouter()
-router.register(r"tags", TagViewSet, basename="tags")
-router.register(r"archives", FileArchiveViewSet)

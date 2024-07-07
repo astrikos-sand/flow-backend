@@ -7,6 +7,8 @@ from apps.flow_new.utils import default_position
 from apps.flow_new.enums import ATTACHMENT_TYPE, VALUE_TYPE
 from apps.flow_new.models.base import Flow
 
+# TODO: Add unique constraint at the serializer level
+
 
 class BaseNode(BaseModel, PolymorphicModel):
     position = models.JSONField(default=default_position)
@@ -20,6 +22,16 @@ class BaseNode(BaseModel, PolymorphicModel):
         indexes = [
             models.Index(fields=["flow"]),
         ]
+
+    @property
+    def inputs(self):
+        return self.slots.filter(attachment_type=ATTACHMENT_TYPE.INPUT)
+
+    @property
+    def outputs(self):
+        return self.slots.filter(attachment_type=ATTACHMENT_TYPE.OUTPUT)
+
+    # TODO: @classMethod fields --> map
 
 
 class Slot(BaseModel):
@@ -63,6 +75,10 @@ class Connection(BaseModel):
     def clean(self) -> None:
         if str(self.from_slot.node.id) == str(self.to_slot.node.id):
             raise ValueError("Cannot create connection bw slots in the same node")
+
+        if str(self.from_slot.node.flow.id) != str(self.to_slot.node.flow.id):
+            raise ValueError("Cannot create connection bw slots in different flows")
+
         return super().clean()
 
     class Meta:

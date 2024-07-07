@@ -32,8 +32,9 @@ class BaseModelWithTagSerializer(serializers.ModelSerializer):
 
 
 class BaseModelWithTagPolymorphicSerializer(PolymorphicSerializer):
-    resource_type_field_name = "cls_type"
+    resource_type_field_name = "item_type"
 
     model_serializer_mapping = {
         BaseModelWithTag: BaseModelWithTagSerializer,
+        FileArchive: FileArchiveSerializer,
     }
