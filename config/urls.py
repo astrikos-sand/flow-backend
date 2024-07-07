@@ -9,6 +9,7 @@ urlpatterns = [
     path("", include("apps.iam.urls")),
     path("", include("apps.flow.urls")),
     path("", include("apps.trigger.urls")),
+    path("", include("apps.flow_new.urls")),
 ]
 
 if settings.DEBUG:

@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "apps.resource",
     "apps.flow",
     "apps.trigger",
+    "apps.flow_new",
 ]
 
 MIDDLEWARE = [
@@ -45,6 +46,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "config.middleware.HandleHttpExceptions",
 ]
 
 CORS_ORIGIN_ALLOW_ALL = False
