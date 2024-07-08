@@ -32,7 +32,15 @@ class BaseModelWithTagAdmin(PolymorphicParentModelAdmin):
 @admin.register(BaseNode)
 class BaseNodeAdmin(PolymorphicParentModelAdmin):
     base_model = BaseNode
-    child_models = (FunctionNode, DataNode)
+    child_models = (
+        FunctionNode,
+        DataNode,
+        FlowNode,
+        InputNode,
+        OutputNode,
+        ConditionalNode,
+        ForEachNode,
+    )
 
 
 @admin.register(FunctionNode)

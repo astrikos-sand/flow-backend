@@ -44,6 +44,7 @@ class Tag(BaseModel):
         ]
 
 
+# TODO: Dynamic enums (use ns_node for tags)
 class BaseModelWithTag(BaseModel, PolymorphicModel):
     tags = models.ManyToManyField(
         Tag,

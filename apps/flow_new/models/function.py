@@ -53,4 +53,5 @@ class FunctionNode(BaseNode):
         related_name="nodes",
     )
 
-    # TODO: create the slots based on the function fields
+    def __str__(self):
+        return f"{self.definition} - {self.flow}"
