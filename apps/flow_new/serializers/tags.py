@@ -8,13 +8,14 @@ from apps.flow_new.models import (
     BaseModelWithTag,
 )
 
-# TODO: Complete the following serializers
-
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = "__all__"
+        exclude = (
+            "created_at",
+            "updated_at",
+        )
 
 
 class FileArchiveSerializer(serializers.ModelSerializer):
@@ -22,13 +23,19 @@ class FileArchiveSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FileArchive
-        fields = "__all__"
+        exclude = (
+            "created_at",
+            "updated_at",
+        )
 
 
 class BaseModelWithTagSerializer(serializers.ModelSerializer):
     class Meta:
         model = BaseModelWithTag
-        fields = "__all__"
+        exclude = (
+            "created_at",
+            "updated_at",
+        )
 
 
 class BaseModelWithTagPolymorphicSerializer(PolymorphicSerializer):

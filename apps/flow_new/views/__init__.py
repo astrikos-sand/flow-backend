@@ -12,3 +12,4 @@ router.register(r"dependency", DependencyViewSet, basename="dependency")
 router.register(
     r"function-definitions", FunctionDefinitionViewSet, basename="function-definitions"
 )
+router.register(r"connections", ConnectionViewSet, basename="connections")

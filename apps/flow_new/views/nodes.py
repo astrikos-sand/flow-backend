@@ -10,6 +10,7 @@ from apps.flow_new.serializers import (
     FlowSerializer,
     DependencySerializer,
     FunctionDefinitionSerializer,
+    ConnectionSerializer,
 )
 from apps.flow_new.models import (
     BaseNode,
@@ -18,11 +19,22 @@ from apps.flow_new.models import (
     FunctionDefinition,
     Connection,
 )
+from apps.flow_new.runtime.worker import submit_task
 
 
 class FlowViewSet(ModelViewSet):
     queryset = Flow.objects.all()
     serializer_class = FlowSerializer
+
+    @action(detail=True, methods=["POST"])
+    def execute(self, request: Request, pk: str):
+        flow = get_object_or_404(Flow, pk=pk)
+        data = {
+            "flow": FlowSerializer(flow).data,
+            "nodes": BaseNodePolymorphicSerializer(flow.nodes.all(), many=True).data,
+        }
+        result = submit_task(data)
+        return Response(data)
 
     # TODO: Deletion of node
 
@@ -67,8 +79,11 @@ class FlowViewSet(ModelViewSet):
     @action(detail=True, methods=["GET"])
     def nodes(self, request: Request, pk: str):
         flow = get_object_or_404(Flow, pk=pk)
-        serializer = BaseNodePolymorphicSerializer(flow.nodes.all(), many=True)
-        return Response({"message": "Not implemented yet!"})
+        data = {
+            "flow": FlowSerializer(flow).data,
+            "nodes": BaseNodePolymorphicSerializer(flow.nodes.all(), many=True).data,
+        }
+        return Response(data)
 
 
 class DependencyViewSet(ModelViewSet):
@@ -90,3 +105,8 @@ class FunctionDefinitionViewSet(ModelViewSet):
     queryset = FunctionDefinition.objects.all()
     serializer_class = FunctionDefinitionSerializer
     # TODO: parsing
+
+
+class ConnectionViewSet(ModelViewSet):
+    queryset = Connection.objects.all()
+    serializer_class = ConnectionSerializer

@@ -1,3 +1,5 @@
+from typing import Iterable
+
 from django.db import models
 
 from polymorphic.models import PolymorphicModel
@@ -24,12 +26,26 @@ class BaseNode(BaseModel, PolymorphicModel):
         ]
 
     @property
-    def inputs(self):
-        return self.slots.filter(attachment_type=ATTACHMENT_TYPE.INPUT)
+    def input_slots(self):
+        return self.slots.filter(attachment_type=ATTACHMENT_TYPE.INPUT.value)
 
     @property
-    def outputs(self):
-        return self.slots.filter(attachment_type=ATTACHMENT_TYPE.OUTPUT)
+    def output_slots(self):
+        return self.slots.filter(attachment_type=ATTACHMENT_TYPE.OUTPUT.value)
+
+    @property
+    def connections_in(self):
+        connections = []
+        for slot in self.input_slots:
+            connections.extend(Connection.objects.filter(to_slot=slot))
+        return connections
+
+    @property
+    def connections_out(self):
+        connections = []
+        for slot in self.output_slots:
+            connections.extend(Connection.objects.filter(from_slot=slot))
+        return connections
 
     # TODO: @classMethod fields --> map
 
@@ -72,6 +88,7 @@ class Connection(BaseModel):
     def __str__(self):
         return f"{self.from_slot} -> {self.to_slot}"
 
+    # TODO: Shift this validation to serializer level or either use django validation error
     def clean(self) -> None:
         if str(self.from_slot.node.id) == str(self.to_slot.node.id):
             raise ValueError("Cannot create connection bw slots in the same node")
@@ -79,7 +96,20 @@ class Connection(BaseModel):
         if str(self.from_slot.node.flow.id) != str(self.to_slot.node.flow.id):
             raise ValueError("Cannot create connection bw slots in different flows")
 
+        if self.from_slot.attachment_type != ATTACHMENT_TYPE.OUTPUT.value:
+            raise ValueError("Cannot create connection from input slot")
+
+        if self.to_slot.attachment_type != ATTACHMENT_TYPE.INPUT.value:
+            raise ValueError("Cannot create connection to output slot")
+
         return super().clean()
+
+    def save(
+        self,
+        **kwargs,
+    ) -> None:
+        self.full_clean()
+        return super().save(**kwargs)
 
     class Meta:
         unique_together = ("from_slot", "to_slot")
