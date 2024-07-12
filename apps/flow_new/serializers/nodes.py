@@ -16,65 +16,79 @@ from apps.flow_new.enums import ATTACHMENT_TYPE
 class FlowSerializer(serializers.ModelSerializer):
     class Meta:
         model = Flow
-        fields = "__all__"
+        exclude = (
+            "created_at",
+            "updated_at",
+        )
 
 
 class DependencySerializer(serializers.ModelSerializer):
     class Meta:
         model = Dependency
-        fields = "__all__"
+        exclude = (
+            "created_at",
+            "updated_at",
+        )
+
+
+class ConnectionSerializer(serializers.ModelSerializer):
+    source = serializers.UUIDField(source="from_slot.node.id", read_only=True)
+    target = serializers.UUIDField(source="to_slot.node.id", read_only=True)
+
+    class Meta:
+        model = Connection
+        exclude = (
+            "created_at",
+            "updated_at",
+        )
 
 
 class SlotSerializer(serializers.ModelSerializer):
     class Meta:
         model = Slot
-        exclude = ("node",)
-
-
-class ConnectionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Connection
-        fields = "__all__"
+        exclude = (
+            "node",
+            "created_at",
+            "updated_at",
+        )
 
 
 class BaseNodeSerializer(serializers.ModelSerializer):
+    input_slots = SlotSerializer(many=True, read_only=True)
+    output_slots = SlotSerializer(many=True, read_only=True)
+    connections_in = ConnectionSerializer(many=True, read_only=True)
+    connections_out = ConnectionSerializer(many=True, read_only=True)
+
     class Meta:
         model = BaseNode
-        fields = "__all__"
+        exclude = (
+            "created_at",
+            "updated_at",
+        )
 
 
 class DataNodeSerializer(BaseNodeSerializer):
-    slots = SlotSerializer(many=True)
+    value_type = serializers.CharField(write_only=True)
 
     class Meta(BaseNodeSerializer.Meta):
         model = DataNode
-        fields = "__all__"
 
     def create(self, validated_data):
-        slots = validated_data.pop("slots")
-        if (
-            len(slots) != 1
-            or slots[0]["attachment_type"] != ATTACHMENT_TYPE.OUTPUT.value
-        ):
-            raise serializers.ValidationError(
-                "DataNode should have exactly one output slot"
-            )
+        value_type = validated_data.pop("value_type")
 
         data_node = DataNode.objects.create(**validated_data)
         data = {
-            "name": slots[0]["name"],
-            "attachment_type": slots[0]["attachment_type"],
+            "name": data_node.name,
+            "attachment_type": ATTACHMENT_TYPE.OUTPUT.value,
+            "value_type": value_type,
         }
-        value_type = slots[0].get("value_type", None)
-        if value_type:
-            data["value_type"] = value_type
 
         Slot.objects.create(node=data_node, **data)
         return data_node
 
 
 class ConditionalNodeSerializer(BaseNodeSerializer):
-    slots = SlotSerializer(many=True)
+    slots = SlotSerializer(many=True, write_only=True)
     values = serializers.DictField(write_only=True)
 
     def get_values(self, obj):
@@ -93,7 +107,6 @@ class ConditionalNodeSerializer(BaseNodeSerializer):
 
     class Meta(BaseNodeSerializer.Meta):
         model = ConditionalNode
-        fields = "__all__"
 
     def create(self, validated_data):
         slots = validated_data.pop("slots")

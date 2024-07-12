@@ -7,15 +7,22 @@ from apps.flow_new.serializers.nodes import BaseNodeSerializer, SlotSerializer
 class FunctionFieldSerializer(serializers.ModelSerializer):
     class Meta:
         model = FunctionField
-        exclude = ("definition",)
+        exclude = (
+            "definition",
+            "created_at",
+            "updated_at",
+        )
 
 
 class FunctionDefinitionSerializer(serializers.ModelSerializer):
-    fields = FunctionFieldSerializer(many=True)
+    fields = FunctionFieldSerializer(many=True, write_only=True)
 
     class Meta:
         model = FunctionDefinition
-        fields = "__all__"
+        exclude = (
+            "created_at",
+            "updated_at",
+        )
 
     def create(self, validated_data):
         fields = validated_data.pop("fields")
@@ -26,11 +33,13 @@ class FunctionDefinitionSerializer(serializers.ModelSerializer):
 
 
 class FunctionNodeSerializer(BaseNodeSerializer):
-    slots = SlotSerializer(many=True, read_only=True)
-
     class Meta(BaseNodeSerializer.Meta):
         model = FunctionNode
-        fields = "__all__"
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["definition"] = FunctionDefinitionSerializer(instance.definition).data
+        return data
 
     def create(self, validated_data):
         definition = validated_data.pop("definition")

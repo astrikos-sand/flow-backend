@@ -3,15 +3,18 @@ from rest_framework import serializers
 from apps.flow_new.enums import ATTACHMENT_TYPE
 
 from apps.flow_new.models import FlowNode, InputNode, OutputNode, Slot
-from apps.flow_new.serializers.nodes import BaseNodeSerializer, SlotSerializer
+from apps.flow_new.serializers.nodes import (
+    BaseNodeSerializer,
+    SlotSerializer,
+    FlowSerializer,
+)
 
 
 class InputNodeSerializer(BaseNodeSerializer):
-    slots = SlotSerializer(many=True)
+    slots = SlotSerializer(many=True, write_only=True)
 
     class Meta(BaseNodeSerializer.Meta):
         model = InputNode
-        fields = "__all__"
 
     def create(self, validated_data):
         if InputNode.objects.filter(flow=validated_data["flow"]).exists():
@@ -34,11 +37,10 @@ class InputNodeSerializer(BaseNodeSerializer):
 
 
 class OutputNodeSerializer(BaseNodeSerializer):
-    slots = SlotSerializer(many=True)
+    slots = SlotSerializer(many=True, write_only=True)
 
     class Meta(BaseNodeSerializer.Meta):
         model = OutputNode
-        fields = "__all__"
 
     def create(self, validated_data):
         if OutputNode.objects.filter(flow=validated_data["flow"]).exists():
@@ -61,16 +63,19 @@ class OutputNodeSerializer(BaseNodeSerializer):
 
 
 class FlowNodeSerializer(BaseNodeSerializer):
-    slots = SlotSerializer(many=True, read_only=True)
 
     class Meta(BaseNodeSerializer.Meta):
         model = FlowNode
-        fields = "__all__"
 
     def validate(self, attrs):
         if attrs["represent"] == attrs["flow"]:
             raise serializers.ValidationError("FlowNode cannot represent itself")
         return super().validate(attrs)
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["represent"] = FlowSerializer(instance.represent).data
+        return data
 
     def create(self, validated_data):
         represent = validated_data.pop("represent")

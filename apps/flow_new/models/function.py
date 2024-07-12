@@ -18,6 +18,14 @@ class FunctionDefinition(BaseModelWithTag):
     def item_type(self) -> str:
         return ITEM_TYPE.FUNCTION_DEFINITION.value
 
+    @property
+    def input_fields(self):
+        return self.fields.filter(attachment_type=ATTACHMENT_TYPE.INPUT.value)
+
+    @property
+    def output_fields(self):
+        return self.fields.filter(attachment_type=ATTACHMENT_TYPE.OUTPUT.value)
+
 
 class FunctionField(BaseModel):
     name = models.CharField(max_length=255)
