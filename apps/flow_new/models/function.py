@@ -63,3 +63,33 @@ class FunctionNode(BaseNode):
 
     def __str__(self):
         return f"{self.definition} - {self.flow}"
+
+    # @classmethod
+    # def get_node_fields(cls):
+    #     return [
+    #         {
+    #             "type": "string",
+    #             "key": ["definition", "name"],
+    #             "placement": "node",
+    #         },
+    #         {
+    #             "type": "string",
+    #             "key": ["definition", "code"],
+    #             "placement": "popup",
+    #         },
+    #     ]
+
+    # @classmethod
+    # def get_form_fields(cls):
+    #     return [
+    #         {
+    #             "type": "select",
+    #             "required": True,
+    #             "label": "Definition",
+    #             "choices": {
+    #                 "key": ["name"],
+    #                 "endpoint": "/definitions/",
+    #                 "type": "list",
+    #             },
+    #         },
+    #     ]

@@ -1,5 +1,4 @@
-from typing import Iterable
-
+from django.core.exceptions import ValidationError
 from django.db import models
 
 from polymorphic.models import PolymorphicModel
@@ -10,6 +9,7 @@ from apps.flow_new.enums import ATTACHMENT_TYPE, VALUE_TYPE
 from apps.flow_new.models.base import Flow
 
 # TODO: Add unique constraint at the serializer level
+# TODO: Use serializer to validate the data
 
 
 class BaseNode(BaseModel, PolymorphicModel):
@@ -47,7 +47,13 @@ class BaseNode(BaseModel, PolymorphicModel):
             connections.extend(Connection.objects.filter(from_slot=slot))
         return connections
 
-    # TODO: @classMethod fields --> map
+    @classmethod
+    def get_node_fields(cls):
+        raise NotImplementedError
+
+    @classmethod
+    def get_form_fields(cls):
+        raise NotImplementedError
 
 
 class Slot(BaseModel):
@@ -88,19 +94,20 @@ class Connection(BaseModel):
     def __str__(self):
         return f"{self.from_slot} -> {self.to_slot}"
 
-    # TODO: Shift this validation to serializer level or either use django validation error
     def clean(self) -> None:
         if str(self.from_slot.node.id) == str(self.to_slot.node.id):
-            raise ValueError("Cannot create connection bw slots in the same node")
+            raise ValidationError("Cannot create connection bw slots in the same node")
 
         if str(self.from_slot.node.flow.id) != str(self.to_slot.node.flow.id):
-            raise ValueError("Cannot create connection bw slots in different flows")
+            raise ValidationError(
+                "Cannot create connection bw slots in different flows"
+            )
 
         if self.from_slot.attachment_type != ATTACHMENT_TYPE.OUTPUT.value:
-            raise ValueError("Cannot create connection from input slot")
+            raise ValidationError("Cannot create connection from input slot")
 
         if self.to_slot.attachment_type != ATTACHMENT_TYPE.INPUT.value:
-            raise ValueError("Cannot create connection to output slot")
+            raise ValidationError("Cannot create connection to output slot")
 
         return super().clean()
 

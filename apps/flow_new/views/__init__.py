@@ -13,3 +13,4 @@ router.register(
     r"function-definitions", FunctionDefinitionViewSet, basename="function-definitions"
 )
 router.register(r"connections", ConnectionViewSet, basename="connections")
+router.register(r"fields", DynamicFieldsViewSet, basename="dynamic-fields")

@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
 
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, ViewSet
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -110,3 +110,41 @@ class FunctionDefinitionViewSet(ModelViewSet):
 class ConnectionViewSet(ModelViewSet):
     queryset = Connection.objects.all()
     serializer_class = ConnectionSerializer
+
+
+class DynamicFieldsViewSet(ViewSet):
+    @action(detail=False, methods=["GET"])
+    def node_types(self, request: Request):
+        child_node_classes = BaseNode.__subclasses__()
+        data = [child_node_class.__name__ for child_node_class in child_node_classes]
+        return Response(data)
+
+    @action(detail=False, methods=["GET"])
+    def node_fields(self, request: Request):
+        node_type = request.query_params.get("node_type", None)
+        data = {}
+
+        child_node_classes = BaseNode.__subclasses__()
+
+        for child_node_class in child_node_classes:
+            data[child_node_class.__name__] = child_node_class.get_node_fields()
+
+        if node_type is not None:
+            return Response(data[node_type])
+
+        return Response(data)
+
+    @action(detail=False, methods=["GET"])
+    def form_fields(self, request: Request):
+        node_type = request.query_params.get("node_type", None)
+        data = {}
+
+        child_node_classes = BaseNode.__subclasses__()
+
+        for child_node_class in child_node_classes:
+            data[child_node_class.__name__] = child_node_class.get_form_fields()
+
+        if node_type is not None:
+            return Response(data[node_type])
+
+        return Response(data)
