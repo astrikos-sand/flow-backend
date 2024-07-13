@@ -110,6 +110,13 @@ class Flow(BaseModelWithTag):
         blank=True,
         related_name="flows",
     )
+    scope = models.ForeignKey(
+        "self",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="local_flows",
+    )
 
     def __str__(self):
         return f"{self.name}"

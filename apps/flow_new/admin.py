@@ -20,6 +20,7 @@ from apps.flow_new.models import (
     OutputNode,
     ConditionalNode,
     ForEachNode,
+    ScopeNode,
 )
 
 
@@ -76,6 +77,11 @@ class ConditionalAdmin(PolymorphicChildModelAdmin):
 @admin.register(ForEachNode)
 class ForEachNodeAdmin(PolymorphicChildModelAdmin):
     base_model = ForEachNode
+
+
+@admin.register(ScopeNode)
+class ScopeNodeAdmin(PolymorphicChildModelAdmin):
+    base_model = ScopeNode
 
 
 @admin.register(FileArchive)
