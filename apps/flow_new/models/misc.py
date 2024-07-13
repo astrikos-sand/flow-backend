@@ -61,6 +61,4 @@ class ConditionalNode(BaseNode):
 
 
 class ForEachNode(BaseNode):
-    # TODO: It will have single input slot as list and
-    # single output slot as element of the list
     pass

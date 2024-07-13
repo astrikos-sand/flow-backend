@@ -56,6 +56,7 @@ class BaseNode(BaseModel, PolymorphicModel):
         raise NotImplementedError
 
 
+# TODO: rm the value type from slot
 class Slot(BaseModel):
     name = models.CharField(max_length=255)
     node = models.ForeignKey(

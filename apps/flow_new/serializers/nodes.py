@@ -9,6 +9,7 @@ from apps.flow_new.models import (
     Flow,
     Dependency,
     ConditionalNodeValue,
+    ForEachNode,
 )
 from apps.flow_new.enums import ATTACHMENT_TYPE
 
@@ -159,3 +160,44 @@ class ConditionalNodeSerializer(BaseNodeSerializer):
                 ConditionalNodeValue.objects.create(slot=instance, value=value)
 
         return conditional_node
+
+
+class ForEachNodeSerializer(BaseNodeSerializer):
+    slots = SlotSerializer(many=True, write_only=True)
+
+    class Meta(BaseNodeSerializer.Meta):
+        model = ForEachNode
+
+    def create(self, validated_data):
+        slots = validated_data.pop("slots")
+
+        input_slots = [
+            slot
+            for slot in slots
+            if slot["attachment_type"] == ATTACHMENT_TYPE.INPUT.value
+        ]
+
+        if len(input_slots) != 1:
+            raise serializers.ValidationError(
+                "ForEachNode should have exactly one input slot"
+            )
+
+        output_slots = [
+            {
+                "name": f"{input_slots[0]['name']}_element",
+                "attachment_type": ATTACHMENT_TYPE.OUTPUT.value,
+            }
+        ]
+
+        slots = input_slots + output_slots
+
+        for_each_node = ForEachNode.objects.create(**validated_data)
+
+        for slot in slots:
+            data = {
+                "name": slot["name"],
+                "attachment_type": slot["attachment_type"],
+            }
+            Slot.objects.create(node=for_each_node, **data)
+
+        return for_each_node
