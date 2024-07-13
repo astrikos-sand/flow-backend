@@ -18,11 +18,3 @@ class FlowNode(BaseNode):
         on_delete=models.CASCADE,
         related_name="represent_nodes",
     )
-
-
-class ScopeNode(BaseNode):
-    represent = models.OneToOneField(
-        Flow,
-        on_delete=models.CASCADE,
-        related_name="represent_scopes",
-    )

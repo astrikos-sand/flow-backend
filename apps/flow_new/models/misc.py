@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.flow_new.models.nodes import BaseNode, Slot
+from apps.flow_new.models.nodes import BaseNode, Slot, Flow
 from apps.common.models import BaseModel
 
 
@@ -61,4 +61,8 @@ class ConditionalNode(BaseNode):
 
 
 class ForEachNode(BaseNode):
-    pass
+    block = models.OneToOneField(
+        Flow,
+        on_delete=models.CASCADE,
+        related_name="block_node",
+    )
