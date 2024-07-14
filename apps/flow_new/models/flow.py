@@ -5,11 +5,94 @@ from apps.flow_new.models.base import Flow
 
 
 class InputNode(BaseNode):
-    pass
+
+    @classmethod
+    def get_form_fields(cls):
+        return [
+            {
+                "type": "input",
+                "placeholder": "Name",
+                "required": True,
+                "label": "name",
+            },
+            {
+                "type": "textarea",
+                "placeholder": "Value",
+                "required": True,
+                "label": "value",
+            },
+            {
+                "type": "input",
+                "placeholder": "Flow",
+                "required": True,
+                "label": "flow",
+            },
+            {
+                "type": "array",
+                "label": "slots",
+                "fields": [
+                    {
+                        "type": "input",
+                        "placeholder": "Slot Name",
+                        "required": True,
+                        "label": "name",
+                    },
+                    {
+                        "type": "select",
+                        "placeholder": "Attachment Type",
+                        "required": True,
+                        "label": "attachment_type",
+                        "choices": ["OUT"],
+                    },
+                ],
+            },
+        ]
 
 
 class OutputNode(BaseNode):
-    pass
+    # Other fields and methods
+
+    @classmethod
+    def get_form_fields(cls):
+        return [
+            {
+                "type": "input",
+                "placeholder": "Name",
+                "required": True,
+                "label": "name",
+            },
+            {
+                "type": "textarea",
+                "placeholder": "Value",
+                "required": True,
+                "label": "value",
+            },
+            {
+                "type": "input",
+                "placeholder": "Flow",
+                "required": True,
+                "label": "flow",
+            },
+            {
+                "type": "array",
+                "label": "slots",
+                "fields": [
+                    {
+                        "type": "input",
+                        "placeholder": "Slot Name",
+                        "required": True,
+                        "label": "name",
+                    },
+                    {
+                        "type": "select",
+                        "placeholder": "Attachment Type",
+                        "required": True,
+                        "label": "attachment_type",
+                        "choices": ["IN"],
+                    },
+                ],
+            },
+        ]
 
 
 class FlowNode(BaseNode):
@@ -18,3 +101,20 @@ class FlowNode(BaseNode):
         on_delete=models.CASCADE,
         related_name="represent_nodes",
     )
+
+    @classmethod
+    def get_form_fields(cls):
+        return [
+            {
+                "type": "input",
+                "placeholder": "Flow",
+                "required": True,
+                "label": "flow",
+            },
+            {
+                "type": "input",
+                "placeholder": "Represent",
+                "required": True,
+                "label": "represent",
+            },
+        ]
