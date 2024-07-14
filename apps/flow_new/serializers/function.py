@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from apps.flow_new.models import FunctionField, FunctionDefinition, FunctionNode, Slot
-from apps.flow_new.serializers.nodes import BaseNodeSerializer, SlotSerializer
+from apps.flow_new.serializers.nodes import BaseNodeSerializer
 
 
 class FunctionFieldSerializer(serializers.ModelSerializer):

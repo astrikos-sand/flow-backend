@@ -3,7 +3,6 @@ from rest_polymorphic.serializers import PolymorphicSerializer
 from apps.flow_new.serializers.nodes import (
     BaseNodeSerializer,
     DataNodeSerializer,
-    ConditionalNodeSerializer,
 )
 from apps.flow_new.serializers.function import FunctionNodeSerializer
 from apps.flow_new.serializers.flow import (
@@ -12,6 +11,7 @@ from apps.flow_new.serializers.flow import (
     OutputNodeSerializer,
 )
 from apps.flow_new.serializers.for_each import ForEachNodeSerializer
+from apps.flow_new.serializers.conditional import ConditionalNodeSerializer
 
 from apps.flow_new.models import (
     BaseNode,
