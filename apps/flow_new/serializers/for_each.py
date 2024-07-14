@@ -5,7 +5,6 @@ from apps.flow_new.models import ForEachNode, Slot
 from apps.flow_new.serializers.nodes import (
     BaseNodeSerializer,
     SlotSerializer,
-    FlowSerializer,
 )
 
 from apps.flow_new.serializers.flow import ScopeSerializer
@@ -14,7 +13,7 @@ from apps.flow_new.serializers.flow import ScopeSerializer
 class ForEachNodeSerializer(BaseNodeSerializer):
     slots = SlotSerializer(many=True, write_only=True)
     name = serializers.CharField(write_only=True)
-    block = FlowSerializer(read_only=True)
+    block = ScopeSerializer(read_only=True)
 
     class Meta(BaseNodeSerializer.Meta):
         model = ForEachNode
@@ -24,7 +23,7 @@ class ForEachNodeSerializer(BaseNodeSerializer):
 
         input_slots = [
             {
-                "name": "list",
+                "name": "_list",
                 "attachment_type": ATTACHMENT_TYPE.INPUT.value,
                 "value_type": VALUE_TYPE.LIST.value,
             }
@@ -48,7 +47,7 @@ class ForEachNodeSerializer(BaseNodeSerializer):
 
         scope_input_slots = [
             {
-                "name": "element",
+                "name": "_element",
                 "attachment_type": ATTACHMENT_TYPE.INPUT.value,
             }
         ] + input_slots[1:]
@@ -57,7 +56,7 @@ class ForEachNodeSerializer(BaseNodeSerializer):
             data={
                 "name": validated_data.pop("name"),
                 "slots": scope_input_slots,
-                "flow": validated_data["flow"],
+                "scope": validated_data["flow"],
             }
         )
 

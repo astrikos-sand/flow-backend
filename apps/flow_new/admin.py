@@ -20,6 +20,7 @@ from apps.flow_new.models import (
     OutputNode,
     ConditionalNode,
     ForEachNode,
+    ScopeBlock,
 )
 
 
@@ -102,3 +103,4 @@ admin.site.register(Tag)
 admin.site.register(Slot)
 admin.site.register(Connection)
 admin.site.register(FunctionField)
+admin.site.register(ScopeBlock)

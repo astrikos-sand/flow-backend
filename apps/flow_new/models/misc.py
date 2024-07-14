@@ -44,6 +44,17 @@ class DataNode(BaseNode):
     #     ]
 
 
+class ScopeBlock(BaseModel):
+    flow = models.OneToOneField(
+        Flow,
+        on_delete=models.CASCADE,
+        related_name="scope_block",
+    )
+
+    def __str__(self):
+        return self.flow.name
+
+
 class ConditionalNodeValue(BaseModel):
     value = models.CharField(max_length=255)
     slot = models.OneToOneField(
@@ -62,7 +73,7 @@ class ConditionalNode(BaseNode):
 
 class ForEachNode(BaseNode):
     block = models.OneToOneField(
-        Flow,
+        ScopeBlock,
         on_delete=models.CASCADE,
-        related_name="block_node",
+        related_name="for_each_node",
     )
