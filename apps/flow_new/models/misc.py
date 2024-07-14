@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.flow_new.models.nodes import BaseNode, Slot
+from apps.flow_new.models.nodes import BaseNode, Slot, Flow
 from apps.common.models import BaseModel
 
 
@@ -44,6 +44,17 @@ class DataNode(BaseNode):
     #     ]
 
 
+class ScopeBlock(BaseModel):
+    flow = models.OneToOneField(
+        Flow,
+        on_delete=models.CASCADE,
+        related_name="scope_block",
+    )
+
+    def __str__(self):
+        return self.flow.name
+
+
 class ConditionalNodeValue(BaseModel):
     value = models.CharField(max_length=255)
     slot = models.OneToOneField(
@@ -61,6 +72,8 @@ class ConditionalNode(BaseNode):
 
 
 class ForEachNode(BaseNode):
-    # TODO: It will have single input slot as list and
-    # single output slot as element of the list
-    pass
+    block = models.OneToOneField(
+        ScopeBlock,
+        on_delete=models.CASCADE,
+        related_name="for_each_node",
+    )

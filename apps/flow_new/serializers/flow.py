@@ -2,11 +2,13 @@ from rest_framework import serializers
 
 from apps.flow_new.enums import ATTACHMENT_TYPE
 
-from apps.flow_new.models import FlowNode, InputNode, OutputNode, Slot
+from apps.flow_new.models import FlowNode, InputNode, OutputNode, Slot, Flow, ScopeBlock
+
 from apps.flow_new.serializers.nodes import (
     BaseNodeSerializer,
     SlotSerializer,
     FlowSerializer,
+    ConnectionSerializer,
 )
 
 
@@ -111,3 +113,83 @@ class FlowNodeSerializer(BaseNodeSerializer):
             Slot.objects.create(node=flow_node, **data)
 
         return flow_node
+
+
+class ScopeSerializer(serializers.ModelSerializer):
+    slots = SlotSerializer(many=True, write_only=True)
+    name = serializers.CharField(write_only=True)
+    scope = serializers.PrimaryKeyRelatedField(
+        queryset=Flow.objects.all(), write_only=True
+    )
+    flow = FlowSerializer(read_only=True)
+
+    class Meta:
+        model = ScopeBlock
+        exclude = (
+            "created_at",
+            "updated_at",
+        )
+
+    def create(self, validated_data):
+        slots = validated_data.pop("slots")
+
+        input_slots = [
+            slot
+            for slot in slots
+            if slot["attachment_type"] == ATTACHMENT_TYPE.INPUT.value
+        ]
+
+        output_slots = [
+            {**slot, "attachment_type": ATTACHMENT_TYPE.OUTPUT.value}
+            for slot in input_slots
+        ]
+
+        slots = input_slots + output_slots
+
+        flow_data = {
+            "name": validated_data.pop("name"),
+            "scope": validated_data.pop("scope"),
+        }
+
+        flow_serializer = FlowSerializer(data=flow_data)
+        flow_serializer.is_valid(raise_exception=True)
+        flow_serializer.save()
+
+        flow = flow_serializer.instance
+
+        input_node_serializer = InputNodeSerializer(
+            data={"flow": flow, "slots": output_slots}
+        )
+        input_node_serializer.is_valid(raise_exception=True)
+        input_node_serializer.save()
+
+        input_node = input_node_serializer.instance
+
+        output_node_serializer = OutputNodeSerializer(
+            data={"flow": flow, "slots": input_slots}
+        )
+        output_node_serializer.is_valid(raise_exception=True)
+        output_node_serializer.save()
+
+        output_node = output_node_serializer.instance
+
+        input_node_slots = input_node.output_slots
+        output_node_slots = output_node.input_slots
+
+        data = [
+            {
+                "from_slot": input_node_slot.id,
+                "to_slot": output_node_slot.id,
+            }
+            for input_node_slot, output_node_slot in zip(
+                input_node_slots, output_node_slots
+            )
+        ]
+
+        connection_serializer = ConnectionSerializer(data=data, many=True)
+        connection_serializer.is_valid(raise_exception=True)
+        connection_serializer.save()
+
+        scope_block = ScopeBlock.objects.create(flow=flow)
+
+        return scope_block

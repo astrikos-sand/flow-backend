@@ -11,6 +11,7 @@ from apps.flow_new.serializers.flow import (
     InputNodeSerializer,
     OutputNodeSerializer,
 )
+from apps.flow_new.serializers.for_each import ForEachNodeSerializer
 
 from apps.flow_new.models import (
     BaseNode,
@@ -20,6 +21,7 @@ from apps.flow_new.models import (
     FlowNode,
     InputNode,
     OutputNode,
+    ForEachNode,
 )
 
 
@@ -34,4 +36,5 @@ class BaseNodePolymorphicSerializer(PolymorphicSerializer):
         FlowNode: FlowNodeSerializer,
         InputNode: InputNodeSerializer,
         OutputNode: OutputNodeSerializer,
+        ForEachNode: ForEachNodeSerializer,
     }
