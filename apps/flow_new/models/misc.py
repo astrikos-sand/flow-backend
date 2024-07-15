@@ -1,7 +1,7 @@
 from django.db import models
 
-from apps.flow_new.models.nodes import BaseNode, Slot, Flow
-from apps.flow_new.enums import VALUE_TYPE
+from apps.flow_new.models.nodes import BaseNode, Flow
+from apps.flow_new.enums import ATTACHMENT_TYPE, VALUE_TYPE
 from apps.common.models import BaseModel
 
 
@@ -16,37 +16,32 @@ class DataNode(BaseNode):
     def __str__(self):
         return f"{self.name} - {self.value}"
 
-    # @classmethod
-    # def get_node_fields(cls):
-    #     return [
-    #         {
-    #             "type": "string",
-    #             "key": ["name"],
-    #             "placement": "node",
-    #         },
-    #         {
-    #             "type": "string",
-    #             "key": ["value"],
-    #             "placement": "popup",
-    #         },
-    #     ]
-
-    # @classmethod
-    # def get_form_fields(cls):
-    #     return [
-    #         {
-    #             "type": "input",
-    #             "placeholder": "Name",
-    #             "required": True,
-    #             "reskey": ["name"],
-    #         },
-    #         {
-    #             "type": "textarea",
-    #             "placeholder": "Value",
-    #             "required": True,
-    #             "reskey": ["value"],
-    #         },
-    #     ]
+    @classmethod
+    def get_form_fields(cls):
+        return [
+            {
+                "type": "input",
+                "placeholder": "Name",
+                "required": True,
+                "label": "name",
+            },
+            {
+                "type": "textarea",
+                "placeholder": "Value",
+                "required": True,
+                "label": "value",
+            },
+            {
+                "type": "select",
+                "placeholder": "Value Type",
+                "required": True,
+                "label": "value_type",
+                "choices": [
+                    {"value": choice[0], "label": choice[0]}
+                    for choice in VALUE_TYPE.choices
+                ],
+            },
+        ]
 
 
 class ScopeBlock(BaseModel):
@@ -65,6 +60,55 @@ class ConditionalNode(BaseNode):
         max_length=15,
         choices=VALUE_TYPE.choices,
     )
+
+    @classmethod
+    def get_form_fields(cls):
+        return [
+            {
+                "type": "input",
+                "placeholder": "Name",
+                "required": True,
+                "label": "name",
+            },
+            {
+                "type": "array",
+                "label": "slots",
+                "fields": [
+                    {
+                        "type": "input",
+                        "placeholder": "Slot Name",
+                        "required": True,
+                        "label": "name",
+                    },
+                    {
+                        "type": "select",
+                        "placeholder": "Attachment Type",
+                        "required": True,
+                        "label": "attachment_type",
+                        "choices": [
+                            {"value": choice[0], "label": choice[0]}
+                            for choice in ATTACHMENT_TYPE.choices
+                        ],
+                    },
+                    {
+                        "type": "select",
+                        "placeholder": "Value Type",
+                        "required": True,
+                        "label": "value_type",
+                        "choices": [
+                            {"value": choice[0], "label": choice[0]}
+                            for choice in VALUE_TYPE.choices
+                        ],
+                    },
+                ],
+            },
+            {
+                "type": "textarea",
+                "placeholder": "Slot Values",
+                "required": False,
+                "label": "values",
+            },
+        ]
 
 
 class ConditionalNodeCase(BaseModel):
@@ -91,3 +135,20 @@ class ForEachNode(BaseNode):
         on_delete=models.CASCADE,
         related_name="for_each_node",
     )
+
+    @classmethod
+    def get_form_fields(cls):
+        return [
+            {
+                "type": "input",
+                "placeholder": "Name",
+                "required": True,
+                "reskey": ["name"],
+            },
+            {
+                "type": "textarea",
+                "placeholder": "Value",
+                "required": True,
+                "reskey": ["value"],
+            },
+        ]

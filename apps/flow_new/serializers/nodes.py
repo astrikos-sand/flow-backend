@@ -11,9 +11,12 @@ from apps.flow_new.models import (
 )
 from apps.flow_new.enums import ATTACHMENT_TYPE
 from apps.flow_new.utils import typecast_value
+from apps.flow_new.serializers.tags import TagSerializer
 
 
 class FlowSerializer(serializers.ModelSerializer):
+    tags = TagSerializer(many=True, read_only=True)
+
     class Meta:
         model = Flow
         exclude = (

@@ -26,6 +26,36 @@ class FunctionDefinition(BaseModelWithTag):
     def output_fields(self):
         return self.fields.filter(attachment_type=ATTACHMENT_TYPE.OUTPUT.value)
 
+    @classmethod
+    def get_form_fields(cls):
+        return [
+            {
+                "type": "input",
+                "placeholder": "Name",
+                "required": True,
+                "label": "name",
+            },
+            {
+                "type": "input",
+                "placeholder": "Code",
+                "required": True,
+                "label": "code",
+            },
+            {
+                "type": "input",
+                "placeholder": "Field Name",
+                "required": True,
+                "label": "fields.name",
+            },
+            {
+                "type": "select",
+                "placeholder": "Attachment Type",
+                "required": True,
+                "label": "fields.attachment_type",
+                "choices": ["IN", "OUT"],
+            },
+        ]
+
 
 class FunctionField(BaseModel):
     name = models.CharField(max_length=255)
@@ -64,32 +94,27 @@ class FunctionNode(BaseNode):
     def __str__(self):
         return f"{self.definition} - {self.flow}"
 
-    # @classmethod
-    # def get_node_fields(cls):
-    #     return [
-    #         {
-    #             "type": "string",
-    #             "key": ["definition", "name"],
-    #             "placement": "node",
-    #         },
-    #         {
-    #             "type": "string",
-    #             "key": ["definition", "code"],
-    #             "placement": "popup",
-    #         },
-    #     ]
+    @classmethod
+    def get_form_fields(cls):
+        function_definitions = FunctionDefinition.objects.all()
 
-    # @classmethod
-    # def get_form_fields(cls):
-    #     return [
-    #         {
-    #             "type": "select",
-    #             "required": True,
-    #             "label": "Definition",
-    #             "choices": {
-    #                 "key": ["name"],
-    #                 "endpoint": "/definitions/",
-    #                 "type": "list",
-    #             },
-    #         },
-    #     ]
+        definition_choices = [
+            {"value": definition.id, "label": definition.name}
+            for definition in function_definitions
+        ]
+
+        return [
+            {
+                "type": "input",
+                "placeholder": "Flow",
+                "required": True,
+                "label": "flow",
+            },
+            {
+                "type": "select",
+                "placeholder": "Definition",
+                "required": True,
+                "label": "definition",
+                "choices": definition_choices,
+            },
+        ]

@@ -10,6 +10,9 @@ from apps.flow_new.models import (
 
 
 class TagSerializer(serializers.ModelSerializer):
+    children = serializers.SerializerMethodField()
+    full_name = serializers.SerializerMethodField()
+
     class Meta:
         model = Tag
         exclude = (
@@ -17,9 +20,15 @@ class TagSerializer(serializers.ModelSerializer):
             "updated_at",
         )
 
+    def get_children(self, obj):
+        return TagSerializer(obj.children, many=True).data
+
+    def get_full_name(self, obj):
+        return obj.full_name
+
 
 class FileArchiveSerializer(serializers.ModelSerializer):
-    url = serializers.CharField(read_only=True)
+    tags = TagSerializer(many=True, read_only=True)
 
     class Meta:
         model = FileArchive

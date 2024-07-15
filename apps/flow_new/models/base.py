@@ -23,13 +23,13 @@ class Tag(BaseModel):
 
     @property
     def children(self) -> list["Tag"]:
-        tags = Tag.objects.filter(parent=self)
-        all_children = []
-        for tag in tags:
-            all_children.append(tag)
-            all_children.extend(tag.children)
+        def get_all_children(tag):
+            children = list(Tag.objects.filter(parent=tag))
+            for child in children:
+                children.extend(get_all_children(child))
+            return children
 
-        return all_children
+        return get_all_children(self)
 
     def __str__(self):
         return self.full_name
