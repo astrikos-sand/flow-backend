@@ -8,7 +8,12 @@ from apps.flow_new.enums import ITEM_TYPE
 
 class Tag(BaseModel):
     name = models.CharField(max_length=255)
-    parent = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True)
+    parent = models.ForeignKey(
+        "self",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
 
     @property
     def full_name(self):

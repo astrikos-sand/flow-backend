@@ -7,7 +7,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework import status
 
-from django.apps import apps
+from apps.common.exceptions import bad_request
 from apps.flow_new.models.nodes import Slot
 from apps.flow_new.serializers import (
     BaseNodePolymorphicSerializer,
@@ -143,48 +143,26 @@ class DynamicFieldsViewSet(ViewSet):
         node_type = request.query_params.get("node_type", None)
         data = {}
 
-        try:
-            app_config = apps.get_app_config("flow_new")
-            list(app_config.get_models())
-            child_node_classes = BaseNode.__subclasses__()
+        child_node_classes = BaseNode.__subclasses__()
 
-            for child_node_class in child_node_classes:
-                if hasattr(child_node_class, "get_form_fields"):
-                    try:
-                        form_fields = child_node_class.get_form_fields()
-                        if form_fields:
-                            data[child_node_class.__name__] = form_fields
-                    except Exception as e:
-                        print(
-                            f"Error getting form fields for {child_node_class.__name__}: {e}"
-                        )
-                else:
-                    print(
-                        f"Class {child_node_class.__name__} does not have get_form_fields method"
-                    )
+        for child_node_class in child_node_classes:
+            if hasattr(child_node_class, "get_form_fields"):
+                form_fields = child_node_class.get_form_fields()
+                if form_fields:
+                    data[child_node_class.__name__] = form_fields
 
-            if node_type:
-                if node_type in data:
-                    return Response(data[node_type])
-                else:
-                    return Response(
-                        {"error": "Invalid node type"},
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
+        if node_type:
+            if node_type in data:
+                return Response(data[node_type])
+            else:
+                raise bad_request
 
-            return Response(data)
-
-        except Exception as e:
-            print(f"Error occurred: {e}")
-            return Response(
-                {"error": "An error occurred while fetching form fields."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+        return Response(data)
 
 
+# TODO
 class SaveAPIView(APIView):
     def post(self, request, *args, **kwargs):
-        print(request.data)
         flow_id = request.data.get("flow_id")
         if not flow_id:
             return Response(

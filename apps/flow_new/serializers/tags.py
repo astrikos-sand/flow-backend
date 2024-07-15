@@ -36,7 +36,6 @@ class FileArchiveSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         )
-        fields = ["id", "name", "file", "tags"]
 
 
 class BaseModelWithTagSerializer(serializers.ModelSerializer):

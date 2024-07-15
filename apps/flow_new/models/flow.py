@@ -52,7 +52,6 @@ class InputNode(BaseNode):
 
 
 class OutputNode(BaseNode):
-    # Other fields and methods
 
     @classmethod
     def get_form_fields(cls):
