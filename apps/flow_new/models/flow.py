@@ -42,7 +42,9 @@ class InputNode(BaseNode):
                         "placeholder": "Attachment Type",
                         "required": True,
                         "label": "attachment_type",
-                        "choices": ["OUT"],
+                        "choices": [
+                            {"value": "OUT", "label": "Output"},
+                        ],
                     },
                 ],
             },
@@ -88,7 +90,9 @@ class OutputNode(BaseNode):
                         "placeholder": "Attachment Type",
                         "required": True,
                         "label": "attachment_type",
-                        "choices": ["IN"],
+                        "choices": [
+                            {"value": "IN", "label": "Input"},
+                        ],
                     },
                 ],
             },

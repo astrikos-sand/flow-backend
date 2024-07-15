@@ -99,7 +99,8 @@ class FunctionNode(BaseNode):
         function_definitions = FunctionDefinition.objects.all()
 
         definition_choices = [
-            {definition.id, definition.name} for definition in function_definitions
+            {"value": definition.id, "label": definition.name}
+            for definition in function_definitions
         ]
 
         return [

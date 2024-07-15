@@ -36,7 +36,10 @@ class DataNode(BaseNode):
                 "placeholder": "Value Type",
                 "required": True,
                 "label": "value_type",
-                "choices": VALUE_TYPE.choices,
+                "choices": [
+                    {"value": choice[0], "label": choice[0]}
+                    for choice in VALUE_TYPE.choices
+                ],
             },
         ]
 
@@ -82,14 +85,20 @@ class ConditionalNode(BaseNode):
                         "placeholder": "Attachment Type",
                         "required": True,
                         "label": "attachment_type",
-                        "choices": [choice[0] for choice in ATTACHMENT_TYPE.choices],
+                        "choices": [
+                            {"value": choice[0], "label": choice[0]}
+                            for choice in ATTACHMENT_TYPE.choices
+                        ],
                     },
                     {
                         "type": "select",
                         "placeholder": "Value Type",
                         "required": True,
                         "label": "value_type",
-                        "choices": [choice[0] for choice in VALUE_TYPE.choices],
+                        "choices": [
+                            {"value": choice[0], "label": choice[0]}
+                            for choice in VALUE_TYPE.choices
+                        ],
                     },
                 ],
             },
