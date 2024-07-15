@@ -32,6 +32,12 @@ class DataNode(BaseNode):
                 "label": "value",
             },
             {
+                "type": "input",
+                "placeholder": "Flow",
+                "required": True,
+                "label": "flow",
+            },
+            {
                 "type": "select",
                 "placeholder": "Value Type",
                 "required": True,

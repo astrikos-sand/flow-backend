@@ -16,12 +16,6 @@ class InputNode(BaseNode):
                 "label": "name",
             },
             {
-                "type": "textarea",
-                "placeholder": "Value",
-                "required": True,
-                "label": "value",
-            },
-            {
                 "type": "input",
                 "placeholder": "Flow",
                 "required": True,
@@ -63,12 +57,6 @@ class OutputNode(BaseNode):
                 "label": "name",
             },
             {
-                "type": "textarea",
-                "placeholder": "Value",
-                "required": True,
-                "label": "value",
-            },
-            {
                 "type": "input",
                 "placeholder": "Flow",
                 "required": True,
@@ -107,6 +95,15 @@ class FlowNode(BaseNode):
 
     @classmethod
     def get_form_fields(cls):
+        # TODO
+        partial_flows = Flow.objects.all()
+        choices = [
+            {
+                "value": flow.id,
+                "label": flow.name,
+            }
+            for flow in partial_flows
+        ]
         return [
             {
                 "type": "input",
@@ -115,9 +112,10 @@ class FlowNode(BaseNode):
                 "label": "flow",
             },
             {
-                "type": "input",
+                "type": "select",
                 "placeholder": "Represent",
                 "required": True,
                 "label": "represent",
+                "choices": choices,
             },
         ]

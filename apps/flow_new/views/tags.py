@@ -5,8 +5,12 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.request import Request
 
-from apps.flow_new.models import Tag, FileArchive, BaseModelWithTag, Flow
-from apps.flow_new.serializers import TagSerializer, FileArchiveSerializer
+from apps.flow_new.models import Tag, FileArchive, BaseModelWithTag, Flow, Dependency
+from apps.flow_new.serializers import (
+    TagSerializer,
+    FileArchiveSerializer,
+    DependencySerializer,
+)
 from apps.flow_new.mappings import ITEM_MAPS
 from apps.common.exceptions import bad_request
 from apps.flow_new.serializers.nodes import FlowSerializer
@@ -101,24 +105,6 @@ class FileArchiveViewSet(ModelViewSet):
         return Response(FileArchiveSerializer(file_archive).data)
 
 
-# TODO
-class FlowViewSet(ModelViewSet):
-    queryset = Flow.objects.all()
-    serializer_class = FlowSerializer
-
-    def create(self, request: Request, *args, **kwargs):
-        flow_data = request.data
-        tags_data = flow_data.pop("tags", [])
-
-        flow = Flow.objects.create(**flow_data)
-        for tag_data in tags_data:
-            parent_tag_id = tag_data.get("parent")
-            tag_name = tag_data.get("name")
-
-            parent_tag = get_object_or_404(Tag, id=parent_tag_id)
-            tag, created = Tag.objects.get_or_create(name=tag_name, parent=parent_tag)
-            flow.tags.add(tag)
-
-        flow.save()
-
-        return Response(FlowSerializer(flow).data)
+class DependencyViewSet(ModelViewSet):
+    queryset = Dependency.objects.all()
+    serializer_class = DependencySerializer

@@ -8,7 +8,7 @@ router.register(r"tags", TagViewSet, basename="tags")
 router.register(r"archives", FileArchiveViewSet)
 router.register(r"nodes", BaseNodeViewSet, basename="nodes")
 router.register(r"flow", FlowViewSet, basename="flow")
-router.register(r"dependency", DependencyViewSet, basename="dependency")
+router.register(r"env", DependencyViewSet, basename="dependency")
 router.register(
     r"function-definitions", FunctionDefinitionViewSet, basename="function-definitions"
 )
