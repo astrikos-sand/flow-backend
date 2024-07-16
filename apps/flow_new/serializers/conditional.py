@@ -9,7 +9,7 @@ from apps.flow_new.utils import typecast_value
 
 
 class ConditionalNodeCaseSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(write_only=True)
+    name = serializers.CharField()
     block = ScopeSerializer(read_only=True)
 
     class Meta:

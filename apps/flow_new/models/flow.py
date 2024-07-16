@@ -7,6 +7,19 @@ from apps.flow_new.models.base import Flow
 class InputNode(BaseNode):
 
     @classmethod
+    def get_node_fields(cls):
+        return {
+            "color": "#FF5733",
+            "attrs": [
+                {
+                    "type": "id",
+                    "placement": "popup",
+                    "key": ["id"],
+                }
+            ],
+        }
+
+    @classmethod
     def get_form_fields(cls):
         return [
             {
@@ -46,6 +59,19 @@ class InputNode(BaseNode):
 
 
 class OutputNode(BaseNode):
+
+    @classmethod
+    def get_node_fields(cls):
+        return {
+            "color": "#FF5733",
+            "attrs": [
+                {
+                    "type": "id",
+                    "placement": "popup",
+                    "key": ["id"],
+                }
+            ],
+        }
 
     @classmethod
     def get_form_fields(cls):
@@ -92,6 +118,30 @@ class FlowNode(BaseNode):
         on_delete=models.CASCADE,
         related_name="represent_nodes",
     )
+
+    @classmethod
+    def get_node_fields(cls):
+        return {
+            "color": "#FF5733",
+            "attrs": [
+                {
+                    "type": "span",
+                    "placement": "node",
+                    "key": ["represent", "name"],
+                },
+                {
+                    "type": "id",
+                    "placement": "popup",
+                    "key": ["id"],
+                },
+                {
+                    "type": "link",
+                    "placement": "popup",
+                    "key": ["represent", "id"],
+                    "link_type": "flow",
+                },
+            ],
+        }
 
     @classmethod
     def get_form_fields(cls):

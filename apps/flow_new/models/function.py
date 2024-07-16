@@ -95,6 +95,35 @@ class FunctionNode(BaseNode):
         return f"{self.definition} - {self.flow}"
 
     @classmethod
+    def get_node_fields(cls):
+        return {
+            "color": "#FF5733",
+            "attrs": [
+                {
+                    "type": "span",
+                    "placement": "node",
+                    "key": ["definition", "name"],
+                },
+                {
+                    "type": "id",
+                    "placement": "popup",
+                    "key": ["id"],
+                },
+                {
+                    "type": "link",
+                    "placement": "popup",
+                    "key": ["definition", "id"],
+                    "link_type": "function_definition",
+                },
+                {
+                    "type": "link",
+                    "placement": "popup",
+                    "key": ["definition", "code"],
+                },
+            ],
+        }
+
+    @classmethod
     def get_form_fields(cls):
         function_definitions = FunctionDefinition.objects.all()
 

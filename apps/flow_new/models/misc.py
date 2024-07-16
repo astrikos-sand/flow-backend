@@ -17,6 +17,34 @@ class DataNode(BaseNode):
         return f"{self.name} - {self.value}"
 
     @classmethod
+    def get_node_fields(cls):
+        return {
+            "color": "#FF5733",
+            "attrs": [
+                {
+                    "type": "span",
+                    "placement": "node",
+                    "key": ["name"],
+                },
+                {
+                    "type": "id",
+                    "placement": "popup",
+                    "key": ["id"],
+                },
+                {
+                    "type": "p",
+                    "placement": "popup",
+                    "key": ["value"],
+                },
+                {
+                    "type": "span",
+                    "placement": "popup",
+                    "key": ["value_type"],
+                },
+            ],
+        }
+
+    @classmethod
     def get_form_fields(cls):
         return [
             {
@@ -57,8 +85,12 @@ class ScopeBlock(BaseModel):
         related_name="scope_block",
     )
 
-    def __str__(self):
+    @property
+    def name(self):
         return self.flow.name
+
+    def __str__(self):
+        return self.name
 
 
 class ConditionalNode(BaseNode):
@@ -66,7 +98,69 @@ class ConditionalNode(BaseNode):
         max_length=15,
         choices=VALUE_TYPE.choices,
     )
+    name = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+    )
 
+    def __str__(self):
+        return self.name
+
+    @classmethod
+    def get_node_fields(cls):
+        return {
+            "color": "#FF5733",
+            "attrs": [
+                {
+                    "type": "span",
+                    "placement": "node",
+                    "key": ["name"],
+                },
+                {
+                    "type": "id",
+                    "placement": "popup",
+                    "key": ["id"],
+                },
+                {
+                    "type": "list",
+                    "key": ["cases"],
+                    "placement": "node",
+                    "child": [
+                        {
+                            "type": "span",
+                            "key": ["name"],
+                        },
+                        {
+                            "type": "scope",
+                            "key": ["block", "id"],
+                        },
+                    ],
+                },
+                {
+                    "type": "span",
+                    "placement": "popup",
+                    "key": ["value_type"],
+                },
+                {
+                    "type": "list",
+                    "key": ["cases"],
+                    "placement": "popup",
+                    "child": [
+                        {
+                            "type": "span",
+                            "key": ["name"],
+                        },
+                        {
+                            "type": "p",
+                            "key": ["value"],
+                        },
+                    ],
+                },
+            ],
+        }
+
+    # TODO
     @classmethod
     def get_form_fields(cls):
         return [
@@ -134,6 +228,13 @@ class ConditionalNodeCase(BaseModel):
         related_name="cases",
     )
 
+    @property
+    def name(self):
+        return self.block.name
+
+    def __str__(self):
+        return self.name
+
 
 class ForEachNode(BaseNode):
     block = models.OneToOneField(
@@ -142,6 +243,38 @@ class ForEachNode(BaseNode):
         related_name="for_each_node",
     )
 
+    @property
+    def name(self):
+        return self.block.name
+
+    def __str__(self):
+        return self.name
+
+    # TODO
+    @classmethod
+    def get_node_fields(cls):
+        return {
+            "color": "#FF5733",
+            "attrs": [
+                {
+                    "type": "span",
+                    "placement": "node",
+                    "key": ["name"],
+                },
+                {
+                    "type": "id",
+                    "placement": "popup",
+                    "key": ["id"],
+                },
+                {
+                    "type": "scope",
+                    "placement": "node",
+                    "key": ["block", "id"],
+                },
+            ],
+        }
+
+    # TODO
     @classmethod
     def get_form_fields(cls):
         return [

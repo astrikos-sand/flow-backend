@@ -12,7 +12,7 @@ from apps.flow_new.serializers.flow import ScopeSerializer
 
 class ForEachNodeSerializer(BaseNodeSerializer):
     slots = SlotSerializer(many=True, write_only=True)
-    name = serializers.CharField(write_only=True)
+    name = serializers.CharField()
     block = ScopeSerializer(read_only=True)
 
     class Meta(BaseNodeSerializer.Meta):
