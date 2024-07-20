@@ -1,7 +1,7 @@
 from django.db import models
 
 from apps.flow_new.models.nodes import BaseNode, Flow
-from apps.flow_new.enums import ATTACHMENT_TYPE, VALUE_TYPE
+from apps.flow_new.enums import ATTACHMENT_TYPE, VALUE_TYPE, NODE_COLOR_PALLETE
 from apps.common.models import BaseModel
 
 
@@ -19,11 +19,12 @@ class DataNode(BaseNode):
     @classmethod
     def get_node_fields(cls):
         return {
-            "color": "#FF5733",
+            "color": NODE_COLOR_PALLETE.DATANODE.value,
             "attrs": [
                 {
                     "type": "span",
                     "placement": "node",
+                    "label": "name",
                     "key": ["name"],
                 },
                 {
@@ -34,11 +35,13 @@ class DataNode(BaseNode):
                 {
                     "type": "p",
                     "placement": "popup",
+                    "label": "value",
                     "key": ["value"],
                 },
                 {
                     "type": "span",
                     "placement": "popup",
+                    "label": "value_type",
                     "key": ["value_type"],
                 },
             ],
@@ -105,16 +108,17 @@ class ConditionalNode(BaseNode):
     )
 
     def __str__(self):
-        return self.name
+        return self.name or "Conditional Node"
 
     @classmethod
     def get_node_fields(cls):
         return {
-            "color": "#FF5733",
+            "color": NODE_COLOR_PALLETE.CONDITIONAL_NODE.value,
             "attrs": [
                 {
                     "type": "span",
                     "placement": "node",
+                    "label": "name",
                     "key": ["name"],
                 },
                 {
@@ -140,6 +144,7 @@ class ConditionalNode(BaseNode):
                 {
                     "type": "span",
                     "placement": "popup",
+                    "label": "value_type",
                     "key": ["value_type"],
                 },
                 {
@@ -254,11 +259,12 @@ class ForEachNode(BaseNode):
     @classmethod
     def get_node_fields(cls):
         return {
-            "color": "#FF5733",
+            "color": NODE_COLOR_PALLETE.FOR_EACH_NODE.value,
             "attrs": [
                 {
                     "type": "span",
                     "placement": "node",
+                    "label": "name",
                     "key": ["name"],
                 },
                 {

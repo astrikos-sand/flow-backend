@@ -1,7 +1,12 @@
 from django.db import models
 
 from apps.common.models import BaseModel
-from apps.flow_new.enums import ITEM_TYPE, ATTACHMENT_TYPE, VALUE_TYPE
+from apps.flow_new.enums import (
+    ITEM_TYPE,
+    ATTACHMENT_TYPE,
+    VALUE_TYPE,
+    NODE_COLOR_PALLETE,
+)
 from apps.flow_new.models.base import BaseModelWithTag
 from apps.flow_new.models.nodes import BaseNode
 
@@ -97,10 +102,11 @@ class FunctionNode(BaseNode):
     @classmethod
     def get_node_fields(cls):
         return {
-            "color": "#FF5733",
+            "color": NODE_COLOR_PALLETE.FUNCTION_NODE.value,
             "attrs": [
                 {
                     "type": "span",
+                    "label": "Function",
                     "placement": "node",
                     "key": ["definition", "name"],
                 },
@@ -112,12 +118,14 @@ class FunctionNode(BaseNode):
                 {
                     "type": "link",
                     "placement": "popup",
+                    "label": "Definition",
                     "key": ["definition", "id"],
                     "link_type": "function_definition",
                 },
                 {
                     "type": "link",
                     "placement": "popup",
+                    "label": "Code",
                     "key": ["definition", "code"],
                 },
             ],
