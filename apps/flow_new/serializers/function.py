@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from apps.flow_new.models import FunctionField, FunctionDefinition, FunctionNode, Slot
 from apps.flow_new.serializers.nodes import BaseNodeSerializer
+from apps.flow_new.serializers.tags import TagSerializer
 
 
 class FunctionFieldSerializer(serializers.ModelSerializer):
@@ -16,6 +17,7 @@ class FunctionFieldSerializer(serializers.ModelSerializer):
 
 class FunctionDefinitionSerializer(serializers.ModelSerializer):
     fields = FunctionFieldSerializer(many=True, write_only=True)
+    tags = TagSerializer(many=True, read_only=True)
 
     class Meta:
         model = FunctionDefinition

@@ -16,6 +16,7 @@ from apps.flow_new.serializers import (
     FunctionDefinitionSerializer,
     ConnectionSerializer,
 )
+from apps.flow_new.parsers import MultiPartJSONParser
 from apps.flow_new.models import (
     BaseNode,
     Flow,
@@ -132,7 +133,7 @@ class BaseNodeViewSet(ModelViewSet):
 class FunctionDefinitionViewSet(ModelViewSet):
     queryset = FunctionDefinition.objects.all()
     serializer_class = FunctionDefinitionSerializer
-    # TODO: parsing
+    parser_classes = [MultiPartJSONParser]
 
 
 class ConnectionViewSet(ModelViewSet):

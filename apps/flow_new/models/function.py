@@ -31,36 +31,6 @@ class FunctionDefinition(BaseModelWithTag):
     def output_fields(self):
         return self.fields.filter(attachment_type=ATTACHMENT_TYPE.OUTPUT.value)
 
-    @classmethod
-    def get_form_fields(cls):
-        return [
-            {
-                "type": "input",
-                "placeholder": "Name",
-                "required": True,
-                "label": "name",
-            },
-            {
-                "type": "input",
-                "placeholder": "Code",
-                "required": True,
-                "label": "code",
-            },
-            {
-                "type": "input",
-                "placeholder": "Field Name",
-                "required": True,
-                "label": "fields.name",
-            },
-            {
-                "type": "select",
-                "placeholder": "Attachment Type",
-                "required": True,
-                "label": "fields.attachment_type",
-                "choices": ["IN", "OUT"],
-            },
-        ]
-
 
 class FunctionField(BaseModel):
     name = models.CharField(max_length=255)
