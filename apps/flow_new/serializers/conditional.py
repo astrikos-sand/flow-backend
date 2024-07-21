@@ -47,7 +47,15 @@ class ConditionalNodeSerializer(BaseNodeSerializer):
             if slot["attachment_type"] == ATTACHMENT_TYPE.INPUT.value
         ]
 
-        output_slots = [
+        case = [
+            {
+                "name": "_case",
+                "attachment_type": ATTACHMENT_TYPE.OUTPUT.value,
+                "value_type": value_type,
+            }
+        ]
+
+        output_slots = case + [
             {
                 **slot,
                 "attachment_type": ATTACHMENT_TYPE.OUTPUT.value,
@@ -95,13 +103,11 @@ class ConditionalNodeSerializer(BaseNodeSerializer):
 
         scope_input_slots = [
             {
-                "name": "_case",
+                **slot,
                 "attachment_type": ATTACHMENT_TYPE.INPUT.value,
-                "value_type": value_type,
             }
+            for slot in output_slots
         ]
-
-        scope_input_slots = scope_input_slots + input_slots[1:]
 
         for case in cases:
             scope_serializer = ScopeSerializer(

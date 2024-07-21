@@ -209,7 +209,8 @@ class SaveAPIView(APIView):
         for node_data in received_nodes:
             node_id = node_data.get("id")
             try:
-                node = BaseNode.objects.get(id=node_id, flow=flow)
+                node = BaseNode.objects.get(id=node_id)
+                node.flow = flow
                 node.position = node_data.get("position")
                 node.save()
                 updated_nodes.append(node_data)
@@ -237,8 +238,8 @@ class SaveAPIView(APIView):
                 if (
                     str(exist_conn.from_slot.node.id) == incoming_conn["source"]
                     and str(exist_conn.to_slot.node.id) == incoming_conn["target"]
-                    and exist_conn.from_slot.name == incoming_conn["source_slot"]
-                    and exist_conn.to_slot.name == incoming_conn["target_slot"]
+                    and str(exist_conn.from_slot.id) == incoming_conn["source_slot"]
+                    and str(exist_conn.to_slot.id) == incoming_conn["target_slot"]
                 ):
                     connections_to_create.remove(incoming_conn)
                     exist = True
@@ -258,13 +259,19 @@ class SaveAPIView(APIView):
 
         if connections_to_create:
             serialized_connections = []
+            existing_conn_set = set(
+                (conn.from_slot.id, conn.to_slot.id)
+                for conn in existing_connections
+            )
             for conn in connections_to_create:
                 try:
                     from_slot = Slot.objects.get(id=conn["source_slot"])
                     to_slot = Slot.objects.get(id=conn["target_slot"])
-                    serialized_connections.append(
-                        {"from_slot": from_slot.id, "to_slot": to_slot.id}
-                    )
+                    if (from_slot.id, to_slot.id) not in existing_conn_set:
+                        serialized_connections.append(
+                            {"from_slot": from_slot.id, "to_slot": to_slot.id}
+                        )
+                        existing_conn_set.add((from_slot.id, to_slot.id))
                 except Slot.DoesNotExist:
                     return Response(
                         {"error": f"Slot not found for connection: {conn}"},
@@ -276,9 +283,10 @@ class SaveAPIView(APIView):
                         status=status.HTTP_400_BAD_REQUEST,
                     )
 
-            serializer = ConnectionSerializer(data=serialized_connections, many=True)
-            if serializer.is_valid():
-                serializer.save()
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            if serialized_connections:
+                serializer = ConnectionSerializer(data=serialized_connections, many=True)
+                if serializer.is_valid():
+                    serializer.save()
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_200_OK)
