@@ -24,7 +24,7 @@ from apps.flow_new.models import (
     FunctionDefinition,
     Connection,
 )
-from apps.flow_new.runtime.worker import submit_task
+from apps.flow_new.runtime.worker import submit_task, create_environment
 from apps.flow_new.models import Tag
 
 
@@ -118,6 +118,12 @@ class FlowViewSet(ModelViewSet):
 class DependencyViewSet(ModelViewSet):
     queryset = Dependency.objects.all()
     serializer_class = DependencySerializer
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        data = response.data
+        create_environment(data)
+        return response
 
 
 class BaseNodeViewSet(ModelViewSet):
@@ -260,8 +266,7 @@ class SaveAPIView(APIView):
         if connections_to_create:
             serialized_connections = []
             existing_conn_set = set(
-                (conn.from_slot.id, conn.to_slot.id)
-                for conn in existing_connections
+                (conn.from_slot.id, conn.to_slot.id) for conn in existing_connections
             )
             for conn in connections_to_create:
                 try:
@@ -284,9 +289,13 @@ class SaveAPIView(APIView):
                     )
 
             if serialized_connections:
-                serializer = ConnectionSerializer(data=serialized_connections, many=True)
+                serializer = ConnectionSerializer(
+                    data=serialized_connections, many=True
+                )
                 if serializer.is_valid():
                     serializer.save()
                 else:
-                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(
+                        serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                    )
         return Response(status=status.HTTP_200_OK)

@@ -226,6 +226,8 @@ class ConditionalNode(BaseNode):
                 ],
             },
         ]
+
+
 class ConditionalNodeCase(BaseModel):
     value = models.CharField(
         max_length=255,
