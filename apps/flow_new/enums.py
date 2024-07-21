@@ -26,3 +26,13 @@ class VALUE_TYPE(models.TextChoices):
     DICTIONARY = "DICT", "Dictionary"
     NONE = "NONE", "None"
     ANY = "ANY", "Any"
+
+
+class NODE_COLOR_PALLETE(Enum):
+    DATANODE = "#FFBB70"
+    FUNCTION_NODE = "#CDE8E5"
+    CONDITIONAL_NODE = "#E8C5E5"
+    FOR_EACH_NODE = "#EEF7FF"
+    FLOW_NODE = "#E6FF94"
+    INPUT_NODE = "#F8DFD4"
+    OUTPUT_NODE = "#B19470"

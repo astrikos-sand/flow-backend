@@ -2,6 +2,7 @@ from django.db import models
 
 from apps.flow_new.models.nodes import BaseNode
 from apps.flow_new.models.base import Flow
+from apps.flow_new.enums import NODE_COLOR_PALLETE
 
 
 class InputNode(BaseNode):
@@ -9,7 +10,7 @@ class InputNode(BaseNode):
     @classmethod
     def get_node_fields(cls):
         return {
-            "color": "#FF5733",
+            "color": NODE_COLOR_PALLETE.INPUT_NODE.value,
             "attrs": [
                 {
                     "type": "id",
@@ -63,7 +64,7 @@ class OutputNode(BaseNode):
     @classmethod
     def get_node_fields(cls):
         return {
-            "color": "#FF5733",
+            "color": NODE_COLOR_PALLETE.OUTPUT_NODE.value,
             "attrs": [
                 {
                     "type": "id",
@@ -122,10 +123,11 @@ class FlowNode(BaseNode):
     @classmethod
     def get_node_fields(cls):
         return {
-            "color": "#FF5733",
+            "color": NODE_COLOR_PALLETE.FLOW_NODE.value,
             "attrs": [
                 {
                     "type": "span",
+                    "label": "Target Flow Name",
                     "placement": "node",
                     "key": ["represent", "name"],
                 },
@@ -137,6 +139,7 @@ class FlowNode(BaseNode):
                 {
                     "type": "link",
                     "placement": "popup",
+                    "label": "Target Flow",
                     "key": ["represent", "id"],
                     "link_type": "flow",
                 },

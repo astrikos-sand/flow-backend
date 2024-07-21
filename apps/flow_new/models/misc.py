@@ -1,7 +1,7 @@
 from django.db import models
 
 from apps.flow_new.models.nodes import BaseNode, Flow
-from apps.flow_new.enums import ATTACHMENT_TYPE, VALUE_TYPE
+from apps.flow_new.enums import ATTACHMENT_TYPE, VALUE_TYPE, NODE_COLOR_PALLETE
 from apps.common.models import BaseModel
 
 
@@ -19,11 +19,12 @@ class DataNode(BaseNode):
     @classmethod
     def get_node_fields(cls):
         return {
-            "color": "#FF5733",
+            "color": NODE_COLOR_PALLETE.DATANODE.value,
             "attrs": [
                 {
                     "type": "span",
                     "placement": "node",
+                    "label": "name",
                     "key": ["name"],
                 },
                 {
@@ -34,11 +35,13 @@ class DataNode(BaseNode):
                 {
                     "type": "p",
                     "placement": "popup",
+                    "label": "value",
                     "key": ["value"],
                 },
                 {
                     "type": "span",
                     "placement": "popup",
+                    "label": "value_type",
                     "key": ["value_type"],
                 },
             ],
@@ -105,16 +108,17 @@ class ConditionalNode(BaseNode):
     )
 
     def __str__(self):
-        return self.name
+        return self.name or "Conditional Node"
 
     @classmethod
     def get_node_fields(cls):
         return {
-            "color": "#FF5733",
+            "color": NODE_COLOR_PALLETE.CONDITIONAL_NODE.value,
             "attrs": [
                 {
                     "type": "span",
                     "placement": "node",
+                    "label": "name",
                     "key": ["name"],
                 },
                 {
@@ -140,6 +144,7 @@ class ConditionalNode(BaseNode):
                 {
                     "type": "span",
                     "placement": "popup",
+                    "label": "value_type",
                     "key": ["value_type"],
                 },
                 {
@@ -160,15 +165,43 @@ class ConditionalNode(BaseNode):
             ],
         }
 
-    # TODO
     @classmethod
     def get_form_fields(cls):
         return [
             {
-                "type": "input",
-                "placeholder": "Name",
+                "type": "select",
+                "placeholder": "Value Type",
                 "required": True,
-                "label": "name",
+                "label": "value_type",
+                "choices": [
+                    {"value": choice[0], "label": choice[0]}
+                    for choice in VALUE_TYPE.choices
+                ],
+            },
+            {
+                "type": "input",
+                "placeholder": "Flow",
+                "required": True,
+                "label": "flow",
+                "value": "",
+            },
+            {
+                "type": "array",
+                "label": "cases",
+                "fields": [
+                    {
+                        "type": "input",
+                        "placeholder": "Case Name",
+                        "required": True,
+                        "label": "name",
+                    },
+                    {
+                        "type": "input",
+                        "placeholder": "Case Value",
+                        "required": True,
+                        "label": "value",
+                    },
+                ],
             },
             {
                 "type": "array",
@@ -190,27 +223,9 @@ class ConditionalNode(BaseNode):
                             for choice in ATTACHMENT_TYPE.choices
                         ],
                     },
-                    {
-                        "type": "select",
-                        "placeholder": "Value Type",
-                        "required": True,
-                        "label": "value_type",
-                        "choices": [
-                            {"value": choice[0], "label": choice[0]}
-                            for choice in VALUE_TYPE.choices
-                        ],
-                    },
                 ],
             },
-            {
-                "type": "textarea",
-                "placeholder": "Slot Values",
-                "required": False,
-                "label": "values",
-            },
         ]
-
-
 class ConditionalNodeCase(BaseModel):
     value = models.CharField(
         max_length=255,
@@ -250,15 +265,15 @@ class ForEachNode(BaseNode):
     def __str__(self):
         return self.name
 
-    # TODO
     @classmethod
     def get_node_fields(cls):
         return {
-            "color": "#FF5733",
+            "color": NODE_COLOR_PALLETE.FOR_EACH_NODE.value,
             "attrs": [
                 {
                     "type": "span",
                     "placement": "node",
+                    "label": "name",
                     "key": ["name"],
                 },
                 {
@@ -274,7 +289,6 @@ class ForEachNode(BaseNode):
             ],
         }
 
-    # TODO
     @classmethod
     def get_form_fields(cls):
         return [
@@ -282,12 +296,35 @@ class ForEachNode(BaseNode):
                 "type": "input",
                 "placeholder": "Name",
                 "required": True,
-                "reskey": ["name"],
+                "label": "name",
             },
             {
-                "type": "textarea",
-                "placeholder": "Value",
+                "type": "input",
+                "placeholder": "Flow",
                 "required": True,
-                "reskey": ["value"],
+                "label": "flow",
+                "value": "",
+            },
+            {
+                "type": "array",
+                "label": "slots",
+                "fields": [
+                    {
+                        "type": "input",
+                        "placeholder": "Slot Name",
+                        "required": True,
+                        "label": "name",
+                    },
+                    {
+                        "type": "select",
+                        "placeholder": "Attachment Type",
+                        "required": True,
+                        "label": "attachment_type",
+                        "choices": [
+                            {"value": choice[0], "label": choice[0]}
+                            for choice in ATTACHMENT_TYPE.choices
+                        ],
+                    },
+                ],
             },
         ]

@@ -23,11 +23,20 @@ from apps.flow_new.models import (
     ScopeBlock,
 )
 
+from apps.trigger.models import WebHookTrigger, PeriodicTrigger
+
 
 @admin.register(BaseModelWithTag)
 class BaseModelWithTagAdmin(PolymorphicParentModelAdmin):
     base_model = BaseModelWithTag
-    child_models = (FileArchive, Dependency, Flow, FunctionDefinition)
+    child_models = (
+        FileArchive,
+        Dependency,
+        Flow,
+        FunctionDefinition,
+        PeriodicTrigger,
+        WebHookTrigger,
+    )
 
 
 @admin.register(BaseNode)
