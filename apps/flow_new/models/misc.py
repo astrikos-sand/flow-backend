@@ -165,15 +165,43 @@ class ConditionalNode(BaseNode):
             ],
         }
 
-    # TODO
     @classmethod
     def get_form_fields(cls):
         return [
             {
-                "type": "input",
-                "placeholder": "Name",
+                "type": "select",
+                "placeholder": "Value Type",
                 "required": True,
-                "label": "name",
+                "label": "value_type",
+                "choices": [
+                    {"value": choice[0], "label": choice[0]}
+                    for choice in VALUE_TYPE.choices
+                ],
+            },
+            {
+                "type": "input",
+                "placeholder": "Flow",
+                "required": True,
+                "label": "flow",
+                "value": "",
+            },
+            {
+                "type": "array",
+                "label": "cases",
+                "fields": [
+                    {
+                        "type": "input",
+                        "placeholder": "Case Name",
+                        "required": True,
+                        "label": "name",
+                    },
+                    {
+                        "type": "input",
+                        "placeholder": "Case Value",
+                        "required": True,
+                        "label": "value",
+                    },
+                ],
             },
             {
                 "type": "array",
@@ -195,27 +223,9 @@ class ConditionalNode(BaseNode):
                             for choice in ATTACHMENT_TYPE.choices
                         ],
                     },
-                    {
-                        "type": "select",
-                        "placeholder": "Value Type",
-                        "required": True,
-                        "label": "value_type",
-                        "choices": [
-                            {"value": choice[0], "label": choice[0]}
-                            for choice in VALUE_TYPE.choices
-                        ],
-                    },
                 ],
             },
-            {
-                "type": "textarea",
-                "placeholder": "Slot Values",
-                "required": False,
-                "label": "values",
-            },
         ]
-
-
 class ConditionalNodeCase(BaseModel):
     value = models.CharField(
         max_length=255,
@@ -255,7 +265,6 @@ class ForEachNode(BaseNode):
     def __str__(self):
         return self.name
 
-    # TODO
     @classmethod
     def get_node_fields(cls):
         return {
@@ -280,7 +289,6 @@ class ForEachNode(BaseNode):
             ],
         }
 
-    # TODO
     @classmethod
     def get_form_fields(cls):
         return [
@@ -288,12 +296,35 @@ class ForEachNode(BaseNode):
                 "type": "input",
                 "placeholder": "Name",
                 "required": True,
-                "reskey": ["name"],
+                "label": "name",
             },
             {
-                "type": "textarea",
-                "placeholder": "Value",
+                "type": "input",
+                "placeholder": "Flow",
                 "required": True,
-                "reskey": ["value"],
+                "label": "flow",
+                "value": "",
+            },
+            {
+                "type": "array",
+                "label": "slots",
+                "fields": [
+                    {
+                        "type": "input",
+                        "placeholder": "Slot Name",
+                        "required": True,
+                        "label": "name",
+                    },
+                    {
+                        "type": "select",
+                        "placeholder": "Attachment Type",
+                        "required": True,
+                        "label": "attachment_type",
+                        "choices": [
+                            {"value": choice[0], "label": choice[0]}
+                            for choice in ATTACHMENT_TYPE.choices
+                        ],
+                    },
+                ],
             },
         ]

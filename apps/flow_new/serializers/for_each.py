@@ -35,22 +35,22 @@ class ForEachNodeSerializer(BaseNodeSerializer):
             if slot["attachment_type"] == ATTACHMENT_TYPE.INPUT.value
         ]
 
-        output_slots = [
-            {
-                "name": slot["name"],
-                "attachment_type": ATTACHMENT_TYPE.OUTPUT.value,
-            }
-            for slot in input_slots[1:]
-        ]
-
-        slots = input_slots + output_slots
-
         scope_input_slots = [
             {
                 "name": "_element",
                 "attachment_type": ATTACHMENT_TYPE.INPUT.value,
             }
         ] + input_slots[1:]
+
+        output_slots = [
+            {
+                "name": slot["name"],
+                "attachment_type": ATTACHMENT_TYPE.OUTPUT.value,
+            }
+            for slot in scope_input_slots
+        ]
+
+        slots = input_slots + output_slots
 
         scope_serializer = ScopeSerializer(
             data={
