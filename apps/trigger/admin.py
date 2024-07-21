@@ -1,7 +1,18 @@
 from django.contrib import admin
-from apps.trigger.models import WebHookTrigger, PeriodicTrigger
 
-admin.site.register(WebHookTrigger)
-admin.site.register(PeriodicTrigger)
+from polymorphic.admin import PolymorphicChildModelAdmin
 
-# Register your models here.
+from apps.trigger.models import (
+    WebHookTrigger,
+    PeriodicTrigger,
+)
+
+
+@admin.register(WebHookTrigger)
+class WebHookTriggerAdmin(PolymorphicChildModelAdmin):
+    base_model = WebHookTrigger
+
+
+@admin.register(PeriodicTrigger)
+class PeriodicTriggerAdmin(PolymorphicChildModelAdmin):
+    base_model = PeriodicTrigger
