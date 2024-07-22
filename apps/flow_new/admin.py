@@ -21,6 +21,7 @@ from apps.flow_new.models import (
     ConditionalNode,
     ForEachNode,
     ScopeBlock,
+    BlockNode,
 )
 
 from apps.trigger.models import WebHookTrigger, PeriodicTrigger
@@ -50,7 +51,13 @@ class BaseNodeAdmin(PolymorphicParentModelAdmin):
         OutputNode,
         ConditionalNode,
         ForEachNode,
+        BlockNode,
     )
+
+
+@admin.register(BlockNode)
+class BlockNodeAdmin(PolymorphicChildModelAdmin):
+    base_model = BlockNode
 
 
 @admin.register(FunctionNode)

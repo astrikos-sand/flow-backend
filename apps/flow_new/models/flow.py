@@ -7,6 +7,9 @@ from apps.flow_new.enums import NODE_COLOR_PALLETE
 
 class InputNode(BaseNode):
 
+    def __str__(self):
+        return f"input node for {self.flow.name}"
+
     @classmethod
     def get_node_fields(cls):
         return {
@@ -60,6 +63,9 @@ class InputNode(BaseNode):
 
 
 class OutputNode(BaseNode):
+
+    def __str__(self):
+        return f"output node for {self.flow.name}"
 
     @classmethod
     def get_node_fields(cls):
