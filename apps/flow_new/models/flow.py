@@ -28,12 +28,6 @@ class InputNode(BaseNode):
         return [
             {
                 "type": "input",
-                "placeholder": "Name",
-                "required": True,
-                "label": "name",
-            },
-            {
-                "type": "input",
                 "placeholder": "Flow",
                 "required": True,
                 "label": "flow",
@@ -83,12 +77,6 @@ class OutputNode(BaseNode):
     @classmethod
     def get_form_fields(cls):
         return [
-            {
-                "type": "input",
-                "placeholder": "Name",
-                "required": True,
-                "label": "name",
-            },
             {
                 "type": "input",
                 "placeholder": "Flow",

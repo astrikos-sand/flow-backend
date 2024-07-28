@@ -119,13 +119,13 @@ class BlockNodeSerializer(BaseNodeSerializer):
 
         validated_data["block"] = scope_serializer.instance
 
-        for_each_node = BlockNode.objects.create(**validated_data)
+        block_node = BlockNode.objects.create(**validated_data)
 
         for slot in slots:
             data = {
                 "name": slot["name"],
                 "attachment_type": slot["attachment_type"],
             }
-            Slot.objects.create(node=for_each_node, **data)
+            Slot.objects.create(node=block_node, **data)
 
-        return for_each_node
+        return block_node
