@@ -16,25 +16,16 @@ class WebHookTriggerViewSet(ModelViewSet):
     queryset = WebHookTrigger.objects.all()
     serializer_class = WebHookTriggerSerializer
 
-    @action(detail=True, methods=["post"], url_path="trigger", url_name="trigger")
-    def trigger(self, request, pk=None):
+    @action(detail=True, methods=["post"])
+    def execute(self, request, pk: str):
         hook: WebHookTrigger = self.get_object()
-        data = {"data": request.data}
-        try:
-            result = webhook_task(node=hook.node, data=data, request=request)
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        result = webhook_task(flow_id=str(hook.target.id))
         return Response(result, status=status.HTTP_200_OK)
 
 
 class PeriodicTriggerViewSet(ModelViewSet):
     queryset = PeriodicTrigger.objects.all()
     serializer_class = PeriodicTriggerSerializer
-
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context.update({"request": self.request})
-        return context
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -43,7 +34,5 @@ class PeriodicTriggerViewSet(ModelViewSet):
 
 
 router = DefaultRouter()
-router.register(r"webhook-triggers", WebHookTriggerViewSet, basename="webhook-trigger")
-router.register(
-    r"periodic-triggers", PeriodicTriggerViewSet, basename="periodic-trigger"
-)
+router.register(r"webhook", WebHookTriggerViewSet, basename="webhook-trigger")
+router.register(r"periodic", PeriodicTriggerViewSet, basename="periodic-trigger")

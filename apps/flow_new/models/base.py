@@ -119,6 +119,8 @@ class Flow(BaseModelWithTag):
     )
 
     def __str__(self):
+        if self.scope:
+            return f"{self.scope}/{self.name}"
         return f"{self.name}"
 
     @property

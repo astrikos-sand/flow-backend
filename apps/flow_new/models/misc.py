@@ -226,6 +226,8 @@ class ConditionalNode(BaseNode):
                 ],
             },
         ]
+
+
 class ConditionalNodeCase(BaseModel):
     value = models.CharField(
         max_length=255,
@@ -269,6 +271,85 @@ class ForEachNode(BaseNode):
     def get_node_fields(cls):
         return {
             "color": NODE_COLOR_PALLETE.FOR_EACH_NODE.value,
+            "attrs": [
+                {
+                    "type": "span",
+                    "placement": "node",
+                    "label": "name",
+                    "key": ["name"],
+                },
+                {
+                    "type": "id",
+                    "placement": "popup",
+                    "key": ["id"],
+                },
+                {
+                    "type": "scope",
+                    "placement": "node",
+                    "key": ["block", "id"],
+                },
+            ],
+        }
+
+    @classmethod
+    def get_form_fields(cls):
+        return [
+            {
+                "type": "input",
+                "placeholder": "Name",
+                "required": True,
+                "label": "name",
+            },
+            {
+                "type": "input",
+                "placeholder": "Flow",
+                "required": True,
+                "label": "flow",
+                "value": "",
+            },
+            {
+                "type": "array",
+                "label": "slots",
+                "fields": [
+                    {
+                        "type": "input",
+                        "placeholder": "Slot Name",
+                        "required": True,
+                        "label": "name",
+                    },
+                    {
+                        "type": "select",
+                        "placeholder": "Attachment Type",
+                        "required": True,
+                        "label": "attachment_type",
+                        "choices": [
+                            {"value": choice[0], "label": choice[0]}
+                            for choice in ATTACHMENT_TYPE.choices
+                        ],
+                    },
+                ],
+            },
+        ]
+
+
+class BlockNode(BaseNode):
+    block = models.OneToOneField(
+        ScopeBlock,
+        on_delete=models.CASCADE,
+        related_name="block_node",
+    )
+
+    @property
+    def name(self):
+        return self.block.name
+
+    def __str__(self):
+        return self.name
+
+    @classmethod
+    def get_node_fields(cls):
+        return {
+            "color": NODE_COLOR_PALLETE.BLOCK_NODE.value,
             "attrs": [
                 {
                     "type": "span",

@@ -14,3 +14,19 @@ def submit_task(
     response = requests.post(f"{WORKER_URL}/v2/", data=json_data, headers=headers)
     response.raise_for_status()
     return response.json()
+
+
+def create_environment(
+    data: dict = {},
+):
+    json_data = JSONRenderer().render(data)
+
+    headers = {"Content-type": "application/json", "Accept": "application/json"}
+
+    response = requests.post(
+        f"{WORKER_URL}/env/",
+        data=json_data,
+        headers=headers,
+    )
+    response.raise_for_status()
+    return response.json()
