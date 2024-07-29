@@ -87,22 +87,22 @@ class FileArchiveViewSet(ModelViewSet):
     queryset = FileArchive.objects.all()
     serializer_class = FileArchiveSerializer
 
-    def create(self, request: Request, *args, **kwargs):
-        file = request.FILES.get("file")
-        filename = request.data.get("filename")
-        parent_tag_id = request.data.get("parentTag")
-        new_tag_name = request.data.get("newTag")
+    # def create(self, request: Request, *args, **kwargs):
+    #     file = request.FILES.get("file")
+    #     filename = request.data.get("filename")
+    #     parent_tag_id = request.data.get("parentTag")
+    #     new_tag_name = request.data.get("newTag")
 
-        parent_tag = get_object_or_404(Tag, id=parent_tag_id)
-        new_tag, created = Tag.objects.get_or_create(
-            name=new_tag_name, parent=parent_tag
-        )
+    #     parent_tag = get_object_or_404(Tag, id=parent_tag_id)
+    #     new_tag, created = Tag.objects.get_or_create(
+    #         name=new_tag_name, parent=parent_tag
+    #     )
 
-        file_archive = FileArchive.objects.create(name=filename, file=file)
-        file_archive.tags.add(new_tag)
-        file_archive.save()
+    #     file_archive = FileArchive.objects.create(name=filename, file=file)
+    #     file_archive.tags.add(new_tag)
+    #     file_archive.save()
 
-        return Response(FileArchiveSerializer(file_archive).data)
+    #     return Response(FileArchiveSerializer(file_archive).data)
 
 
 class DependencyViewSet(ModelViewSet):
