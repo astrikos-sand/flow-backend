@@ -169,6 +169,12 @@ class ConditionalNode(BaseNode):
     def get_form_fields(cls):
         return [
             {
+                "type": "input",
+                "placeholder": "Name",
+                "required": True,
+                "label": "name",
+            },
+            {
                 "type": "select",
                 "placeholder": "Value Type",
                 "required": True,

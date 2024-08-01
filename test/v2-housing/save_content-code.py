@@ -8,7 +8,6 @@ def func(key, content, url):
     with open(key, "rb") as f:
         files = {"file": (key, f)}
         res = requests.post(url, files=files, data={"name": key})
-        print(res.text)
     return
 
 
