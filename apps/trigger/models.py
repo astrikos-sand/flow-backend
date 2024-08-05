@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 
 from django_celery_beat.models import PeriodicTask
 
+from apps.flow_new.enums import ITEM_TYPE
 from apps.flow_new.models import BaseModelWithTag, Flow
 
 
@@ -17,7 +18,10 @@ class Trigger(BaseModelWithTag):
 
 
 class WebHookTrigger(Trigger):
-    pass
+
+    @property
+    def item_type(self) -> str:
+        return ITEM_TYPE.WEBHOOK_TRIGGER.value
 
 
 class PeriodicTrigger(Trigger):
@@ -27,3 +31,7 @@ class PeriodicTrigger(Trigger):
 
     def __str__(self):
         return f"{self.target.name} - {self.task.name}"
+
+    @property
+    def item_type(self) -> str:
+        return ITEM_TYPE.PERIODIC_TRIGGER.value

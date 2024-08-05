@@ -1,11 +1,14 @@
+import json
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.decorators import action
-
+from rest_framework.decorators import action, parser_classes
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.request import Request
 
 from apps.flow_new.models import Tag, FileArchive, BaseModelWithTag, Flow, Dependency
+from apps.flow_new.parsers import MultiPartJSONParser
 from apps.flow_new.serializers import (
     TagSerializer,
     FileArchiveSerializer,
@@ -13,13 +16,47 @@ from apps.flow_new.serializers import (
 )
 from apps.flow_new.mappings import ITEM_MAPS
 from apps.common.exceptions import bad_request
-from apps.flow_new.serializers.nodes import FlowSerializer
 
 
 # TODO
 class TagViewSet(ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
+    parser_classes = [MultiPartJSONParser]
+
+    @action(detail=False, methods=["POST"])
+    def create_item(self, request: Request):
+        item_type = request.data.get("item_type")
+        tag_ids = request.data.pop("tag_ids", [])
+
+        if not item_type:
+            return Response(
+                {"error": "Item type is required"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if item_type not in ITEM_MAPS:
+            return Response(
+                {"error": "Invalid item type"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not tag_ids:
+            return Response(
+                {"error": "Tag IDs are required"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        tags = Tag.objects.filter(id__in=tag_ids)
+        if not tags.exists():
+            return Response(
+                {"error": "Invalid tag IDs"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        item_serializer_class = ITEM_MAPS[item_type]["serializer"]
+        serializer = item_serializer_class(data=request.data)
+        if serializer.is_valid():
+            item = serializer.save()
+            item.tags.set(tags)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=["POST"])
     def search(self, request: Request):
@@ -63,9 +100,17 @@ class TagViewSet(ModelViewSet):
 
         return Response(serializer.data)
 
-    @action(detail=True, methods=["get"])
+    @action(detail=False, methods=["get"])
     def all_children(self, request: Request, pk=None):
-        tag = get_object_or_404(Tag, pk=pk)
+        if pk is not None:
+            tag = get_object_or_404(Tag, pk=pk)
+        else:
+            name = request.query_params.get("name")
+            if name is None:
+                return JsonResponse(
+                    {"error": "Either pk or name parameter is required"}, status=400
+                )
+            tag = get_object_or_404(Tag, name=name)
 
         def get_all_children(tag):
             children = Tag.objects.filter(parent=tag)

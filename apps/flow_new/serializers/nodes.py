@@ -14,21 +14,22 @@ from apps.flow_new.utils import typecast_value
 from apps.flow_new.serializers.tags import TagSerializer
 
 
-class FlowSerializer(serializers.ModelSerializer):
-    tags = TagSerializer(many=True, read_only=True)
-    full_name = serializers.CharField(read_only=True)
-
+class DependencySerializer(serializers.ModelSerializer):
     class Meta:
-        model = Flow
+        model = Dependency
         exclude = (
             "created_at",
             "updated_at",
         )
 
 
-class DependencySerializer(serializers.ModelSerializer):
+class FlowSerializer(serializers.ModelSerializer):
+    tags = TagSerializer(many=True, read_only=True)
+    full_name = serializers.CharField(read_only=True)
+    environment = DependencySerializer(source="lib", read_only=True)
+
     class Meta:
-        model = Dependency
+        model = Flow
         exclude = (
             "created_at",
             "updated_at",
