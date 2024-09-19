@@ -69,6 +69,14 @@ class FunctionNode(BaseNode):
     def __str__(self):
         return f"{self.definition} - {self.flow}"
 
+    def export_data(self):
+        data = super().export_data()
+        return {
+            **data,
+            "definition": self.definition.id,
+            "node_type": "FunctionNode",
+        }
+
     @classmethod
     def get_node_fields(cls):
         return {

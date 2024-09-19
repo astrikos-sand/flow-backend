@@ -55,6 +55,15 @@ class BaseNode(BaseModel, PolymorphicModel):
     def get_form_fields(cls):
         raise NotImplementedError
 
+    def export_data(self):
+        return {
+            "position": self.position,
+            "input_slots": self.input_slots,
+            "output_slots": self.output_slots,
+            "connections_in": self.connections_in,
+            "connections_out": self.connections_out,
+        }
+
 
 # TODO: rm the value type from slot
 class Slot(BaseModel):
