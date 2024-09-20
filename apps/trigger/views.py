@@ -19,7 +19,8 @@ class WebHookTriggerViewSet(ModelViewSet):
     @action(detail=True, methods=["post"])
     def execute(self, request, pk: str):
         hook: WebHookTrigger = self.get_object()
-        result = webhook_task(flow_id=str(hook.target.id))
+        inputs = request.data.get("inputs", {})
+        result = webhook_task(flow_id=str(hook.target.id), inputs=inputs)
         return Response(result, status=status.HTTP_200_OK)
 
 
