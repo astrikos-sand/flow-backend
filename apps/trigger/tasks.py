@@ -3,13 +3,13 @@ from django.shortcuts import get_object_or_404
 from celery import shared_task
 
 from apps.common.exceptions import bad_request
-from apps.flow_new.serializers import (
+from apps.flow.serializers import (
     FlowSerializer,
     BaseNodePolymorphicSerializer,
     DependencySerializer,
 )
-from apps.flow_new.models import Flow, InputNode
-from apps.flow_new.runtime.worker import submit_task
+from apps.flow.models import Flow, InputNode
+from apps.flow.runtime.worker import submit_task
 
 
 @shared_task

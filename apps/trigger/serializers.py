@@ -18,7 +18,7 @@ from apps.trigger.models import (
     Trigger,
 )
 from apps.trigger.enums import SCHDULER_TYPE
-from apps.flow_new.serializers.tags import TagSerializer
+from apps.flow.serializers.tags import TagSerializer
 
 
 class TriggerSerializer(serializers.ModelSerializer):
