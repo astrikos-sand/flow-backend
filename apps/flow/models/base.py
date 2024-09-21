@@ -68,7 +68,7 @@ class BaseModelWithTag(BaseModel, PolymorphicModel):
         return all(visit.values())
 
 
-class FileArchive(BaseModelWithTag):
+class FileArchive(BaseModel):
     name = models.CharField(max_length=255)
     file = models.FileField(upload_to="uploads/")
 
@@ -84,7 +84,7 @@ class FileArchive(BaseModelWithTag):
         return self.file.url
 
 
-class Dependency(BaseModelWithTag):
+class Dependency(BaseModel):
     name = models.CharField(max_length=100, unique=True)
     requirements = models.FileField(upload_to="flow/dependencies/")
 
@@ -100,7 +100,7 @@ class Dependency(BaseModelWithTag):
         verbose_name_plural = "Dependencies"
 
 
-class Flow(BaseModelWithTag):
+class Flow(BaseModel):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
     lib = models.ForeignKey(
