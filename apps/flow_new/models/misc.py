@@ -16,6 +16,16 @@ class DataNode(BaseNode):
     def __str__(self):
         return f"{self.name} - {self.value}"
 
+    def export_data(self):
+        data = super().export_data()
+        return {
+            **data,
+            "name": self.name,
+            "value": self.value,
+            "value_type": self.value_type,
+            "node_type": "DataNode",
+        }
+
     @classmethod
     def get_node_fields(cls):
         return {

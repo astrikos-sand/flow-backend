@@ -55,11 +55,41 @@ class InputNode(BaseNode):
             },
         ]
 
+    def export_data(self):
+        data = super().export_data()
+        return {
+            **data,
+            "slots": [
+                {
+                    "name": slot.name,
+                    "attachment_type": slot.attachment_type,
+                    "value_type": slot.value_type,
+                }
+                for slot in self.slots.all()
+            ],
+            "node_type": "InputNode",
+        }
+
 
 class OutputNode(BaseNode):
 
     def __str__(self):
         return f"output node for {self.flow.name}"
+
+    def export_data(self):
+        data = super().export_data()
+        return {
+            **data,
+            "slots": [
+                {
+                    "name": slot.name,
+                    "attachment_type": slot.attachment_type,
+                    "value_type": slot.value_type,
+                }
+                for slot in self.slots.all()
+            ],
+            "node_type": "OutputNode",
+        }
 
     @classmethod
     def get_node_fields(cls):
@@ -113,6 +143,14 @@ class FlowNode(BaseNode):
         on_delete=models.CASCADE,
         related_name="represent_nodes",
     )
+
+    def export_data(self):
+        data = super().export_data()
+        return {
+            **data,
+            "represent": self.represent.id,
+            "node_type": "FlowNode",
+        }
 
     @classmethod
     def get_node_fields(cls):
