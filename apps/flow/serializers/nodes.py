@@ -3,34 +3,11 @@ from rest_framework import serializers
 from apps.flow.models import (
     BaseNode,
     DataNode,
-    ConditionalNode,
     Slot,
     Connection,
-    Flow,
-    Dependency,
 )
 from apps.flow.enums import ATTACHMENT_TYPE
 from apps.flow.utils import typecast_value
-
-
-class FlowSerializer(serializers.ModelSerializer):
-    full_name = serializers.CharField(read_only=True)
-
-    class Meta:
-        model = Flow
-        exclude = (
-            "created_at",
-            "updated_at",
-        )
-
-
-class DependencySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Dependency
-        exclude = (
-            "created_at",
-            "updated_at",
-        )
 
 
 class ConnectionSerializer(serializers.ModelSerializer):

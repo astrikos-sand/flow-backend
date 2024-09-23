@@ -8,7 +8,8 @@ class ITEM_TYPE(Enum):
     FUNCTION = "functions"
     DEPENDENCY = "environments"
     FLOW = "flows"
-    TRIGGER = "triggers"
+    PERIODIC = "periodic"
+    WEBHOOK = "webhooks"
 
 
 class ATTACHMENT_TYPE(models.TextChoices):

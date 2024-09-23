@@ -9,6 +9,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         for item_type in ITEM_TYPE:
-            Prefix.objects.get_or_create(name=item_type.value)
+            root, _ = Prefix.objects.get_or_create(name=item_type.value)
+            Prefix.objects.get_or_create(name="miscellaneous", parent=root)
 
         self.stdout.write(self.style.SUCCESS("Database seeded successfully."))

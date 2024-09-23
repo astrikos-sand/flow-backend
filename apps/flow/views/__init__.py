@@ -7,10 +7,10 @@ from apps.flow.views.utils import *
 router = DefaultRouter()
 router.register(r"archives", FileArchiveViewSet)
 router.register(r"nodes", BaseNodeViewSet, basename="nodes")
-router.register(r"flow", FlowViewSet, basename="flow")
+router.register(r"flows", FlowViewSet, basename="flow")
 router.register(r"env", DependencyViewSet, basename="dependency")
 router.register(
-    r"function-definitions", FunctionDefinitionViewSet, basename="function-definitions"
+    r"functions", FunctionDefinitionViewSet, basename="function-definitions"
 )
 router.register(r"connections", ConnectionViewSet, basename="connections")
 router.register(r"fields", DynamicFieldsViewSet, basename="dynamic-fields")
