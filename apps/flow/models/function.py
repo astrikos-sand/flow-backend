@@ -7,11 +7,11 @@ from apps.flow.enums import (
     VALUE_TYPE,
     NODE_COLOR_PALLETE,
 )
-from apps.flow.models.base import BaseModelWithTag
+from apps.flow.models.prefix import BaseModelWithPrefix
 from apps.flow.models.nodes import BaseNode
 
 
-class FunctionDefinition(BaseModel):
+class FunctionDefinition(BaseModelWithPrefix):
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField(blank=True, null=True)
     code = models.FileField(upload_to="flow/functions/")

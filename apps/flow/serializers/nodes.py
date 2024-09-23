@@ -11,11 +11,9 @@ from apps.flow.models import (
 )
 from apps.flow.enums import ATTACHMENT_TYPE
 from apps.flow.utils import typecast_value
-from apps.flow.serializers.tags import TagSerializer
 
 
 class FlowSerializer(serializers.ModelSerializer):
-    tags = TagSerializer(many=True, read_only=True)
     full_name = serializers.CharField(read_only=True)
 
     class Meta:

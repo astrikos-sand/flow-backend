@@ -5,7 +5,6 @@ from apps.flow.views.nodes import *
 from apps.flow.views.utils import *
 
 router = DefaultRouter()
-router.register(r"tags", TagViewSet, basename="tags")
 router.register(r"archives", FileArchiveViewSet)
 router.register(r"nodes", BaseNodeViewSet, basename="nodes")
 router.register(r"flow", FlowViewSet, basename="flow")

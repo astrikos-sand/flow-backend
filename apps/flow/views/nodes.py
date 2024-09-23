@@ -25,34 +25,11 @@ from apps.flow.models import (
     Connection,
 )
 from apps.flow.runtime.worker import submit_task, create_environment
-from apps.flow.models import Tag
 
 
 class FlowViewSet(ModelViewSet):
     queryset = Flow.objects.all()
     serializer_class = FlowSerializer
-
-    # TODO
-    def create(self, request: Request, *args, **kwargs):
-        flow_data = request.data
-        tags_data = flow_data.pop("tags", [])
-
-        flow_serializer = FlowSerializer(data=flow_data)
-        flow_serializer.is_valid(raise_exception=True)
-        flow_serializer.save()
-        flow = flow_serializer.instance
-
-        for tag_data in tags_data:
-            parent_tag_id = tag_data.get("parent")
-            tag_name = tag_data.get("name")
-
-            parent_tag = get_object_or_404(Tag, id=parent_tag_id)
-            tag, created = Tag.objects.get_or_create(name=tag_name, parent=parent_tag)
-            flow.tags.add(tag)
-
-        flow.save()
-
-        return Response(FlowSerializer(flow).data)
 
     @action(detail=True, methods=["POST"])
     def execute(self, request: Request, pk: str):
