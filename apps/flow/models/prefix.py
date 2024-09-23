@@ -17,6 +17,10 @@ class Prefix(BaseModel):
     def full_name(self) -> str:
         return f"{self.parent.full_name}/{self.name}" if self.parent else self.name
 
+    @property
+    def first_childs(self) -> list["Prefix"]:
+        return list(self.children.all())
+
     def __str__(self):
         return self.full_name
 

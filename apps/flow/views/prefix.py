@@ -4,6 +4,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.request import Request
+from rest_framework.viewsets import ViewSet
 
 from apps.flow.models import FileArchive, Dependency, Prefix, Flow, FunctionDefinition
 from apps.flow.serializers import (
@@ -16,7 +17,9 @@ from apps.flow.serializers import (
 )
 from apps.flow.runtime.worker import submit_task, create_environment
 from apps.flow.enums import ITEM_TYPE
+from apps.flow.mappings import ITEM_MAPS
 from apps.flow.parsers import MultiPartJSONParser
+from apps.common.exceptions import bad_request
 
 
 class PrefixViewSet(ModelViewSet):
@@ -153,3 +156,60 @@ class FunctionDefinitionViewSet(ModelViewSet):
             "items": serializer.data,
         }
         return Response(data)
+
+
+class SearchViewSet(ViewSet):
+    @action(detail=False, methods=["POST"])
+    def items(self, request):
+        item_type = request.query_params.get("type", None)
+
+        if item_type is None or item_type not in (item.value for item in ITEM_TYPE):
+            raise bad_request
+
+        query: str = request.data.get("query", None)
+        if query is None:
+            raise bad_request
+
+        query = query.strip()
+
+        results = []
+
+        if query.startswith("prefix:"):
+            query = query.replace("prefix:", "")
+            query = query.strip("/")
+
+            root_prefix = Prefix.objects.get(name=item_type, parent=None)
+            res_prefix = [root_prefix]
+            prefixes = []
+            temp_prefix = root_prefix
+
+            if "/" in query:
+                prefixes = query.split("/")
+            elif len(query) > 0:
+                prefixes = [query]
+
+            for index, prefix in enumerate(prefixes):
+                if index == (len(prefixes) - 1):
+                    res_prefix = Prefix.objects.filter(
+                        name__icontains=prefix, parent=temp_prefix
+                    )
+                else:
+                    temp_prefix = Prefix.objects.get(name=prefix, parent=temp_prefix)
+                    if temp_prefix is None:
+                        res_prefix = []
+                        break
+
+            res_prefix = list(res_prefix)
+
+            for prefix in res_prefix:
+                results += ITEM_MAPS[item_type]["model"].objects.filter(prefix=prefix)
+                res_prefix.extend(prefix.first_childs)
+
+        else:
+            results = ITEM_MAPS[item_type]["model"].objects.filter(
+                name__icontains=query
+            )
+
+        serializer = ITEM_MAPS[item_type]["serializer"](results, many=True)
+
+        return Response(serializer.data)
