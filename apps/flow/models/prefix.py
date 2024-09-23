@@ -10,7 +10,15 @@ class Prefix(BaseModel):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
+        related_name="children",
     )
+
+    @property
+    def full_name(self) -> str:
+        return f"{self.parent.full_name}/{self.name}" if self.parent else self.name
+
+    def __str__(self):
+        return self.full_name
 
     class Meta:
         verbose_name = "Prefix"

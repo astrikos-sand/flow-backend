@@ -6,9 +6,10 @@ from apps.flow.models import (
     FileArchive,
     Dependency,
     Flow,
+    FunctionDefinition,
+    Prefix,
     Slot,
     Connection,
-    FunctionDefinition,
     BaseNode,
     FunctionField,
     FunctionNode,
@@ -37,6 +38,18 @@ class BaseNodeAdmin(PolymorphicParentModelAdmin):
         ForEachNode,
         BlockNode,
     )
+
+
+admin.site.register(Prefix)
+admin.site.register(Flow)
+admin.site.register(FunctionDefinition)
+admin.site.register(FileArchive)
+admin.site.register(Dependency)
+admin.site.register(Slot)
+admin.site.register(Connection)
+admin.site.register(FunctionField)
+admin.site.register(ScopeBlock)
+admin.site.register(ConditionalNodeCase)
 
 
 @admin.register(BlockNode)
@@ -77,14 +90,3 @@ class ConditionalAdmin(PolymorphicChildModelAdmin):
 @admin.register(ForEachNode)
 class ForEachNodeAdmin(PolymorphicChildModelAdmin):
     base_model = ForEachNode
-
-
-admin.site.register(Slot)
-admin.site.register(Connection)
-admin.site.register(FunctionField)
-admin.site.register(ScopeBlock)
-admin.site.register(ConditionalNodeCase)
-admin.site.register(FileArchive)
-admin.site.register(Dependency)
-admin.site.register(Flow)
-admin.site.register(FunctionDefinition)

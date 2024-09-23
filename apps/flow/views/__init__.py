@@ -1,6 +1,6 @@
 from rest_framework.routers import DefaultRouter
 
-from apps.flow.views.tags import *
+from apps.flow.views.prefix import *
 from apps.flow.views.nodes import *
 from apps.flow.views.utils import *
 
@@ -15,3 +15,4 @@ router.register(
 router.register(r"connections", ConnectionViewSet, basename="connections")
 router.register(r"fields", DynamicFieldsViewSet, basename="dynamic-fields")
 router.register(r"data-transfer", DataTransferManager, basename="data-transfer")
+router.register(r"prefix", PrefixViewSet, basename="prefix")
