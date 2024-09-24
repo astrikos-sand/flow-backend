@@ -83,6 +83,34 @@ class FileArchiveViewSet(ModelViewSet):
     queryset = FileArchive.objects.all()
     serializer_class = FileArchiveSerializer
 
+    @action(detail=False, methods=["post"])
+    def logs(self, request):
+        data = request.data
+        flow_id = data.pop("flow")[0]
+        timestamp_prefix = data.pop("timestamp_prefix")[0]
+
+        flow = get_object_or_404(Flow, pk=flow_id)
+        flow_prefix = flow.prefix.full_name
+        archive_prefix = (
+            flow_prefix.replace(ITEM_TYPE.FLOW.value, ITEM_TYPE.ARCHIVES.value, 1)
+            + "/logs/"
+            + timestamp_prefix
+        )
+
+        res_prefix = None
+        prefixes = archive_prefix.split("/")
+
+        for prefix in prefixes:
+            res_prefix = Prefix.objects.get_or_create(name=prefix, parent=res_prefix)[0]
+
+        data["prefix"] = res_prefix.id
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data)
+
     @action(detail=False, methods=["get"], url_path="page-data")
     def page_data(self, request):
         query_params = request.query_params
