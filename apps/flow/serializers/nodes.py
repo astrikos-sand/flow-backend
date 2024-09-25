@@ -3,36 +3,11 @@ from rest_framework import serializers
 from apps.flow.models import (
     BaseNode,
     DataNode,
-    ConditionalNode,
     Slot,
     Connection,
-    Flow,
-    Dependency,
 )
 from apps.flow.enums import ATTACHMENT_TYPE
 from apps.flow.utils import typecast_value
-from apps.flow.serializers.tags import TagSerializer
-
-
-class FlowSerializer(serializers.ModelSerializer):
-    tags = TagSerializer(many=True, read_only=True)
-    full_name = serializers.CharField(read_only=True)
-
-    class Meta:
-        model = Flow
-        exclude = (
-            "created_at",
-            "updated_at",
-        )
-
-
-class DependencySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Dependency
-        exclude = (
-            "created_at",
-            "updated_at",
-        )
 
 
 class ConnectionSerializer(serializers.ModelSerializer):
@@ -94,3 +69,23 @@ class DataNodeSerializer(BaseNodeSerializer):
 
         Slot.objects.create(node=data_node, **data)
         return data_node
+
+    def update(self, instance, validated_data):
+        if any(key in validated_data for key in ("value", "value_type")):
+            try:
+                value = validated_data.get("value", instance.value)
+                value_type = validated_data.get("value_type", instance.value_type)
+                typecast_value(value, value_type)
+            except Exception as e:
+                raise serializers.ValidationError(
+                    f"Unable to typecast {value} to {value_type}"
+                )
+
+        instance = super().update(instance, validated_data)
+
+        slot = instance.slots.first()
+        slot.value_type = instance.value_type
+        slot.name = instance.name
+        slot.save()
+
+        return instance

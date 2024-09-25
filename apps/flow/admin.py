@@ -3,14 +3,13 @@ from django.contrib import admin
 from polymorphic.admin import PolymorphicParentModelAdmin, PolymorphicChildModelAdmin
 
 from apps.flow.models import (
-    Tag,
-    BaseModelWithTag,
     FileArchive,
     Dependency,
     Flow,
+    FunctionDefinition,
+    Prefix,
     Slot,
     Connection,
-    FunctionDefinition,
     BaseNode,
     FunctionField,
     FunctionNode,
@@ -24,21 +23,6 @@ from apps.flow.models import (
     ScopeBlock,
     BlockNode,
 )
-
-from apps.trigger.models import WebHookTrigger, PeriodicTrigger
-
-
-@admin.register(BaseModelWithTag)
-class BaseModelWithTagAdmin(PolymorphicParentModelAdmin):
-    base_model = BaseModelWithTag
-    child_models = (
-        FileArchive,
-        Dependency,
-        Flow,
-        FunctionDefinition,
-        PeriodicTrigger,
-        WebHookTrigger,
-    )
 
 
 @admin.register(BaseNode)
@@ -54,6 +38,18 @@ class BaseNodeAdmin(PolymorphicParentModelAdmin):
         ForEachNode,
         BlockNode,
     )
+
+
+admin.site.register(Prefix)
+admin.site.register(Flow)
+admin.site.register(FunctionDefinition)
+admin.site.register(FileArchive)
+admin.site.register(Dependency)
+admin.site.register(Slot)
+admin.site.register(Connection)
+admin.site.register(FunctionField)
+admin.site.register(ScopeBlock)
+admin.site.register(ConditionalNodeCase)
 
 
 @admin.register(BlockNode)
@@ -94,31 +90,3 @@ class ConditionalAdmin(PolymorphicChildModelAdmin):
 @admin.register(ForEachNode)
 class ForEachNodeAdmin(PolymorphicChildModelAdmin):
     base_model = ForEachNode
-
-
-@admin.register(FileArchive)
-class FileArchiveAdmin(PolymorphicChildModelAdmin):
-    base_model = FileArchive
-
-
-@admin.register(Dependency)
-class DependencyAdmin(PolymorphicChildModelAdmin):
-    base_model = Dependency
-
-
-@admin.register(Flow)
-class FlowAdmin(PolymorphicChildModelAdmin):
-    base_model = Flow
-
-
-@admin.register(FunctionDefinition)
-class FunctionDefinitionAdmin(PolymorphicChildModelAdmin):
-    base_model = FunctionDefinition
-
-
-admin.site.register(Tag)
-admin.site.register(Slot)
-admin.site.register(Connection)
-admin.site.register(FunctionField)
-admin.site.register(ScopeBlock)
-admin.site.register(ConditionalNodeCase)

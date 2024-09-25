@@ -5,9 +5,11 @@ from django.db import models
 
 class ITEM_TYPE(Enum):
     ARCHIVES = "archives"
-    FUNCTION_DEFINITION = "function_definition"
-    DEPENDENCY = "dependency"
-    FLOW = "flow"
+    FUNCTION = "functions"
+    DEPENDENCY = "environments"
+    FLOW = "flows"
+    PERIODIC = "periodic"
+    WEBHOOK = "webhooks"
 
 
 class ATTACHMENT_TYPE(models.TextChoices):

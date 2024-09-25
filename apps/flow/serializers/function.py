@@ -1,8 +1,14 @@
 from rest_framework import serializers
 
-from apps.flow.models import FunctionField, FunctionDefinition, FunctionNode, Slot
+from apps.flow.models import (
+    FunctionField,
+    FunctionDefinition,
+    FunctionNode,
+    Slot,
+    Prefix,
+)
 from apps.flow.serializers.nodes import BaseNodeSerializer
-from apps.flow.serializers.tags import TagSerializer
+from apps.flow.enums import ITEM_TYPE
 
 
 class FunctionFieldSerializer(serializers.ModelSerializer):
@@ -17,7 +23,6 @@ class FunctionFieldSerializer(serializers.ModelSerializer):
 
 class FunctionDefinitionSerializer(serializers.ModelSerializer):
     fields = FunctionFieldSerializer(many=True, write_only=True)
-    tags = TagSerializer(many=True, read_only=True)
 
     class Meta:
         model = FunctionDefinition
@@ -26,12 +31,32 @@ class FunctionDefinitionSerializer(serializers.ModelSerializer):
             "updated_at",
         )
 
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+
+        prefix: Prefix | None = attrs.get("prefix", None)
+        if prefix is None:
+            root = Prefix.objects.get(name=ITEM_TYPE.FUNCTION.value)
+            misc_prefix = Prefix.objects.get(name="miscellaneous", parent=root)
+            attrs["prefix"] = misc_prefix
+        else:
+            if not prefix.full_name.startswith(ITEM_TYPE.FUNCTION.value):
+                raise serializers.ValidationError("Prefix must start with 'flows'")
+
+        return attrs
+
     def create(self, validated_data):
         fields = validated_data.pop("fields")
         definition = FunctionDefinition.objects.create(**validated_data)
         for field in fields:
             FunctionField.objects.create(definition=definition, **field)
         return definition
+
+    def update(self, instance, validated_data):
+        if "fields" in validated_data:
+            validated_data.pop("fields")
+
+        return super().update(instance, validated_data)
 
 
 class FunctionNodeSerializer(BaseNodeSerializer):

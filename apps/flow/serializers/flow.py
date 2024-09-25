@@ -7,9 +7,10 @@ from apps.flow.models import FlowNode, InputNode, OutputNode, Slot, Flow, ScopeB
 from apps.flow.serializers.nodes import (
     BaseNodeSerializer,
     SlotSerializer,
-    FlowSerializer,
     ConnectionSerializer,
 )
+
+from apps.flow.serializers.prefix import FlowSerializer
 
 
 class InputNodeSerializer(BaseNodeSerializer):
