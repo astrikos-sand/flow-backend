@@ -87,14 +87,39 @@ class FileArchiveViewSet(ModelViewSet):
     def logs(self, request):
         data = request.data
         flow_id = data.pop("flow")[0]
-        timestamp_prefix = data.pop("timestamp_prefix")[0]
+        timestamp_prefix = data.pop("timestamp_prefix")[0].strip("/")
 
         flow = get_object_or_404(Flow, pk=flow_id)
         flow_prefix = flow.prefix.full_name
         archive_prefix = (
             flow_prefix.replace(ITEM_TYPE.FLOW.value, ITEM_TYPE.ARCHIVES.value, 1)
-            + "/logs/"
-            + timestamp_prefix
+            + f"/{flow.name}/logs/{timestamp_prefix}"
+        )
+
+        res_prefix = None
+        prefixes = archive_prefix.split("/")
+
+        for prefix in prefixes:
+            res_prefix = Prefix.objects.get_or_create(name=prefix, parent=res_prefix)[0]
+
+        data["prefix"] = res_prefix.id
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["post"])
+    def artifacts(self, request):
+        data = request.data
+        flow_id = data.pop("flow")[0]
+
+        flow = get_object_or_404(Flow, pk=flow_id)
+        flow_prefix = flow.prefix.full_name
+        archive_prefix = (
+            flow_prefix.replace(ITEM_TYPE.FLOW.value, ITEM_TYPE.ARCHIVES.value, 1)
+            + f"/{flow.name}/artifacts"
         )
 
         res_prefix = None
