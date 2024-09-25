@@ -1,63 +1,65 @@
 from django.contrib import admin
 
-from polymorphic.admin import (
-    PolymorphicParentModelAdmin,
-    PolymorphicChildModelAdmin,
-    PolymorphicChildModelFilter,
-)
+from polymorphic.admin import PolymorphicParentModelAdmin, PolymorphicChildModelAdmin
 
 from apps.flow.models import (
     FileArchive,
-    FlowFile,
-    BaseNodeClass,
-    GenericNodeClass,
-    TriggerNodeClass,
-    BaseNode,
+    Dependency,
+    Flow,
+    FunctionDefinition,
+    Prefix,
     Slot,
-    GenericNode,
-    DataNode,
     Connection,
-    NodeResult,
-    Environment,
+    BaseNode,
+    FunctionField,
+    FunctionNode,
+    DataNode,
+    FlowNode,
+    InputNode,
+    OutputNode,
+    ConditionalNode,
+    ConditionalNodeCase,
+    ForEachNode,
+    ScopeBlock,
+    BlockNode,
 )
 
-# Register your models here.
-admin.site.register(FlowFile)
+
+@admin.register(BaseNode)
+class BaseNodeAdmin(PolymorphicParentModelAdmin):
+    base_model = BaseNode
+    child_models = (
+        FunctionNode,
+        DataNode,
+        FlowNode,
+        InputNode,
+        OutputNode,
+        ConditionalNode,
+        ForEachNode,
+        BlockNode,
+    )
+
+
+admin.site.register(Prefix)
+admin.site.register(Flow)
+admin.site.register(FunctionDefinition)
+admin.site.register(FileArchive)
+admin.site.register(Dependency)
 admin.site.register(Slot)
 admin.site.register(Connection)
+admin.site.register(FunctionField)
+admin.site.register(ScopeBlock)
+admin.site.register(ConditionalNodeCase)
 
 
-# BaseNodeClass Polymorphic Admin
-class BaseNodeClassChildAdmin(PolymorphicChildModelAdmin):
-    base_model = BaseNodeClass
+@admin.register(BlockNode)
+class BlockNodeAdmin(PolymorphicChildModelAdmin):
+    base_model = BlockNode
 
 
-@admin.register(GenericNodeClass)
-class GenericNodeClassAdmin(BaseNodeClassChildAdmin):
-    base_model = GenericNodeClass
-
-
-@admin.register(TriggerNodeClass)
-class TriggerNodeClassAdmin(BaseNodeClassChildAdmin):
-    base_model = TriggerNodeClass
-
-
-@admin.register(BaseNodeClass)
-class BaseNodeClassAdmin(PolymorphicParentModelAdmin):
-    base_model = BaseNodeClass
-    child_models = (GenericNodeClass, TriggerNodeClass)
-    list_filter = (PolymorphicChildModelFilter,)
-    child_model_admin = BaseNodeClassChildAdmin
-
-
-# BaseNode Polymorphic Admin
-class BaseNodeChildAdmin(PolymorphicChildModelAdmin):
-    base_model = BaseNode
-
-
-@admin.register(GenericNode)
-class GenericNodeAdmin(PolymorphicChildModelAdmin):
-    base_model = GenericNode
+@admin.register(FunctionNode)
+class FunctionNodeAdmin(PolymorphicChildModelAdmin):
+    base_model = FunctionNode
 
 
 @admin.register(DataNode)
@@ -65,14 +67,26 @@ class DataNodeAdmin(PolymorphicChildModelAdmin):
     base_model = DataNode
 
 
-@admin.register(BaseNode)
-class BaseNodeAdmin(PolymorphicParentModelAdmin):
-    base_model = BaseNode
-    child_models = (GenericNode, DataNode)
-    list_filter = (PolymorphicChildModelFilter,)
-    child_model_admin = BaseNodeChildAdmin
+@admin.register(FlowNode)
+class FlowNodeAdmin(PolymorphicChildModelAdmin):
+    base_model = FlowNode
 
 
-admin.site.register(NodeResult)
-admin.site.register(Environment)
-admin.site.register(FileArchive)
+@admin.register(InputNode)
+class InputNodeAdmin(PolymorphicChildModelAdmin):
+    base_model = InputNode
+
+
+@admin.register(OutputNode)
+class OutputNodeAdmin(PolymorphicChildModelAdmin):
+    base_model = OutputNode
+
+
+@admin.register(ConditionalNode)
+class ConditionalAdmin(PolymorphicChildModelAdmin):
+    base_model = ConditionalNode
+
+
+@admin.register(ForEachNode)
+class ForEachNodeAdmin(PolymorphicChildModelAdmin):
+    base_model = ForEachNode

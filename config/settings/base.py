@@ -31,9 +31,8 @@ INSTALLED_APPS = [
     # LOCAL APPS
     "apps.iam",
     "apps.resource",
-    "apps.flow",
     "apps.trigger",
-    "apps.flow_new",
+    "apps.flow",
 ]
 
 MIDDLEWARE = [

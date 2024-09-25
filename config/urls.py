@@ -7,9 +7,8 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("apps.resource.urls")),
     path("", include("apps.iam.urls")),
-    path("", include("apps.flow.urls")),
     path("", include("apps.trigger.urls")),
-    path("", include("apps.flow_new.urls")),
+    path("", include("apps.flow.urls")),
 ]
 
 if settings.DEBUG:

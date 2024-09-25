@@ -1,8 +1,9 @@
 from django.urls import path, include
-from apps.flow.views import router, SaveAPIView, SaveCodeFileAPIView
+
+from apps.flow.views import SaveAPIView
+from apps.flow.views import router
 
 urlpatterns = [
-    path("", include(router.urls)),
-    path("save/", SaveAPIView.as_view(), name="save"),
-    path("file-upload/", SaveCodeFileAPIView.as_view(), name="new-node"),
+    path("v2/", include(router.urls)),
+    path("v2/save/", SaveAPIView.as_view(), name="save"),
 ]

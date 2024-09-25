@@ -18,7 +18,6 @@ from apps.trigger.models import (
     Trigger,
 )
 from apps.trigger.enums import SCHDULER_TYPE
-from apps.flow_new.serializers.tags import TagSerializer
 
 
 class TriggerSerializer(serializers.ModelSerializer):
@@ -31,7 +30,6 @@ class TriggerSerializer(serializers.ModelSerializer):
 
 
 class WebHookTriggerSerializer(TriggerSerializer):
-    tags = TagSerializer(many=True, read_only=True)
 
     class Meta(TriggerSerializer.Meta):
         model = WebHookTrigger
@@ -102,7 +100,6 @@ class PeriodicTriggerSerializer(TriggerSerializer):
     interval = IntervalSchedulerSerializer(required=False, write_only=True)
     crontab = CronTabSchedulerSerializer(required=False, write_only=True)
     name = serializers.CharField(write_only=True)
-    tags = TagSerializer(many=True, read_only=True)
 
     task = TaskSerializer(read_only=True)
 

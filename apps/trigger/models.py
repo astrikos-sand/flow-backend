@@ -3,10 +3,10 @@ from django.utils.translation import gettext_lazy as _
 
 from django_celery_beat.models import PeriodicTask
 
-from apps.flow_new.models import BaseModelWithTag, Flow
+from apps.flow.models import Flow, BaseModelWithPrefix
 
 
-class Trigger(BaseModelWithTag):
+class Trigger(BaseModelWithPrefix):
     target = models.ForeignKey(Flow, on_delete=models.CASCADE, related_name="%(class)s")
 
     class Meta:
