@@ -69,3 +69,23 @@ class DataNodeSerializer(BaseNodeSerializer):
 
         Slot.objects.create(node=data_node, **data)
         return data_node
+
+    def update(self, instance, validated_data):
+        if any(key in validated_data for key in ("value", "value_type")):
+            try:
+                value = validated_data.get("value", instance.value)
+                value_type = validated_data.get("value_type", instance.value_type)
+                typecast_value(value, value_type)
+            except Exception as e:
+                raise serializers.ValidationError(
+                    f"Unable to typecast {value} to {value_type}"
+                )
+
+        instance = super().update(instance, validated_data)
+
+        slot = instance.slots.first()
+        slot.value_type = instance.value_type
+        slot.name = instance.name
+        slot.save()
+
+        return instance

@@ -14,7 +14,6 @@ class PrefixSerializer(serializers.ModelSerializer):
             "updated_at",
         )
         extra_kwargs = {
-            "name": {"write_only": True},
             "parent": {"write_only": True},
         }
 

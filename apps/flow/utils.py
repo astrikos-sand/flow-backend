@@ -6,7 +6,7 @@ def default_position():
     return {"x": 0, "y": 0}
 
 
-def typecast_value(data_type, value):
+def typecast_value(value, data_type):
     match data_type:
         case VALUE_TYPE.INTEGER.value:
             return int(value)

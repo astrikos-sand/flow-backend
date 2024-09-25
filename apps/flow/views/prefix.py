@@ -5,6 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.viewsets import ViewSet
+from rest_framework.parsers import JSONParser
 
 from apps.flow.models import FileArchive, Dependency, Prefix, Flow, FunctionDefinition
 from apps.flow.serializers import (
@@ -32,7 +33,11 @@ class PrefixViewSet(ModelViewSet):
         parent = query_params.get("parent", None)
         queryset = self.get_queryset().filter(parent=parent)
         serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+        data = {
+            "tree": serializer.data,
+            "items": serializer.data,
+        }
+        return Response(data)
 
 
 class FlowViewSet(ModelViewSet):
@@ -189,7 +194,7 @@ class DependencyViewSet(ModelViewSet):
 class FunctionDefinitionViewSet(ModelViewSet):
     queryset = FunctionDefinition.objects.all()
     serializer_class = FunctionDefinitionSerializer
-    parser_classes = [MultiPartJSONParser]
+    parser_classes = [MultiPartJSONParser, JSONParser]
 
     @action(detail=False, methods=["get"], url_path="page-data")
     def page_data(self, request):

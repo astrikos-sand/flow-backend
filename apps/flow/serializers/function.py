@@ -52,6 +52,12 @@ class FunctionDefinitionSerializer(serializers.ModelSerializer):
             FunctionField.objects.create(definition=definition, **field)
         return definition
 
+    def update(self, instance, validated_data):
+        if "fields" in validated_data:
+            validated_data.pop("fields")
+
+        return super().update(instance, validated_data)
+
 
 class FunctionNodeSerializer(BaseNodeSerializer):
     class Meta(BaseNodeSerializer.Meta):
