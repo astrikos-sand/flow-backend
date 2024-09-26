@@ -2,7 +2,6 @@ from django.db import models
 
 from apps.common.models import BaseModel
 from apps.flow.enums import (
-    ITEM_TYPE,
     ATTACHMENT_TYPE,
     VALUE_TYPE,
     NODE_COLOR_PALLETE,
@@ -17,11 +16,9 @@ class FunctionDefinition(BaseModelWithPrefix):
     code = models.FileField(upload_to="flow/functions/")
 
     def __str__(self):
-        return f"{self.name}"
-
-    @property
-    def item_type(self) -> str:
-        return ITEM_TYPE.FUNCTION_DEFINITION.value
+        if self.prefix:
+            return f"{self.prefix.full_name}/{self.name}"
+        return self.name
 
     @property
     def input_fields(self):
@@ -67,7 +64,7 @@ class FunctionNode(BaseNode):
     )
 
     def __str__(self):
-        return f"{self.definition} - {self.flow}"
+        return f"{self.definition} ({self.flow})"
 
     def export_data(self):
         data = super().export_data()

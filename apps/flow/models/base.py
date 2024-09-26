@@ -1,6 +1,5 @@
 from django.db import models
 
-from apps.flow.enums import ITEM_TYPE
 from apps.flow.models.prefix import BaseModelWithPrefix
 
 
@@ -9,11 +8,9 @@ class FileArchive(BaseModelWithPrefix):
     file = models.FileField(upload_to="uploads/")
 
     def __str__(self):
-        return f"{self.name}"
-
-    @property
-    def item_type(self) -> str:
-        return ITEM_TYPE.ARCHIVES.value
+        if self.prefix:
+            return f"{self.prefix.full_name}/{self.name}"
+        return self.name
 
     @property
     def url(self):
@@ -24,12 +21,10 @@ class Dependency(BaseModelWithPrefix):
     name = models.CharField(max_length=100, unique=True)
     requirements = models.FileField(upload_to="flow/dependencies/")
 
-    @property
-    def item_type(self) -> str:
-        return ITEM_TYPE.DEPENDENCY.value
-
     def __str__(self):
-        return f"{self.name}"
+        if self.prefix:
+            return f"{self.prefix.full_name}/{self.name}"
+        return self.name
 
     class Meta:
         verbose_name = "Dependency"
@@ -55,6 +50,8 @@ class Flow(BaseModelWithPrefix):
     )
 
     def __str__(self):
+        if self.prefix:
+            return f"{self.prefix.full_name}/{self.full_name}"
         return self.full_name
 
     @property
@@ -62,7 +59,3 @@ class Flow(BaseModelWithPrefix):
         if self.scope:
             return f"{self.scope}/{self.name}"
         return f"{self.name}"
-
-    @property
-    def item_type(self) -> str:
-        return ITEM_TYPE.FLOW.value

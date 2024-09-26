@@ -20,6 +20,9 @@ class BaseNode(BaseModel, PolymorphicModel):
         related_name="nodes",
     )
 
+    def __str__(self):
+        return f"{self.id} ({self.flow})"
+
     class Meta:
         indexes = [
             models.Index(fields=["flow"]),

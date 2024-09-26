@@ -30,6 +30,12 @@ class PrefixSerializer(serializers.ModelSerializer):
 class FlowSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(read_only=True)
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if instance.prefix is not None:
+            data["prefix"] = PrefixSerializer(instance.prefix).data
+        return data
+
     def validate(self, attrs):
         attrs = super().validate(attrs)
 
@@ -69,6 +75,12 @@ class FileArchiveSerializer(serializers.ModelSerializer):
 
         return attrs
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if instance.prefix is not None:
+            data["prefix"] = PrefixSerializer(instance.prefix).data
+        return data
+
     class Meta:
         model = FileArchive
         exclude = (
@@ -91,6 +103,12 @@ class DependencySerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("Prefix must start with 'flows'")
 
         return attrs
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if instance.prefix is not None:
+            data["prefix"] = PrefixSerializer(instance.prefix).data
+        return data
 
     class Meta:
         model = Dependency
