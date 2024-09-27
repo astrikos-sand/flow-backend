@@ -15,7 +15,7 @@ def create_default_functions():
 
     functions = [
         {
-            "name": "convert_csv_content_to_df",
+            "name": "_convert_csv_content_to_df",
             "code": "convert_csv_content_to_df.py",
             "fields": [
                 {
@@ -29,7 +29,7 @@ def create_default_functions():
             ],
         },
         {
-            "name": "df_to_csv_content",
+            "name": "_df_to_csv_content",
             "code": "df_to_csv_content.py",
             "fields": [
                 {
@@ -43,7 +43,7 @@ def create_default_functions():
             ],
         },
         {
-            "name": "download_file_content",
+            "name": "_download_file_content",
             "code": "download_file_content.py",
             "fields": [
                 {
@@ -57,7 +57,7 @@ def create_default_functions():
             ],
         },
         {
-            "name": "pickle_dump",
+            "name": "_pickle_dump",
             "code": "pickle_dump.py",
             "fields": [
                 {
@@ -71,7 +71,7 @@ def create_default_functions():
             ],
         },
         {
-            "name": "pickle_load",
+            "name": "_pickle_load",
             "code": "pickle_load.py",
             "fields": [
                 {
@@ -85,7 +85,7 @@ def create_default_functions():
             ],
         },
         {
-            "name": "save_file_content",
+            "name": "_save_file_content",
             "code": "save_file_content.py",
             "fields": [
                 {

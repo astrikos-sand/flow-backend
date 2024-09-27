@@ -19,6 +19,9 @@ createsuperuser:
 shell:
 	docker exec -it astrikos_backend bash
 
+seed:
+	docker exec -it astrikos_backend python3 manage.py seed
+
 db-shell:
 	docker exec -it astrikos_db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)
 

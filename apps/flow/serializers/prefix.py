@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.flow.models import FileArchive, Prefix, Flow, Dependency
+from apps.flow.models import FileArchive, Prefix, Flow, Dependency, FlowExecution
 from apps.flow.enums import ITEM_TYPE
 
 
@@ -112,6 +112,17 @@ class DependencySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Dependency
+        exclude = (
+            "created_at",
+            "updated_at",
+        )
+
+
+class FlowExecutionSerializer(serializers.ModelSerializer):
+    timestamp = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = FlowExecution
         exclude = (
             "created_at",
             "updated_at",
