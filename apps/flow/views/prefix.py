@@ -7,7 +7,14 @@ from rest_framework.request import Request
 from rest_framework.viewsets import ViewSet
 from rest_framework.parsers import JSONParser
 
-from apps.flow.models import FileArchive, Dependency, Prefix, Flow, FunctionDefinition
+from apps.flow.models import (
+    FileArchive,
+    Dependency,
+    Prefix,
+    Flow,
+    FunctionDefinition,
+    FlowExecution,
+)
 from apps.flow.serializers import (
     FileArchiveSerializer,
     DependencySerializer,
@@ -15,6 +22,7 @@ from apps.flow.serializers import (
     FlowSerializer,
     BaseNodePolymorphicSerializer,
     FunctionDefinitionSerializer,
+    FlowExecutionSerializer,
 )
 from apps.flow.runtime.worker import submit_task, create_environment
 from apps.flow.enums import ITEM_TYPE
@@ -82,6 +90,36 @@ class FlowViewSet(ModelViewSet):
             "nodes": BaseNodePolymorphicSerializer(flow.nodes.all(), many=True).data,
         }
         return Response(data)
+
+    @action(detail=True, methods=["GET", "POST", "PATCH", "PUT"])
+    def executions(self, request: Request, pk: str):
+        if request.method == "GET":
+            return self._list_executions(pk)
+        if request.method == "POST":
+            return self._create_execution(request.data, pk)
+        if request.method in ["PATCH", "PUT"]:
+            return self._update_execution(request.data)
+
+    def _list_executions(self, pk: str):
+        queryset = FlowExecution.objects.filter(flow=pk)[:5]
+        serializer = FlowExecutionSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def _create_execution(self, data: dict, pk: str):
+        data["flow"] = pk
+        serializer = FlowExecutionSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data)
+
+    def _update_execution(self, data: dict):
+        execution = get_object_or_404(FlowExecution, pk=data["id"])
+        serializer = FlowExecutionSerializer(execution, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data)
 
 
 class FileArchiveViewSet(ModelViewSet):

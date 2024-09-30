@@ -39,3 +39,9 @@ class NODE_COLOR_PALLETE(Enum):
     INPUT_NODE = "#F8DFD4"
     OUTPUT_NODE = "#B19470"
     BLOCK_NODE = "#FBF9F1"
+
+
+class Status(models.TextChoices):
+    PENDING = "PENDING", "pending"
+    SUCCESS = "SUCCESS", "success"
+    ERROR = "ERROR", "error"

@@ -8,7 +8,7 @@ from apps.flow.enums import NODE_COLOR_PALLETE
 class InputNode(BaseNode):
 
     def __str__(self):
-        return f"input node for {self.flow.name}"
+        return f"Input Node for {self.flow}"
 
     @classmethod
     def get_node_fields(cls):
@@ -74,7 +74,7 @@ class InputNode(BaseNode):
 class OutputNode(BaseNode):
 
     def __str__(self):
-        return f"output node for {self.flow.name}"
+        return f"Output Node for {self.flow}"
 
     def export_data(self):
         data = super().export_data()
@@ -143,6 +143,9 @@ class FlowNode(BaseNode):
         on_delete=models.CASCADE,
         related_name="represent_nodes",
     )
+
+    def __str__(self):
+        return f"Flow Node for {self.flow} -> {self.represent}"
 
     def export_data(self):
         data = super().export_data()

@@ -8,6 +8,7 @@ from apps.flow.models import (
     Prefix,
 )
 from apps.flow.serializers.nodes import BaseNodeSerializer
+from apps.flow.serializers.prefix import PrefixSerializer
 from apps.flow.enums import ITEM_TYPE
 
 
@@ -23,6 +24,12 @@ class FunctionFieldSerializer(serializers.ModelSerializer):
 
 class FunctionDefinitionSerializer(serializers.ModelSerializer):
     fields = FunctionFieldSerializer(many=True, write_only=True)
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if instance.prefix is not None:
+            data["prefix"] = PrefixSerializer(instance.prefix).data
+        return data
 
     class Meta:
         model = FunctionDefinition

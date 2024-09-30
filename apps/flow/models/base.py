@@ -1,7 +1,8 @@
 from django.db import models
 
-from apps.flow.enums import ITEM_TYPE
 from apps.flow.models.prefix import BaseModelWithPrefix
+from apps.common.models import BaseModel
+from apps.flow.enums import Status
 
 
 class FileArchive(BaseModelWithPrefix):
@@ -9,11 +10,9 @@ class FileArchive(BaseModelWithPrefix):
     file = models.FileField(upload_to="uploads/")
 
     def __str__(self):
-        return f"{self.name}"
-
-    @property
-    def item_type(self) -> str:
-        return ITEM_TYPE.ARCHIVES.value
+        if self.prefix:
+            return f"{self.prefix.full_name}/{self.name}"
+        return self.name
 
     @property
     def url(self):
@@ -24,12 +23,10 @@ class Dependency(BaseModelWithPrefix):
     name = models.CharField(max_length=100, unique=True)
     requirements = models.FileField(upload_to="flow/dependencies/")
 
-    @property
-    def item_type(self) -> str:
-        return ITEM_TYPE.DEPENDENCY.value
-
     def __str__(self):
-        return f"{self.name}"
+        if self.prefix:
+            return f"{self.prefix.full_name}/{self.name}"
+        return self.name
 
     class Meta:
         verbose_name = "Dependency"
@@ -55,6 +52,8 @@ class Flow(BaseModelWithPrefix):
     )
 
     def __str__(self):
+        if self.prefix:
+            return f"{self.prefix.full_name}/{self.full_name}"
         return self.full_name
 
     @property
@@ -63,6 +62,37 @@ class Flow(BaseModelWithPrefix):
             return f"{self.scope}/{self.name}"
         return f"{self.name}"
 
+
+class FlowExecution(BaseModel):
+    flow = models.ForeignKey(Flow, on_delete=models.CASCADE, related_name="executions")
+    status = models.CharField(
+        max_length=20, choices=Status.choices, default=Status.PENDING
+    )
+    container_logs = models.ForeignKey(
+        FileArchive,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="flow_execution_container_logs",
+    )
+    json_logs = models.ForeignKey(
+        FileArchive,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="flow_execution_json_logs",
+    )
+    html_logs = models.ForeignKey(
+        FileArchive,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="flow_execution_html_logs",
+    )
+
     @property
-    def item_type(self) -> str:
-        return ITEM_TYPE.FLOW.value
+    def timestamp(self):
+        return self.created_at.strftime("%Y-%m-%d %H:%M:%S")
+
+    def __str__(self):
+        return f"Execution of {self.flow} at {self.timestamp}"

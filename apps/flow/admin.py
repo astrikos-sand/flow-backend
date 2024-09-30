@@ -22,6 +22,7 @@ from apps.flow.models import (
     ForEachNode,
     ScopeBlock,
     BlockNode,
+    FlowExecution,
 )
 
 
@@ -50,6 +51,7 @@ admin.site.register(Connection)
 admin.site.register(FunctionField)
 admin.site.register(ScopeBlock)
 admin.site.register(ConditionalNodeCase)
+admin.site.register(FlowExecution)
 
 
 @admin.register(BlockNode)

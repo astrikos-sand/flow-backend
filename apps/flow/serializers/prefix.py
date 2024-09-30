@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.flow.models import FileArchive, Prefix, Flow, Dependency
+from apps.flow.models import FileArchive, Prefix, Flow, Dependency, FlowExecution
 from apps.flow.enums import ITEM_TYPE
 
 
@@ -29,6 +29,12 @@ class PrefixSerializer(serializers.ModelSerializer):
 
 class FlowSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(read_only=True)
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if instance.prefix is not None:
+            data["prefix"] = PrefixSerializer(instance.prefix).data
+        return data
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
@@ -69,6 +75,12 @@ class FileArchiveSerializer(serializers.ModelSerializer):
 
         return attrs
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if instance.prefix is not None:
+            data["prefix"] = PrefixSerializer(instance.prefix).data
+        return data
+
     class Meta:
         model = FileArchive
         exclude = (
@@ -92,8 +104,25 @@ class DependencySerializer(serializers.ModelSerializer):
 
         return attrs
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if instance.prefix is not None:
+            data["prefix"] = PrefixSerializer(instance.prefix).data
+        return data
+
     class Meta:
         model = Dependency
+        exclude = (
+            "created_at",
+            "updated_at",
+        )
+
+
+class FlowExecutionSerializer(serializers.ModelSerializer):
+    timestamp = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = FlowExecution
         exclude = (
             "created_at",
             "updated_at",

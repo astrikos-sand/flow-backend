@@ -14,7 +14,7 @@ class DataNode(BaseNode):
     )
 
     def __str__(self):
-        return f"{self.name} - {self.value}"
+        return f"{self.name} ({self.flow})"
 
     def export_data(self):
         data = super().export_data()
