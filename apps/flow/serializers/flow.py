@@ -149,7 +149,7 @@ class ScopeSerializer(serializers.ModelSerializer):
 
         flow_data = {
             "name": validated_data.pop("name"),
-            "scope": validated_data.pop("scope"),
+            "scope": validated_data.pop("scope").id,
         }
 
         flow_serializer = FlowSerializer(data=flow_data)
@@ -159,7 +159,7 @@ class ScopeSerializer(serializers.ModelSerializer):
         flow = flow_serializer.instance
 
         input_node_serializer = InputNodeSerializer(
-            data={"flow": flow, "slots": output_slots}
+            data={"flow": flow.id, "slots": output_slots}
         )
         input_node_serializer.is_valid(raise_exception=True)
         input_node_serializer.save()
@@ -167,7 +167,7 @@ class ScopeSerializer(serializers.ModelSerializer):
         input_node = input_node_serializer.instance
 
         output_node_serializer = OutputNodeSerializer(
-            data={"flow": flow, "slots": input_slots}
+            data={"flow": flow.id, "slots": input_slots}
         )
         output_node_serializer.is_valid(raise_exception=True)
         output_node_serializer.save()

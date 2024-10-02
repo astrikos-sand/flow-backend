@@ -108,19 +108,18 @@ class ConditionalNodeSerializer(BaseNodeSerializer):
             }
             for slot in output_slots
         ]
-
         for case in cases:
             scope_serializer = ScopeSerializer(
                 data={
                     "name": case.pop("name"),
                     "slots": scope_input_slots,
-                    "scope": validated_data["flow"],
+                    "scope": validated_data["flow"].id,
                 }
             )
-
             scope_serializer.is_valid(raise_exception=True)
+            print(2)
             scope_serializer.save()
-
+            print(3)
             ConditionalNodeCase.objects.create(
                 value=case.get("value", None),
                 node=conditional_node,

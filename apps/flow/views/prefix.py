@@ -46,7 +46,43 @@ class PrefixViewSet(ModelViewSet):
             "items": serializer.data,
         }
         return Response(data)
+    
+    @action(detail=False, methods=["get"], url_path="by-type")
+    def get_prefixes_by_type(self, request):
+        """
+        This endpoint retrieves prefixes based on the specified type (e.g., functions),
+        by constructing the full_name dynamically.
+        """
+        prefix_type = request.query_params.get("type", None)
+        if not prefix_type:
+            return Response({"error": "Type is required"}, status=400)
 
+        prefix_parts = prefix_type.split("/")
+        
+        try:
+            root_prefix = Prefix.objects.get(name=prefix_parts[0], parent=None)
+        except Prefix.DoesNotExist:
+            return Response({"error": f"No root prefix found for type: {prefix_type}"}, status=404)
+
+        current_prefix = root_prefix
+        for part in prefix_parts[1:]:
+            try:
+                current_prefix = Prefix.objects.get(name=part, parent=current_prefix)
+            except Prefix.DoesNotExist:
+                return Response({"error": f"No prefix found for full path: {prefix_type}"}, status=404)
+
+        def get_all_children(prefix):
+            children = list(prefix.children.all())
+            all_children = []
+            for child in children:
+                all_children.append(child)
+                all_children.extend(get_all_children(child))
+            return all_children
+
+        all_prefixes = [current_prefix] + get_all_children(current_prefix)
+
+        serializer = PrefixSerializer(all_prefixes, many=True)
+        return Response({"tree": serializer.data})
 
 class FlowViewSet(ModelViewSet):
     queryset = Flow.objects.all()
