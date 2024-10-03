@@ -4,3 +4,4 @@
 !influx/
 !manage.py
 !requirements.txt
+!ml-utilities
