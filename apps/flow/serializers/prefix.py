@@ -121,6 +121,19 @@ class DependencySerializer(serializers.ModelSerializer):
 class FlowExecutionSerializer(serializers.ModelSerializer):
     timestamp = serializers.CharField(read_only=True)
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data.update(
+            {
+                "html_logs": FileArchive.objects.get(id=instance.html_logs.id).url,
+                "json_logs": FileArchive.objects.get(id=instance.json_logs.id).url,
+                "container_logs": FileArchive.objects.get(
+                    id=instance.container_logs.id
+                ).url,
+            }
+        )
+        return data
+
     class Meta:
         model = FlowExecution
         exclude = (
