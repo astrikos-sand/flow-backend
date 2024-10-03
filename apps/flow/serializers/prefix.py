@@ -30,11 +30,11 @@ class PrefixSerializer(serializers.ModelSerializer):
 class FlowSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(read_only=True)
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        if instance.prefix is not None:
-            data["prefix"] = PrefixSerializer(instance.prefix).data
-        return data
+    # def to_representation(self, instance):
+    #     data = super().to_representation(instance)
+    #     if instance.prefix is not None:
+    #         data["prefix"] = PrefixSerializer(instance.prefix).data
+    #     return data
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
@@ -75,11 +75,11 @@ class FileArchiveSerializer(serializers.ModelSerializer):
 
         return attrs
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        if instance.prefix is not None:
-            data["prefix"] = PrefixSerializer(instance.prefix).data
-        return data
+    # def to_representation(self, instance):
+    #     data = super().to_representation(instance)
+    #     if instance.prefix is not None:
+    #         data["prefix"] = PrefixSerializer(instance.prefix).data
+    #     return data
 
     class Meta:
         model = FileArchive
@@ -104,11 +104,11 @@ class DependencySerializer(serializers.ModelSerializer):
 
         return attrs
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        if instance.prefix is not None:
-            data["prefix"] = PrefixSerializer(instance.prefix).data
-        return data
+    # def to_representation(self, instance):
+    #     data = super().to_representation(instance)
+    #     if instance.prefix is not None:
+    #         data["prefix"] = PrefixSerializer(instance.prefix).data
+    #     return data
 
     class Meta:
         model = Dependency

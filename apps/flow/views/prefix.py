@@ -35,6 +35,15 @@ class PrefixViewSet(ModelViewSet):
     queryset = Prefix.objects.all()
     serializer_class = PrefixSerializer
 
+    def create(self, request, *args, **kwargs):
+        type = request.query_params.get("type", None)
+        parent = request.data.get("parent", None)
+        if type is not None and parent is None:
+            parent = Prefix.objects.get(name=type, parent=None)
+            request.data["parent"] = parent.id
+
+        return super().create(request, *args, **kwargs)
+
     @action(detail=False, methods=["get"], url_path="page-data")
     def page_data(self, request):
         query_params = request.query_params
@@ -46,30 +55,31 @@ class PrefixViewSet(ModelViewSet):
             "items": serializer.data,
         }
         return Response(data)
-    
+
     @action(detail=False, methods=["get"], url_path="by-type")
     def get_prefixes_by_type(self, request):
-        """
-        This endpoint retrieves prefixes based on the specified type (e.g., functions),
-        by constructing the full_name dynamically.
-        """
         prefix_type = request.query_params.get("type", None)
         if not prefix_type:
             return Response({"error": "Type is required"}, status=400)
 
         prefix_parts = prefix_type.split("/")
-        
+
         try:
             root_prefix = Prefix.objects.get(name=prefix_parts[0], parent=None)
         except Prefix.DoesNotExist:
-            return Response({"error": f"No root prefix found for type: {prefix_type}"}, status=404)
+            return Response(
+                {"error": f"No root prefix found for type: {prefix_type}"}, status=404
+            )
 
         current_prefix = root_prefix
         for part in prefix_parts[1:]:
             try:
                 current_prefix = Prefix.objects.get(name=part, parent=current_prefix)
             except Prefix.DoesNotExist:
-                return Response({"error": f"No prefix found for full path: {prefix_type}"}, status=404)
+                return Response(
+                    {"error": f"No prefix found for full path: {prefix_type}"},
+                    status=404,
+                )
 
         def get_all_children(prefix):
             children = list(prefix.children.all())
@@ -83,6 +93,7 @@ class PrefixViewSet(ModelViewSet):
 
         serializer = PrefixSerializer(all_prefixes, many=True)
         return Response({"tree": serializer.data})
+
 
 class FlowViewSet(ModelViewSet):
     queryset = Flow.objects.all()

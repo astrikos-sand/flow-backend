@@ -117,9 +117,9 @@ class ConditionalNodeSerializer(BaseNodeSerializer):
                 }
             )
             scope_serializer.is_valid(raise_exception=True)
-            print(2)
+
             scope_serializer.save()
-            print(3)
+
             ConditionalNodeCase.objects.create(
                 value=case.get("value", None),
                 node=conditional_node,
