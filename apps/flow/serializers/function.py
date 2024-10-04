@@ -38,21 +38,16 @@ class FunctionDefinitionSerializer(serializers.ModelSerializer):
             "updated_at",
         )
 
-    def validate(self, attrs):
-        attrs = super().validate(attrs)
-
-        prefix: Prefix | None = attrs.get("prefix", None)
+    def create(self, validated_data):
+        prefix: Prefix | None = validated_data.get("prefix", None)
         if prefix is None:
             root = Prefix.objects.get(name=ITEM_TYPE.FUNCTION.value)
             misc_prefix = Prefix.objects.get(name="miscellaneous", parent=root)
-            attrs["prefix"] = misc_prefix
+            validated_data["prefix"] = misc_prefix
         else:
             if not prefix.full_name.startswith(ITEM_TYPE.FUNCTION.value):
                 raise serializers.ValidationError("Prefix must start with 'flows'")
 
-        return attrs
-
-    def create(self, validated_data):
         fields = validated_data.pop("fields")
         definition = FunctionDefinition.objects.create(**validated_data)
         for field in fields:
