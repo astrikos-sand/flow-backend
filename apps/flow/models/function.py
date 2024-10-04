@@ -111,7 +111,7 @@ class FunctionNode(BaseNode):
         function_definitions = FunctionDefinition.objects.all()
 
         definition_choices = [
-            {"value": definition.id, "label": definition.name}
+            {"value": definition.id, "label": f"{definition.prefix.full_name}/{definition.name}"}
             for definition in function_definitions
         ]
 

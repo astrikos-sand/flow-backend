@@ -28,6 +28,7 @@ class DataTransferManager(ViewSet):
                     "name": f"{flow.name} (copy)",
                     "description": flow.description,
                     "lib": flow.lib.id,
+                    "prefix": flow.prefix.id,
                 }
             )
             flow_serializer.is_valid(raise_exception=True)

@@ -123,15 +123,30 @@ class FlowExecutionSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        data.update(
-            {
-                "html_logs": FileArchive.objects.get(id=instance.html_logs.id).url,
-                "json_logs": FileArchive.objects.get(id=instance.json_logs.id).url,
-                "container_logs": FileArchive.objects.get(
-                    id=instance.container_logs.id
-                ).url,
-            }
-        )
+
+        if instance.html_logs is not None:
+            data.update(
+                {
+                    "html_logs": FileArchive.objects.get(id=instance.html_logs.id).url,
+                }
+            )
+
+        if instance.json_logs is not None:
+            data.update(
+                {
+                    "json_logs": FileArchive.objects.get(id=instance.json_logs.id).url,
+                }
+            )
+        
+        if instance.container_logs is not None:
+            data.update(
+                {
+                    "container_logs": FileArchive.objects.get(
+                        id=instance.container_logs.id
+                    ).url,
+                }
+            )
+
         return data
 
     class Meta:
