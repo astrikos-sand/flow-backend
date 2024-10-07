@@ -23,7 +23,7 @@ class FunctionFieldSerializer(serializers.ModelSerializer):
 
 
 class FunctionDefinitionSerializer(serializers.ModelSerializer):
-    fields = FunctionFieldSerializer(many=True, write_only=True)
+    fields = FunctionFieldSerializer(many=True, write_only=True, required=False)
 
     # def to_representation(self, instance):
     #     data = super().to_representation(instance)
@@ -48,7 +48,7 @@ class FunctionDefinitionSerializer(serializers.ModelSerializer):
             if not prefix.full_name.startswith(ITEM_TYPE.FUNCTION.value):
                 raise serializers.ValidationError("Prefix must start with 'flows'")
 
-        fields = validated_data.pop("fields")
+        fields = validated_data.pop("fields", [])
         definition = FunctionDefinition.objects.create(**validated_data)
         for field in fields:
             FunctionField.objects.create(definition=definition, **field)

@@ -137,7 +137,7 @@ class FlowExecutionSerializer(serializers.ModelSerializer):
                     "json_logs": FileArchive.objects.get(id=instance.json_logs.id).url,
                 }
             )
-        
+
         if instance.container_logs is not None:
             data.update(
                 {
