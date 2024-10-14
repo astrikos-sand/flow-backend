@@ -96,7 +96,7 @@ class PrefixViewSet(ModelViewSet):
 
 
 class FlowViewSet(ModelViewSet):
-    queryset = Flow.objects.all()
+    queryset = Flow.objects.all().order_by("name")
     serializer_class = FlowSerializer
 
     @action(detail=False, methods=["get"], url_path="page-data")
@@ -170,7 +170,7 @@ class FlowViewSet(ModelViewSet):
 
 
 class FileArchiveViewSet(ModelViewSet):
-    queryset = FileArchive.objects.all()
+    queryset = FileArchive.objects.all().order_by("-created_at")
     serializer_class = FileArchiveSerializer
 
     @action(detail=False, methods=["post"])
@@ -247,7 +247,7 @@ class FileArchiveViewSet(ModelViewSet):
 
 
 class DependencyViewSet(ModelViewSet):
-    queryset = Dependency.objects.all()
+    queryset = Dependency.objects.all().order_by("name")
     serializer_class = DependencySerializer
 
     def create(self, request, *args, **kwargs):
@@ -277,7 +277,7 @@ class DependencyViewSet(ModelViewSet):
 
 
 class FunctionDefinitionViewSet(ModelViewSet):
-    queryset = FunctionDefinition.objects.all()
+    queryset = FunctionDefinition.objects.all().order_by("name")
     serializer_class = FunctionDefinitionSerializer
     parser_classes = [MultiPartJSONParser, JSONParser]
 
