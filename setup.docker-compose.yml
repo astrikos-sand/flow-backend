@@ -9,7 +9,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - backend_media:/app/media
+      - ./media:/app/media
     networks:
       - db
       - broker
