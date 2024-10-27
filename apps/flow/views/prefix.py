@@ -226,6 +226,34 @@ class FileArchiveViewSet(ModelViewSet):
 
         return Response(serializer.data)
 
+    @action(detail=False, methods=["post"])
+    def env(self, request):
+        data = request.data
+        env_id = data.pop("env")[0]
+
+        env = get_object_or_404(Dependency, pk=env_id)
+        env_prefix = env.prefix.full_name
+        archive_prefix = (
+            env_prefix.replace(
+                ITEM_TYPE.DEPENDENCY.value, f"{ITEM_TYPE.ARCHIVES.value}/envs", 1
+            )
+            + f"/{env.name}"
+        )
+
+        res_prefix = None
+        prefixes = archive_prefix.split("/")
+
+        for prefix in prefixes:
+            res_prefix = Prefix.objects.get_or_create(name=prefix, parent=res_prefix)[0]
+
+        data["prefix"] = res_prefix.id
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data)
+
     @action(detail=False, methods=["get"], url_path="page-data")
     def page_data(self, request):
         query_params = request.query_params

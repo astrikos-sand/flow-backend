@@ -110,6 +110,11 @@ class DependencySerializer(serializers.ModelSerializer):
     #         data["prefix"] = PrefixSerializer(instance.prefix).data
     #     return data
 
+    def create(self, validated_data):
+        name = validated_data.get("name").lower()
+        validated_data["name"] = name
+        return Dependency.objects.create(**validated_data)
+
     class Meta:
         model = Dependency
         exclude = (
