@@ -23,6 +23,7 @@ from apps.flow.serializers import (
     BaseNodePolymorphicSerializer,
     FunctionDefinitionSerializer,
     FlowExecutionSerializer,
+    FunctionFieldSerializer,
 )
 from apps.flow.runtime.worker import submit_task, create_environment
 from apps.flow.enums import ITEM_TYPE
@@ -327,6 +328,18 @@ class FunctionDefinitionViewSet(ModelViewSet):
             "items": serializer.data,
         }
         return Response(data)
+
+    @action(detail=False, methods=["get"], url_path="p")
+    def func_path(self, request: Request):
+        func_path = request.query_params.get("path")
+
+        function = get_object_or_404(FunctionDefinition, name=func_path)
+        return Response(
+            {
+                **FunctionDefinitionSerializer(function).data,
+                "fields": FunctionFieldSerializer(function.fields, many=True).data,
+            }
+        )
 
 
 class SearchViewSet(ViewSet):

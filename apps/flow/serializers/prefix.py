@@ -36,19 +36,18 @@ class FlowSerializer(serializers.ModelSerializer):
     #         data["prefix"] = PrefixSerializer(instance.prefix).data
     #     return data
 
-    def validate(self, attrs):
-        attrs = super().validate(attrs)
+    def create(self, validated_data):
+        prefix: Prefix | None = validated_data.get("prefix", None)
 
-        prefix: Prefix | None = attrs.get("prefix", None)
         if prefix is None:
             root = Prefix.objects.get(name=ITEM_TYPE.FLOW.value)
             misc_prefix = Prefix.objects.get(name="miscellaneous", parent=root)
-            attrs["prefix"] = misc_prefix
+            validated_data["prefix"] = misc_prefix
         else:
             if not prefix.full_name.startswith(ITEM_TYPE.FLOW.value):
                 raise serializers.ValidationError("Prefix must start with 'flows'")
 
-        return attrs
+        return super().create(validated_data)
 
     class Meta:
         model = Flow
