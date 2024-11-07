@@ -29,6 +29,7 @@ class PrefixSerializer(serializers.ModelSerializer):
 
 class FlowSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(read_only=True)
+    lib_name = serializers.CharField(read_only=True, source="lib.name")
 
     # def to_representation(self, instance):
     #     data = super().to_representation(instance)

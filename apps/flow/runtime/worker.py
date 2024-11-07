@@ -30,3 +30,14 @@ def create_environment(
     )
     response.raise_for_status()
     return response.json()
+
+def submit_notebook(
+    data: dict = {},
+):
+    json_data = JSONRenderer().render(data)
+
+    headers = {"Content-type": "application/json", "Accept": "application/json"}
+
+    response = requests.post(f"{WORKER_URL}/notebook/start/", data=json_data, headers=headers)
+    response.raise_for_status()
+    return response.json()
