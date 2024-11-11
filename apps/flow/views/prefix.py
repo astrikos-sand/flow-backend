@@ -25,7 +25,7 @@ from apps.flow.serializers import (
     FlowExecutionSerializer,
     FunctionFieldSerializer,
 )
-from apps.flow.runtime.worker import submit_task, create_environment
+from apps.flow.runtime.worker import submit_task, create_environment, submit_notebook
 from apps.flow.enums import ITEM_TYPE
 from apps.flow.mappings import ITEM_MAPS
 from apps.flow.parsers import MultiPartJSONParser
@@ -168,6 +168,17 @@ class FlowViewSet(ModelViewSet):
         serializer.save()
 
         return Response(serializer.data)
+    
+    @action(detail=True, methods=["POST"], url_path="notebook/start")
+    def start_notebook(self, request: Request, pk: str):
+        flow = get_object_or_404(Flow, pk=pk)
+        data = {
+            "flow": FlowSerializer(flow).data,
+            "nodes": BaseNodePolymorphicSerializer(flow.nodes.all(), many=True).data,
+            "lib": DependencySerializer(flow.lib).data,
+        }
+        result = submit_notebook(data)
+        return Response(result)
 
 
 class FileArchiveViewSet(ModelViewSet):
