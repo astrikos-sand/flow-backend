@@ -52,15 +52,13 @@ class Flow(BaseModelWithPrefix):
     )
 
     def __str__(self):
-        if self.prefix:
-            return f"{self.prefix.full_name}/{self.full_name}"
         return self.full_name
 
     @property
     def full_name(self):
-        if self.scope:
-            return f"{self.scope}/{self.name}"
-        return f"{self.name}"
+        # if self.scope:
+        #     return f"{self.scope}/{self.name}"
+        return f"{self.prefix.full_name}/{self.name}"
 
 
 class FlowExecution(BaseModel):

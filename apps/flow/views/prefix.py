@@ -37,13 +37,21 @@ class PrefixViewSet(ModelViewSet):
     serializer_class = PrefixSerializer
 
     def create(self, request, *args, **kwargs):
-        type = request.query_params.get("type", None)
+        item_type = request.query_params.get("type", None)
         parent = request.data.get("parent", None)
-        if type is not None and parent is None:
-            parent = Prefix.objects.get(name=type, parent=None)
+        if item_type is not None and parent is None:
+            parent = Prefix.objects.get(name=item_type, parent=None)
             request.data["parent"] = parent.id
 
         return super().create(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.name == "miscellaneous":
+            return Response(
+                {"error": "Cannot delete the miscellaneous prefix"}, status=400
+            )
+        return super().destroy(request, *args, **kwargs)
 
     @action(detail=False, methods=["get"], url_path="page-data")
     def page_data(self, request):
@@ -168,7 +176,7 @@ class FlowViewSet(ModelViewSet):
         serializer.save()
 
         return Response(serializer.data)
-    
+
     @action(detail=True, methods=["POST"], url_path="notebook/start")
     def start_notebook(self, request: Request, pk: str):
         flow = get_object_or_404(Flow, pk=pk)

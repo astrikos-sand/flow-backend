@@ -26,6 +26,12 @@ class PrefixSerializer(serializers.ModelSerializer):
 
         return attrs
 
+    def update(self, instance, validated_data):
+        if instance.name == "miscellaneous":
+            raise serializers.ValidationError("Cannot update the miscellaneous prefix")
+
+        return super().update(instance, validated_data)
+
 
 class FlowSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(read_only=True)

@@ -14,6 +14,7 @@ class FunctionDefinition(BaseModelWithPrefix):
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField(blank=True, null=True)
     code = models.FileField(upload_to="flow/functions/")
+    doc_str = models.TextField(blank=True, null=True)
 
     def __str__(self):
         if self.prefix:
@@ -27,6 +28,10 @@ class FunctionDefinition(BaseModelWithPrefix):
     @property
     def output_fields(self):
         return self.fields.filter(attachment_type=ATTACHMENT_TYPE.OUTPUT.value)
+
+    @property
+    def full_name(self):
+        return f"{self.prefix.full_name}/{self.name}"
 
 
 class FunctionField(BaseModel):
@@ -93,15 +98,20 @@ class FunctionNode(BaseNode):
                 {
                     "type": "link",
                     "placement": "popup",
-                    "label": "Definition",
-                    "key": ["definition", "id"],
-                    "link_type": "function_definition",
-                },
-                {
-                    "type": "link",
-                    "placement": "popup",
                     "label": "Code",
                     "key": ["definition", "code"],
+                },
+                {
+                    "type": "p",
+                    "placement": "popup",
+                    "label": "Description",
+                    "key": ["definition", "description"],
+                },
+                {
+                    "type": "markdown",
+                    "placement": "popup",
+                    "label": "Doc String",
+                    "key": ["definition", "doc_str"],
                 },
             ],
         }

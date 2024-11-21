@@ -66,14 +66,10 @@ class OutputNodeSerializer(BaseNodeSerializer):
 
 
 class FlowNodeSerializer(BaseNodeSerializer):
+    name = serializers.CharField(read_only=True)
 
     class Meta(BaseNodeSerializer.Meta):
         model = FlowNode
-
-    def validate(self, attrs):
-        if attrs["represent"] == attrs["flow"]:
-            raise serializers.ValidationError("FlowNode cannot represent itself")
-        return super().validate(attrs)
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -81,6 +77,9 @@ class FlowNodeSerializer(BaseNodeSerializer):
         return data
 
     def create(self, validated_data):
+        if validated_data["represent"] == validated_data["flow"]:
+            raise serializers.ValidationError("FlowNode cannot represent itself")
+
         represent = validated_data.pop("represent")
 
         input_node = InputNode.objects.filter(flow=represent)
