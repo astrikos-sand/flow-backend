@@ -10,6 +10,9 @@ from apps.trigger.serializers import (
     WebHookTriggerSerializer,
     PeriodicTriggerSerializer,
 )
+from apps.flow.models import Prefix
+from apps.flow.serializers import PrefixSerializer
+from apps.flow.enums import ITEM_TYPE
 
 
 class WebHookTriggerViewSet(ModelViewSet):
@@ -23,6 +26,25 @@ class WebHookTriggerViewSet(ModelViewSet):
         result = webhook_task(flow_id=str(hook.target.id), inputs=inputs)
         return Response(result, status=status.HTTP_200_OK)
 
+    @action(detail=False, methods=["get"], url_path="page-data")
+    def page_data(self, request):
+        query_params = request.query_params
+        parent = query_params.get("parent", None)
+
+        if parent is None:
+            parent = Prefix.objects.get(name=ITEM_TYPE.WEBHOOK.value)
+
+        items = self.get_queryset().filter(prefix=parent)
+        serializer = self.get_serializer(items, many=True)
+
+        prefixes = Prefix.objects.filter(parent=parent)
+
+        data = {
+            "tree": PrefixSerializer(prefixes, many=True).data,
+            "items": serializer.data,
+        }
+        return Response(data)
+
 
 class PeriodicTriggerViewSet(ModelViewSet):
     queryset = PeriodicTrigger.objects.all()
@@ -32,6 +54,25 @@ class PeriodicTriggerViewSet(ModelViewSet):
         instance = self.get_object()
         instance.task.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    @action(detail=False, methods=["get"], url_path="page-data")
+    def page_data(self, request):
+        query_params = request.query_params
+        parent = query_params.get("parent", None)
+
+        if parent is None:
+            parent = Prefix.objects.get(name=ITEM_TYPE.PERIODIC.value)
+
+        items = self.get_queryset().filter(prefix=parent)
+        serializer = self.get_serializer(items, many=True)
+
+        prefixes = Prefix.objects.filter(parent=parent)
+
+        data = {
+            "tree": PrefixSerializer(prefixes, many=True).data,
+            "items": serializer.data,
+        }
+        return Response(data)
 
 
 router = DefaultRouter()
