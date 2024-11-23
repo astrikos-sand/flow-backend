@@ -144,6 +144,10 @@ class FlowNode(BaseNode):
         related_name="represent_nodes",
     )
 
+    @property
+    def name(self):
+        return self.represent.name
+
     def __str__(self):
         return f"Flow Node for {self.flow} -> {self.represent}"
 

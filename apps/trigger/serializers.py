@@ -18,6 +18,8 @@ from apps.trigger.models import (
     Trigger,
 )
 from apps.trigger.enums import SCHDULER_TYPE
+from apps.flow.enums import ITEM_TYPE
+from apps.flow.models.prefix import Prefix
 
 
 class TriggerSerializer(serializers.ModelSerializer):
@@ -33,6 +35,19 @@ class WebHookTriggerSerializer(TriggerSerializer):
 
     class Meta(TriggerSerializer.Meta):
         model = WebHookTrigger
+
+    def create(self, validated_data):
+        prefix: Prefix | None = validated_data.get("prefix", None)
+
+        if prefix is None:
+            root = Prefix.objects.get(name=ITEM_TYPE.WEBHOOK.value)
+            misc_prefix = Prefix.objects.get(name="miscellaneous", parent=root)
+            validated_data["prefix"] = misc_prefix
+        else:
+            if not prefix.full_name.startswith(ITEM_TYPE.WEBHOOK.value):
+                raise serializers.ValidationError("Prefix must start with 'webhooks'")
+
+        return super().create(validated_data)
 
 
 class IntervalSchedulerSerializer(serializers.ModelSerializer):
@@ -107,6 +122,16 @@ class PeriodicTriggerSerializer(TriggerSerializer):
         model = PeriodicTrigger
 
     def create(self, validated_data):
+        prefix: Prefix | None = validated_data.get("prefix", None)
+
+        if prefix is None:
+            root = Prefix.objects.get(name=ITEM_TYPE.PERIODIC.value)
+            misc_prefix = Prefix.objects.get(name="miscellaneous", parent=root)
+            validated_data["prefix"] = misc_prefix
+        else:
+            if not prefix.full_name.startswith(ITEM_TYPE.PERIODIC.value):
+                raise serializers.ValidationError("Prefix must start with 'periodic'")
+
         interval = validated_data.get("interval", None)
         crontab = validated_data.get("crontab", None)
 
@@ -157,7 +182,7 @@ class PeriodicTriggerSerializer(TriggerSerializer):
                 )
 
         scheduler: PeriodicTrigger = PeriodicTrigger.objects.create(
-            task=periodic_task, target=target
+            task=periodic_task, target=target, prefix=validated_data["prefix"]
         )
 
         return scheduler

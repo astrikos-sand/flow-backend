@@ -24,6 +24,7 @@ class FunctionFieldSerializer(serializers.ModelSerializer):
 
 class FunctionDefinitionSerializer(serializers.ModelSerializer):
     fields = FunctionFieldSerializer(many=True, write_only=True, required=False)
+    full_name = serializers.CharField(read_only=True)
 
     # def to_representation(self, instance):
     #     data = super().to_representation(instance)
@@ -38,8 +39,28 @@ class FunctionDefinitionSerializer(serializers.ModelSerializer):
             "updated_at",
         )
 
+    def get_doc_str(self, code):
+        docstring = "NA"
+
+        try:
+            content = code.read().decode("utf-8")
+            import re
+
+            docstring_pattern = re.compile(r'"""(.*?)"""', re.DOTALL)
+            match = docstring_pattern.search(content)
+            if match:
+                docstring = match.group(1)
+        except Exception as e:
+            print(e, flush=True)
+
+        return docstring
+
     def create(self, validated_data):
         prefix: Prefix | None = validated_data.get("prefix", None)
+        code = validated_data.get("code", None)
+        docstring = self.get_doc_str(code)
+        validated_data["doc_str"] = docstring
+
         if prefix is None:
             root = Prefix.objects.get(name=ITEM_TYPE.FUNCTION.value)
             misc_prefix = Prefix.objects.get(name="miscellaneous", parent=root)
@@ -57,6 +78,10 @@ class FunctionDefinitionSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         if "fields" in validated_data:
             validated_data.pop("fields")
+
+        code = validated_data.get("code", None)
+        docstring = self.get_doc_str(code)
+        validated_data["doc_str"] = docstring
 
         return super().update(instance, validated_data)
 

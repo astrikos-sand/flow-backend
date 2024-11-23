@@ -18,6 +18,7 @@ def periodic_task(flow_id: str):
     data = {
         "flow": FlowSerializer(flow).data,
         "nodes": BaseNodePolymorphicSerializer(flow.nodes.all(), many=True).data,
+        "lib": DependencySerializer(flow.lib).data,
     }
     result = submit_task(data)
     return result
