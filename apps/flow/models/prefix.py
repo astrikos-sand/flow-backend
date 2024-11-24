@@ -1,6 +1,7 @@
 from django.db import models
 
 from apps.common.models import BaseModel
+from apps.flow.enums import ITEM_TYPE
 
 
 class Prefix(BaseModel):
@@ -23,6 +24,16 @@ class Prefix(BaseModel):
 
     def __str__(self):
         return self.full_name
+
+    @property
+    def is_default(self) -> bool:
+        for item_type in ITEM_TYPE:
+            if self.full_name == item_type.value:
+                return True
+            elif self.full_name == f"{item_type.value}/miscellaneous":
+                return True
+
+        return False
 
     class Meta:
         verbose_name = "Prefix"

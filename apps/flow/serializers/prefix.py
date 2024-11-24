@@ -27,8 +27,8 @@ class PrefixSerializer(serializers.ModelSerializer):
         return attrs
 
     def update(self, instance, validated_data):
-        if instance.name == "miscellaneous":
-            raise serializers.ValidationError("Cannot update the miscellaneous prefix")
+        if instance.is_default:
+            raise serializers.ValidationError("Cannot update the default prefix")
 
         return super().update(instance, validated_data)
 

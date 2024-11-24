@@ -47,10 +47,8 @@ class PrefixViewSet(ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        if instance.name == "miscellaneous":
-            return Response(
-                {"error": "Cannot delete the miscellaneous prefix"}, status=400
-            )
+        if instance.is_default:
+            return Response({"error": "Cannot delete the default prefixes"}, status=400)
         return super().destroy(request, *args, **kwargs)
 
     @action(detail=False, methods=["get"], url_path="page-data")

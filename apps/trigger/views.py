@@ -54,7 +54,7 @@ class PeriodicTriggerViewSet(ModelViewSet):
         instance = self.get_object()
         instance.task.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
+
     @action(detail=False, methods=["get"], url_path="page-data")
     def page_data(self, request):
         query_params = request.query_params

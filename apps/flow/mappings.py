@@ -6,7 +6,7 @@ from apps.flow.serializers import (
     FunctionDefinitionSerializer,
     DependencySerializer,
 )
-from apps.trigger.serializers import PeriodicTriggerSerializer, WebHookTriggerSerializer 
+from apps.trigger.serializers import PeriodicTriggerSerializer, WebHookTriggerSerializer
 from apps.flow.models import FileArchive, Flow, FunctionDefinition, Dependency
 from apps.trigger.models import PeriodicTrigger, WebHookTrigger
 
