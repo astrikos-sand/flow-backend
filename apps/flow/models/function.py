@@ -31,7 +31,9 @@ class FunctionDefinition(BaseModelWithPrefix):
 
     @property
     def full_name(self):
-        return f"{self.prefix.full_name}/{self.name}"
+        if self.prefix:
+            return f"{self.prefix.full_name}/{self.name}"
+        return self.name
 
 
 class FunctionField(BaseModel):
@@ -123,7 +125,7 @@ class FunctionNode(BaseNode):
         definition_choices = [
             {
                 "value": definition.id,
-                "label": f"{definition.prefix.full_name}/{definition.name}",
+                "label": f"{definition.full_name}",
             }
             for definition in function_definitions
         ]

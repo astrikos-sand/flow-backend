@@ -58,8 +58,20 @@ class Flow(BaseModelWithPrefix):
     def full_name(self):
         # if self.scope:
         #     return f"{self.scope}/{self.name}"
-        return f"{self.prefix.full_name}/{self.name}"
+        if self.prefix:
+            return f"{self.prefix.full_name}/{self.name}"
+        return f"{self.name}"
+    
+    @property
+    def inputs(self):
+        from apps.flow.models.flow import InputNode
+        input = InputNode.objects.filter(flow=self)
+        if len(input) > 0:
+            slots = input[0].slots.all()
 
+            return slots
+
+        return []
 
 class FlowExecution(BaseModel):
     flow = models.ForeignKey(Flow, on_delete=models.CASCADE, related_name="executions")

@@ -32,6 +32,8 @@ class TriggerSerializer(serializers.ModelSerializer):
 
 
 class WebHookTriggerSerializer(TriggerSerializer):
+    target_name = serializers.CharField(source="target.name", read_only=True)
+    copy_command = serializers.CharField(read_only=True)
 
     class Meta(TriggerSerializer.Meta):
         model = WebHookTrigger
@@ -112,6 +114,7 @@ class TaskSerializer(serializers.ModelSerializer):
 
 
 class PeriodicTriggerSerializer(TriggerSerializer):
+    target_name = serializers.CharField(source="target.name", read_only=True)
     interval = IntervalSchedulerSerializer(required=False, write_only=True)
     crontab = CronTabSchedulerSerializer(required=False, write_only=True)
     name = serializers.CharField(write_only=True)
