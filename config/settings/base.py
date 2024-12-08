@@ -128,7 +128,7 @@ USE_I18N = True
 
 # Timezone
 
-TIME_ZONE = "UTC"
+TIME_ZONE = 'Asia/Kolkata'
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)

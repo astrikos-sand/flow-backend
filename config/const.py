@@ -39,3 +39,4 @@ INFLUXDB_URI = f"http://{INFLUXDB_HOST}:{INFLUXDB_PORT}"
 
 # Worker
 WORKER_URL = os.environ["WORKER_URL"]
+AIRFLOW_URL = os.environ["AIRFLOW_URL"]

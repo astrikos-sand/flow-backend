@@ -25,7 +25,12 @@ from apps.flow.serializers import (
     FlowExecutionSerializer,
     FunctionFieldSerializer,
 )
-from apps.flow.runtime.worker import submit_task, create_environment, submit_notebook
+from apps.flow.runtime.worker import (
+    submit_task,
+    create_environment,
+    submit_notebook,
+    submit_dag,
+)
 from apps.flow.enums import ITEM_TYPE
 from apps.flow.mappings import ITEM_MAPS
 from apps.flow.parsers import MultiPartJSONParser
@@ -135,6 +140,22 @@ class FlowViewSet(ModelViewSet):
         }
         result = submit_task(data)
         return Response(result)
+
+    @action(detail=True, methods=["POST"], url_path="dag/create")
+    def create_dag(self, request: Request, pk: str):
+        result = submit_dag(pk)
+        return Response(result)
+
+    @action(detail=True, methods=["GET"], url_path="dag/items")
+    def dag_items(self, request: Request, pk: str):
+        flow = get_object_or_404(Flow, pk=pk)
+        data = {
+            "flow": FlowSerializer(flow).data,
+            "nodes": BaseNodePolymorphicSerializer(flow.nodes.all(), many=True).data,
+            "lib": DependencySerializer(flow.lib).data,
+        }
+
+        return Response(data)
 
     @action(detail=True, methods=["GET"])
     def nodes(self, request: Request, pk: str):
