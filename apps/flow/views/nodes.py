@@ -16,6 +16,8 @@ from apps.flow.models import (
     Flow,
     Connection,
 )
+from apps.flow.models.function import FunctionDataStore
+from apps.flow.serializers.function import FunctionDataStoreSerializer
 
 
 class BaseNodeViewSet(ModelViewSet):
@@ -185,3 +187,41 @@ class SaveAPIView(APIView):
                         serializer.errors, status=status.HTTP_400_BAD_REQUEST
                     )
         return Response(status=status.HTTP_200_OK)
+
+
+class FunctionDatastoreViewSet(ModelViewSet):
+    queryset = FunctionDataStore
+    serializer_class = FunctionDataStoreSerializer
+
+    @action(detail=False, methods=["POST"], url_path="update")
+    def create_datastore(self, request: Request):
+        data = request.data
+
+        for iter in data:
+            slot = iter["slot"]
+            try:
+                function_datastore = FunctionDataStore.objects.get(slot=slot)
+                serializer = FunctionDataStoreSerializer(function_datastore, data=iter)
+            except FunctionDataStore.DoesNotExist:
+                serializer = FunctionDataStoreSerializer(data=iter)
+            if serializer.is_valid():
+                serializer.save()
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["GET"], url_path="store")
+    def get_datastore(self, request: Request, pk=None):
+        node = BaseNode.objects.get(id=pk)
+        input_slots = node.input_slots
+
+        data = []
+        for slot in input_slots:
+            try:
+                function_datastore = FunctionDataStore.objects.get(slot=slot)
+                data.append(FunctionDataStoreSerializer(function_datastore).data)
+            except FunctionDataStore.DoesNotExist:
+                continue
+        
+        return Response(data)

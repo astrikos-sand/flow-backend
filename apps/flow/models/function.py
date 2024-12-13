@@ -7,7 +7,7 @@ from apps.flow.enums import (
     NODE_COLOR_PALLETE,
 )
 from apps.flow.models.prefix import BaseModelWithPrefix
-from apps.flow.models.nodes import BaseNode
+from apps.flow.models.nodes import BaseNode, Slot
 
 
 class FunctionDefinition(BaseModelWithPrefix):
@@ -145,3 +145,33 @@ class FunctionNode(BaseNode):
                 "choices": definition_choices,
             },
         ]
+
+    @property
+    def datastore(self):
+        input_slots = self.input_slots
+        data = {}
+        for slot in input_slots:
+            try:
+                default_dict = FunctionDataStore.objects.get(slot=slot)
+                data[slot.name] = {
+                    "value": default_dict.value,
+                    "value_type": default_dict.value_type,
+                }
+            except FunctionDataStore.DoesNotExist:
+                continue
+        return data
+
+
+class FunctionDataStore(BaseModel):
+    slot = models.OneToOneField(
+        Slot,
+        on_delete=models.CASCADE,
+    )
+    value = models.CharField(max_length=10000)
+    value_type = models.CharField(
+        max_length=15,
+        choices=VALUE_TYPE.choices,
+    )
+
+    def __str__(self):
+        return f"{self.slot} - {self.value_type}"
