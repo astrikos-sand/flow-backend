@@ -45,10 +45,13 @@ def submit_notebook(
     response.raise_for_status()
     return response.json()
 
+
 def submit_dag(
     flow_id: str,
 ):
     headers = {"Content-type": "application/json", "Accept": "application/json"}
-    response = requests.get(f"{AIRFLOW_URL}/dynamic-dag/create?flow={flow_id}", headers=headers)
+    response = requests.get(
+        f"{AIRFLOW_URL}/dynamic-dag/create?flow={flow_id}", headers=headers
+    )
     response.raise_for_status()
     return response.json()

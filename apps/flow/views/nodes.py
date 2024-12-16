@@ -29,6 +29,41 @@ class BaseNodeViewSet(ModelViewSet):
         context.update({"request": self.request})
         return context
 
+    def partial_update(self, request: Request, *args, **kwargs):
+        datastore = request.data.pop("datastore", None)
+
+        if datastore:
+            pk = kwargs["pk"]
+            function_node = BaseNode.objects.get(pk=pk)
+            input_slots = function_node.input_slots
+
+            for slot in input_slots:
+                if slot.name in datastore:
+                    default_dict = {
+                        "slot": slot.id,
+                        **datastore[slot.name],
+                    }
+
+                    try:
+                        function_datastore = FunctionDataStore.objects.get(slot=slot)
+                        serializer = FunctionDataStoreSerializer(
+                            function_datastore, data=default_dict
+                        )
+                    except FunctionDataStore.DoesNotExist:
+                        serializer = FunctionDataStoreSerializer(data=default_dict)
+
+                    serializer.is_valid(raise_exception=True)
+                    serializer.save()
+
+                else:
+                    try:
+                        function_datastore = FunctionDataStore.objects.get(slot=slot)
+                        function_datastore.delete()
+                    except FunctionDataStore.DoesNotExist:
+                        continue
+
+        return super().partial_update(request, *args, **kwargs)
+
 
 class ConnectionViewSet(ModelViewSet):
     queryset = Connection.objects.all()
@@ -187,41 +222,3 @@ class SaveAPIView(APIView):
                         serializer.errors, status=status.HTTP_400_BAD_REQUEST
                     )
         return Response(status=status.HTTP_200_OK)
-
-
-class FunctionDatastoreViewSet(ModelViewSet):
-    queryset = FunctionDataStore
-    serializer_class = FunctionDataStoreSerializer
-
-    @action(detail=False, methods=["POST"], url_path="update")
-    def create_datastore(self, request: Request):
-        data = request.data
-
-        for iter in data:
-            slot = iter["slot"]
-            try:
-                function_datastore = FunctionDataStore.objects.get(slot=slot)
-                serializer = FunctionDataStoreSerializer(function_datastore, data=iter)
-            except FunctionDataStore.DoesNotExist:
-                serializer = FunctionDataStoreSerializer(data=iter)
-            if serializer.is_valid():
-                serializer.save()
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        return Response(status=status.HTTP_200_OK)
-
-    @action(detail=True, methods=["GET"], url_path="store")
-    def get_datastore(self, request: Request, pk=None):
-        node = BaseNode.objects.get(id=pk)
-        input_slots = node.input_slots
-
-        data = []
-        for slot in input_slots:
-            try:
-                function_datastore = FunctionDataStore.objects.get(slot=slot)
-                data.append(FunctionDataStoreSerializer(function_datastore).data)
-            except FunctionDataStore.DoesNotExist:
-                continue
-        
-        return Response(data)

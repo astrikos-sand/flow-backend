@@ -17,6 +17,3 @@ router.register(r"fields", DynamicFieldsViewSet, basename="dynamic-fields")
 router.register(r"data-transfer", DataTransferManager, basename="data-transfer")
 router.register(r"prefix", PrefixViewSet, basename="prefix")
 router.register(r"search", SearchViewSet, basename="search")
-router.register(
-    r"function-datastore", FunctionDatastoreViewSet, basename="function-data-store"
-)

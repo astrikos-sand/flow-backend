@@ -22,6 +22,7 @@ class WebHookTrigger(Trigger):
         flow_inputs = self.target.inputs
         inputs = {i.name: "<>" for i in flow_inputs}
         import json
+
         inputs_str = json.dumps({"inputs": inputs})
         backend_url = "http://192.168.0.218:9100"
         return f"curl -X POST {backend_url}/triggers/webhook/{self.id}/execute/ -H \"Content-Type: application/json\" -d '{inputs_str}'"

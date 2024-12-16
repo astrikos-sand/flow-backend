@@ -14,6 +14,7 @@ from apps.flow.models import (
     Flow,
     FunctionDefinition,
     FlowExecution,
+    DAGMetaData,
 )
 from apps.flow.serializers import (
     FileArchiveSerializer,
@@ -24,6 +25,7 @@ from apps.flow.serializers import (
     FunctionDefinitionSerializer,
     FlowExecutionSerializer,
     FunctionFieldSerializer,
+    DAGMetaDataSerializer,
 )
 from apps.flow.runtime.worker import (
     submit_task,
@@ -110,6 +112,21 @@ class PrefixViewSet(ModelViewSet):
 class FlowViewSet(ModelViewSet):
     queryset = Flow.objects.all().order_by("name")
     serializer_class = FlowSerializer
+
+    def partial_update(self, request, *args, **kwargs):
+        dag = request.data.pop("dag_meta_data", None)
+        if dag:
+            dag["flow"] = kwargs["pk"]
+            try:
+                instance = DAGMetaData.objects.get(flow=dag["flow"])
+                serializer = DAGMetaDataSerializer(instance, data=dag, partial=True)
+            except DAGMetaData.DoesNotExist:
+                serializer = DAGMetaDataSerializer(data=dag)
+
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+
+        return super().partial_update(request, *args, **kwargs)
 
     @action(detail=False, methods=["get"], url_path="page-data")
     def page_data(self, request):
