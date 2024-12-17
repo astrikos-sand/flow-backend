@@ -16,6 +16,8 @@ from apps.flow.models import (
     Flow,
     Connection,
 )
+from apps.flow.models.function import FunctionDataStore
+from apps.flow.serializers.function import FunctionDataStoreSerializer
 
 
 class BaseNodeViewSet(ModelViewSet):
@@ -26,6 +28,41 @@ class BaseNodeViewSet(ModelViewSet):
         context = super().get_serializer_context()
         context.update({"request": self.request})
         return context
+
+    def partial_update(self, request: Request, *args, **kwargs):
+        datastore = request.data.pop("datastore", None)
+
+        if datastore:
+            pk = kwargs["pk"]
+            function_node = BaseNode.objects.get(pk=pk)
+            input_slots = function_node.input_slots
+
+            for slot in input_slots:
+                if slot.name in datastore:
+                    default_dict = {
+                        "slot": slot.id,
+                        **datastore[slot.name],
+                    }
+
+                    try:
+                        function_datastore = FunctionDataStore.objects.get(slot=slot)
+                        serializer = FunctionDataStoreSerializer(
+                            function_datastore, data=default_dict
+                        )
+                    except FunctionDataStore.DoesNotExist:
+                        serializer = FunctionDataStoreSerializer(data=default_dict)
+
+                    serializer.is_valid(raise_exception=True)
+                    serializer.save()
+
+                else:
+                    try:
+                        function_datastore = FunctionDataStore.objects.get(slot=slot)
+                        function_datastore.delete()
+                    except FunctionDataStore.DoesNotExist:
+                        continue
+
+        return super().partial_update(request, *args, **kwargs)
 
 
 class ConnectionViewSet(ModelViewSet):

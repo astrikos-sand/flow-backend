@@ -6,10 +6,12 @@ from apps.flow.models import (
     FunctionNode,
     Slot,
     Prefix,
+    FunctionDataStore,
 )
 from apps.flow.serializers.nodes import BaseNodeSerializer
 from apps.flow.serializers.prefix import PrefixSerializer
 from apps.flow.enums import ITEM_TYPE
+from apps.flow.utils import typecast_value
 
 
 class FunctionFieldSerializer(serializers.ModelSerializer):
@@ -87,6 +89,8 @@ class FunctionDefinitionSerializer(serializers.ModelSerializer):
 
 
 class FunctionNodeSerializer(BaseNodeSerializer):
+    datastore = serializers.JSONField(read_only=True)
+
     class Meta(BaseNodeSerializer.Meta):
         model = FunctionNode
 
@@ -112,3 +116,41 @@ class FunctionNodeSerializer(BaseNodeSerializer):
             Slot.objects.create(node=function_node, **data)
 
         return function_node
+
+
+class FunctionDataStoreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FunctionDataStore
+        exclude = (
+            "created_at",
+            "updated_at",
+        )
+
+    def create(self, validated_data):
+        try:
+            value = validated_data["value"]
+            value_type = validated_data["value_type"]
+            typecast_value(value, value_type)
+        except Exception as e:
+            raise serializers.ValidationError(
+                f"Unable to typecast {value} to {value_type}"
+            )
+
+        datastore = FunctionDataStore.objects.create(**validated_data)
+
+        return datastore
+
+    def update(self, instance, validated_data):
+        if any(key in validated_data for key in ("value", "value_type")):
+            try:
+                value = validated_data.get("value", instance.value)
+                value_type = validated_data.get("value_type", instance.value_type)
+                typecast_value(value, value_type)
+            except Exception as e:
+                raise serializers.ValidationError(
+                    f"Unable to typecast {value} to {value_type}"
+                )
+
+        instance = super().update(instance, validated_data)
+
+        return instance

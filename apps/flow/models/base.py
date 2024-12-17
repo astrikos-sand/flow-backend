@@ -61,10 +61,11 @@ class Flow(BaseModelWithPrefix):
         if self.prefix:
             return f"{self.prefix.full_name}/{self.name}"
         return f"{self.name}"
-    
+
     @property
     def inputs(self):
         from apps.flow.models.flow import InputNode
+
         input = InputNode.objects.filter(flow=self)
         if len(input) > 0:
             slots = input[0].slots.all()
@@ -72,6 +73,17 @@ class Flow(BaseModelWithPrefix):
             return slots
 
         return []
+
+    @property
+    def dag_meta_data(self):
+        from apps.flow.models.utils import DAGMetaData
+
+        try:
+            dag = DAGMetaData.objects.get(flow=self)
+            return {"config": dag.config}
+        except DAGMetaData.DoesNotExist:
+            return {}
+
 
 class FlowExecution(BaseModel):
     flow = models.ForeignKey(Flow, on_delete=models.CASCADE, related_name="executions")

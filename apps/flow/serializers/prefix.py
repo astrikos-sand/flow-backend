@@ -1,6 +1,12 @@
 from rest_framework import serializers
 
-from apps.flow.models import FileArchive, Prefix, Flow, Dependency, FlowExecution
+from apps.flow.models import (
+    FileArchive,
+    Prefix,
+    Flow,
+    Dependency,
+    FlowExecution,
+)
 from apps.flow.enums import ITEM_TYPE
 
 
@@ -36,6 +42,7 @@ class PrefixSerializer(serializers.ModelSerializer):
 class FlowSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(read_only=True)
     lib_name = serializers.CharField(read_only=True, source="lib.name")
+    dag_meta_data = serializers.JSONField(read_only=True)
 
     # def to_representation(self, instance):
     #     data = super().to_representation(instance)
