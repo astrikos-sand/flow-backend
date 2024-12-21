@@ -1,7 +1,7 @@
 def func(server, database, username, password, driver, port):
     """
     Establishes a connection to an MSSQL database and returns the connection object.
-    
+
     Parameters:
         server (str): The server name or IP address.
         database (str): The name of the database to connect to.
@@ -15,6 +15,7 @@ def func(server, database, username, password, driver, port):
         pyodbc.Connection: The connection object.
     """
     import pyodbc
+
     conn_str = (
         f"Driver={{{driver}}};"
         f"Server={server}{',' + str(port) if port else ''};"
@@ -25,5 +26,6 @@ def func(server, database, username, password, driver, port):
 
     connection = pyodbc.connect(conn_str)
     return connection
+
 
 connection = func(server, database, username, password, driver, port)

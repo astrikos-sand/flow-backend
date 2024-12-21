@@ -95,6 +95,14 @@ DATABASES = {
     },
 }
 
+STORAGES = {
+    "default": {
+        "BACKEND": "config.storage.OverwriteStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -128,7 +136,7 @@ USE_I18N = True
 
 # Timezone
 
-TIME_ZONE = 'Asia/Kolkata'
+TIME_ZONE = "Asia/Kolkata"
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
