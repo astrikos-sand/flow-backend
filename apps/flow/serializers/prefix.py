@@ -74,32 +74,37 @@ class FlowSerializer(serializers.ModelSerializer):
 class FileArchiveSerializer(serializers.ModelSerializer):
     url = serializers.CharField(read_only=True)
 
-    def validate(self, attrs):
-        attrs = super().validate(attrs)
-
-        prefix: Prefix | None = attrs.get("prefix", None)
-        if prefix is None:
-            root = Prefix.objects.get(name=ITEM_TYPE.ARCHIVES.value)
-            misc_prefix = Prefix.objects.get(name="miscellaneous", parent=root)
-            attrs["prefix"] = misc_prefix
-        else:
-            if not prefix.full_name.startswith(ITEM_TYPE.ARCHIVES.value):
-                raise serializers.ValidationError("Prefix must start with 'flows'")
-
-        return attrs
-
     # def to_representation(self, instance):
     #     data = super().to_representation(instance)
     #     if instance.prefix is not None:
     #         data["prefix"] = PrefixSerializer(instance.prefix).data
     #     return data
 
+    def update(self, instance: FileArchive, validated_data):
+        if "file" in validated_data and instance.file:
+            try:
+                instance.file.delete()
+            except Exception as e:
+                print(e, flush=True)
+
+        return super().update(instance, validated_data)
+
+    def create(self, validated_data):
+        prefix: Prefix | None = validated_data.get("prefix", None)
+
+        if prefix is None:
+            root = Prefix.objects.get(name=ITEM_TYPE.ARCHIVES.value)
+            misc_prefix = Prefix.objects.get(name="miscellaneous", parent=root)
+            validated_data["prefix"] = misc_prefix
+        else:
+            if not prefix.full_name.startswith(ITEM_TYPE.ARCHIVES.value):
+                raise serializers.ValidationError("Prefix must start with 'archives'")
+
+        return super().create(validated_data)
+
     class Meta:
         model = FileArchive
-        exclude = (
-            "created_at",
-            "updated_at",
-        )
+        exclude = ("updated_at",)
 
 
 class DependencySerializer(serializers.ModelSerializer):

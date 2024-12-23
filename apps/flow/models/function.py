@@ -8,12 +8,14 @@ from apps.flow.enums import (
 )
 from apps.flow.models.prefix import BaseModelWithPrefix
 from apps.flow.models.nodes import BaseNode, Slot
+from apps.flow.utils import function_upload_path
+from config.storage import OverwriteStorage
 
 
 class FunctionDefinition(BaseModelWithPrefix):
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField(blank=True, null=True)
-    code = models.FileField(upload_to="flow/functions/")
+    code = models.FileField(upload_to=function_upload_path, storage=OverwriteStorage())
     doc_str = models.TextField(blank=True, null=True)
 
     def __str__(self):

@@ -186,14 +186,16 @@ class FlowViewSet(ModelViewSet):
     @action(detail=True, methods=["GET", "POST", "PATCH", "PUT"])
     def executions(self, request: Request, pk: str):
         if request.method == "GET":
-            return self._list_executions(pk)
+            query_params = request.query_params
+            return self._list_executions(pk, query_params)
         if request.method == "POST":
             return self._create_execution(request.data, pk)
         if request.method in ["PATCH", "PUT"]:
             return self._update_execution(request.data)
 
-    def _list_executions(self, pk: str):
-        queryset = FlowExecution.objects.filter(flow=pk)[:5]
+    def _list_executions(self, pk: str, query_params: dict):
+        count = int(query_params.get("count", "5"))
+        queryset = FlowExecution.objects.filter(flow=pk)[:count]
         serializer = FlowExecutionSerializer(queryset, many=True)
         return Response(serializer.data)
 

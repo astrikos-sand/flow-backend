@@ -49,3 +49,36 @@ def typecast_value(value, data_type):
 
         case VALUE_TYPE.ANY.value:
             return value
+
+
+def function_upload_path(instance, _):
+    function_name = instance.name
+    if (
+        instance.prefix
+        and instance.prefix.full_name
+        and instance.prefix.full_name.startswith("functions")
+    ):
+        return f"{instance.prefix.full_name}/{function_name}.py"
+    return f"functions/miscellaneous/{function_name}.py"
+
+
+def dependency_upload_path(instance, _):
+    dependency_name = instance.name
+    if (
+        instance.prefix
+        and instance.prefix.full_name
+        and instance.prefix.full_name.startswith("environments")
+    ):
+        return f"{instance.prefix.full_name}/{dependency_name}.txt"
+
+    return f"environments/miscellaneous/{dependency_name}.txt"
+
+
+def archive_upload_path(instance, filename):
+    if (
+        instance.prefix
+        and instance.prefix.full_name
+        and instance.prefix.full_name.startswith("archives")
+    ):
+        return f"{instance.prefix.full_name}/{filename}"
+    return f"archives/uploads/{filename}"

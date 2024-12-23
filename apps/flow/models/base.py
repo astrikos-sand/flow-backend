@@ -3,11 +3,13 @@ from django.db import models
 from apps.flow.models.prefix import BaseModelWithPrefix
 from apps.common.models import BaseModel
 from apps.flow.enums import Status
+from apps.flow.utils import dependency_upload_path, archive_upload_path
+from config.storage import OverwriteStorage
 
 
 class FileArchive(BaseModelWithPrefix):
     name = models.CharField(max_length=255)
-    file = models.FileField(upload_to="uploads/")
+    file = models.FileField(upload_to=archive_upload_path)
 
     def __str__(self):
         if self.prefix:
@@ -18,10 +20,18 @@ class FileArchive(BaseModelWithPrefix):
     def url(self):
         return self.file.url
 
+    def delete(self, *args, **kwargs):
+        if self.file:
+            self.file.delete()
+
+        return super().delete(*args, **kwargs)
+
 
 class Dependency(BaseModelWithPrefix):
     name = models.CharField(max_length=100, unique=True)
-    requirements = models.FileField(upload_to="flow/dependencies/")
+    requirements = models.FileField(
+        upload_to=dependency_upload_path, storage=OverwriteStorage()
+    )
 
     def __str__(self):
         if self.prefix:
